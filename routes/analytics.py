@@ -50,7 +50,7 @@ def update_learning_time():
         duration_seconds = 0
 
     if 0 < duration_seconds <= 8 * 60 * 60:
-        user = User.query.get(current_user.id)
+        user = db.session.get(User, current_user.id)
         user.learning_duration += int(duration_seconds)
         db.session.commit()
         return jsonify({'success': True, 'message': '学习时长已更新'})

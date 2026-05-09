@@ -61,7 +61,7 @@ def handle_unauthorized():
 @login_manager.user_loader
 def load_user(user_id):
     # 这个函数现在可以安全地查询数据库了
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(user_id))
 
 
 @app.before_request

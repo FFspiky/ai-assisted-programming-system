@@ -20,7 +20,7 @@ def get_all_problems():
 
 @problems_blueprint.route('/problems/<problem_id>', methods=['GET'])
 def get_problem_details(problem_id):
-    problem = Problem.query.get(problem_id)
+    problem = db.session.get(Problem, problem_id)
     if not problem:
         return jsonify({"success": False, "error": "题目未找到"}), 404
     

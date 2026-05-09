@@ -2,7 +2,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, timezone
 
 db = SQLAlchemy()
 
@@ -45,8 +45,8 @@ class Submission(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     code_submitted = db.Column(db.Text, nullable=False)
     language = db.Column(db.String(50), nullable=False)
-    status = db.Column(db.String(50), nullable=False) 
+    status = db.Column(db.String(50), nullable=False, index=True)
     feedback = db.Column(db.Text, nullable=True)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    problem_id = db.Column(db.String(50), db.ForeignKey('problem.id'), nullable=False)
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    problem_id = db.Column(db.String(50), db.ForeignKey('problem.id'), nullable=False, index=True)

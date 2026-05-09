@@ -14,7 +14,7 @@ def check_solution():
     language = data.get("language", "Python")
     problem_id = data.get("problem_id", "")
 
-    problem = Problem.query.get(problem_id)
+    problem = db.session.get(Problem, problem_id)
     if not problem:
         return jsonify({"success": False, "error": "题目不存在"}), 404
 
@@ -64,7 +64,7 @@ def check_solution():
     db.session.add(new_submission)
 
     if final_status == "Accepted" and already_accepted is None:
-        user = User.query.get(current_user.id)
+        user = db.session.get(User, current_user.id)
         user.points += 10 # 首次答对加分
     
     db.session.commit()

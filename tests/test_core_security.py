@@ -2,15 +2,24 @@ import os
 import tempfile
 import unittest
 
-os.environ["DATABASE_URL"] = "sqlite:///" + tempfile.NamedTemporaryFile(suffix=".db").name
+db_file = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+db_file.close()
+os.environ["DATABASE_URL"] = "sqlite:///" + db_file.name
 os.environ["FLASK_SECRET_KEY"] = "test-secret"
 
 from app import app
-from models import db
+from models import Problem, TestCase, User, db
 from services.execute_runner import run_code
 
 
 class CoreSecurityTest(unittest.TestCase):
+    @classmethod
+    def tearDownClass(cls):
+        try:
+            os.unlink(db_file.name)
+        except OSError:
+            pass
+
     def setUp(self):
         app.config["TESTING"] = True
         self.client = app.test_client()
@@ -40,6 +49,45 @@ class CoreSecurityTest(unittest.TestCase):
 
         self.assertTrue(result["success"])
         self.assertEqual(result["output"].strip(), "hello")
+
+    def test_repeated_accept_does_not_add_points_twice(self):
+        with app.app_context():
+            problem = Problem(
+                id="p1",
+                title="Echo",
+                description="Print the input",
+                difficulty="简单",
+            )
+            db.session.add(problem)
+            db.session.add(TestCase(input_data="hello\n", expected_output="hello", problem_id="p1"))
+            db.session.commit()
+
+        self.client.post(
+            "/api/register",
+            json={
+                "username": "coder",
+                "email": "coder@example.com",
+                "password": "strongpass",
+            },
+        )
+        self.client.post(
+            "/api/login",
+            json={"username": "coder", "password": "strongpass"},
+        )
+
+        payload = {
+            "problem_id": "p1",
+            "language": "Python",
+            "code": "print(input())",
+        }
+        first = self.client.post("/api/check-solution", json=payload)
+        second = self.client.post("/api/check-solution", json=payload)
+
+        self.assertEqual(first.status_code, 200)
+        self.assertEqual(second.status_code, 200)
+        with app.app_context():
+            user = User.query.filter_by(username="coder").first()
+            self.assertEqual(user.points, 10)
 
 
 if __name__ == "__main__":

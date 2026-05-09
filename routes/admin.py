@@ -70,7 +70,7 @@ def upload_problems():
             if not all([prob_id, title, description]): # 确保核心数据存在
                 continue 
 
-            problem = Problem.query.get(prob_id)
+            problem = db.session.get(Problem, prob_id)
             if not problem:
                 problem = Problem(id=prob_id)
             
