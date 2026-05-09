@@ -137,6 +137,50 @@ class CoreSecurityTest(unittest.TestCase):
 
         self.assertEqual(last_response.status_code, 429)
 
+    def test_run_code_rejects_unsupported_language(self):
+        self.client.post(
+            "/api/register",
+            json={
+                "username": "languser",
+                "email": "languser@example.com",
+                "password": "strongpass",
+            },
+        )
+        self.client.post(
+            "/api/login",
+            json={"username": "languser", "password": "strongpass"},
+        )
+
+        response = self.client.post(
+            "/api/run-code",
+            json={"language": "javascript", "code": "console.log('bad')"},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("不支持的语言", response.get_json()["error"])
+
+    def test_run_code_rejects_large_payload(self):
+        self.client.post(
+            "/api/register",
+            json={
+                "username": "largeuser",
+                "email": "largeuser@example.com",
+                "password": "strongpass",
+            },
+        )
+        self.client.post(
+            "/api/login",
+            json={"username": "largeuser", "password": "strongpass"},
+        )
+
+        response = self.client.post(
+            "/api/run-code",
+            json={"language": "python", "code": "x" * 20001},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("代码长度", response.get_json()["error"])
+
 
 if __name__ == "__main__":
     unittest.main()

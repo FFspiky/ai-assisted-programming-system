@@ -1,7 +1,11 @@
 # services/learning_path_service.py
 import requests
 import json
+import logging
 from config import API_KEY, API_URL, MODEL_NAME
+
+
+logger = logging.getLogger(__name__)
 
 def _stream_ai_for_path(prompt: str): # 改为流式函数
     """
@@ -45,7 +49,7 @@ def _stream_ai_for_path(prompt: str): # 改为流式函数
                         yield f"data: {json.dumps(message, ensure_ascii=False)}\n\n"
                         # --- 修改结束 ---
     except Exception as e:
-        print(f"Error calling AI service: {e}")
+        logger.exception("Error calling AI service")
         # --- 修改开始 ---
         # 同样将错误信息包装成 SSE 事件
         error_message = {"error": f"AI服务调用失败：{str(e)}"}

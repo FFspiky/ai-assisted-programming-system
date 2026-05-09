@@ -3,6 +3,7 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required
 from routes.guards import rate_limit
+from routes.validators import validate_code_payload
 from services.execute_runner import run_code
 
 execute_blueprint = Blueprint("execute", __name__)
@@ -15,11 +16,9 @@ def execute_code():
         return jsonify({'status': 'ok'}), 200
 
     data = request.get_json(silent=True) or {}
-    code = data.get("code", "")
-    language = data.get("language", "Python")
-    # 新增: 从请求中获取 input_text
-    input_text = data.get("input_text", None) 
+    code, language, input_text, error_response = validate_code_payload(data)
+    if error_response:
+        return error_response
 
-    # 将 input_text 传递给 run_code 函数
     result = run_code(code, language, input_text=input_text)
     return jsonify(result)

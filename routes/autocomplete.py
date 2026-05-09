@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, Response
 from flask_login import login_required
 from routes.guards import rate_limit
+from routes.validators import trim_autocomplete_context, validate_language
 from services.ai_autocomplete import stream_inline_completion
 
 autocomplete_blueprint = Blueprint("autocomplete", __name__)
@@ -14,10 +15,14 @@ def ai_inline_complete_stream():
         return jsonify({"status": "ok"}), 200
 
     data = request.get_json(silent=True) or {}
-    prefix = (data.get("prefix") or "").strip("\x00")
-    suffix = data.get("suffix") or ""
-    language = (data.get("language") or "python").strip()
-    max_tokens = int(data.get("max_tokens", 128))
+    prefix, suffix = trim_autocomplete_context(data.get("prefix"), data.get("suffix"))
+    language, error_response, status = validate_language(data.get("language", "python"))
+    if error_response:
+        return error_response, status
+    try:
+        max_tokens = int(data.get("max_tokens", 128))
+    except (TypeError, ValueError):
+        max_tokens = 128
     max_tokens = max(32, min(max_tokens, 256))
 
     if not prefix:

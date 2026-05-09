@@ -5,15 +5,36 @@ import tempfile
 import os
 import shutil
 
+from config import (
+    CODE_RUN_CPU_SECONDS,
+    CODE_RUN_FILE_SIZE_MB,
+    CODE_RUN_MAX_OUTPUT_CHARS,
+    CODE_RUN_MAX_PROCESSES,
+    CODE_RUN_MEMORY_MB,
+    CODE_RUN_TIMEOUT_SECONDS,
+)
+
+
+def _truncate_output(text):
+    text = text or ""
+    if len(text) <= CODE_RUN_MAX_OUTPUT_CHARS:
+        return text
+    return text[:CODE_RUN_MAX_OUTPUT_CHARS] + "\n... 输出过长，已截断"
+
 
 def _limit_child_process():
     try:
         import resource
 
-        resource.setrlimit(resource.RLIMIT_CPU, (3, 3))
-        resource.setrlimit(resource.RLIMIT_AS, (256 * 1024 * 1024, 256 * 1024 * 1024))
-        resource.setrlimit(resource.RLIMIT_FSIZE, (1024 * 1024, 1024 * 1024))
-        resource.setrlimit(resource.RLIMIT_NPROC, (32, 32))
+        cpu_seconds = max(1, CODE_RUN_CPU_SECONDS)
+        memory_bytes = max(32, CODE_RUN_MEMORY_MB) * 1024 * 1024
+        file_size_bytes = max(1, CODE_RUN_FILE_SIZE_MB) * 1024 * 1024
+        max_processes = max(1, CODE_RUN_MAX_PROCESSES)
+
+        resource.setrlimit(resource.RLIMIT_CPU, (cpu_seconds, cpu_seconds))
+        resource.setrlimit(resource.RLIMIT_AS, (memory_bytes, memory_bytes))
+        resource.setrlimit(resource.RLIMIT_FSIZE, (file_size_bytes, file_size_bytes))
+        resource.setrlimit(resource.RLIMIT_NPROC, (max_processes, max_processes))
     except Exception:
         pass
 
@@ -33,7 +54,7 @@ def run_code(code: str, language: str = "Python", input_text: str = None) -> dic
                 [sys.executable, "-I", "-c", code],
                 capture_output=True,
                 text=True,
-                timeout=10,
+                timeout=CODE_RUN_TIMEOUT_SECONDS,
                 input=input_text, # 2. 将 input_text 传递给进程
                 cwd=tmp_dir,
                 env=run_env,
@@ -50,21 +71,21 @@ def run_code(code: str, language: str = "Python", input_text: str = None) -> dic
                 ["g++", "-std=c++17", file_path, "-o", output_file],
                 capture_output=True,
                 text=True,
-                timeout=10,
+                timeout=CODE_RUN_TIMEOUT_SECONDS,
                 cwd=tmp_dir,
                 env=run_env,
             )
             if compile_result.returncode != 0:
                 return {
                     "success": False,
-                    "error": compile_result.stderr
+                    "error": _truncate_output(compile_result.stderr)
                 }
 
             result = subprocess.run(
                 [output_file],
                 capture_output=True,
                 text=True,
-                timeout=10,
+                timeout=CODE_RUN_TIMEOUT_SECONDS,
                 input=input_text, # 2. 将 input_text 传递给进程
                 cwd=tmp_dir,
                 env=run_env,
@@ -80,8 +101,8 @@ def run_code(code: str, language: str = "Python", input_text: str = None) -> dic
 
         return {
             "success": result.returncode == 0,
-            "output": result.stdout,
-            "error": result.stderr,
+            "output": _truncate_output(result.stdout),
+            "error": _truncate_output(result.stderr),
             "time": elapsed_time,
             "memory": "N/A"
         }
@@ -89,7 +110,7 @@ def run_code(code: str, language: str = "Python", input_text: str = None) -> dic
     except subprocess.TimeoutExpired:
         return {
             "success": False,
-            "error": "Execution timed out after 10 seconds"
+            "error": f"Execution timed out after {CODE_RUN_TIMEOUT_SECONDS} seconds"
         }
     except FileNotFoundError:
         return {

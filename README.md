@@ -35,6 +35,12 @@ ADMIN_EMAIL=admin@example.com
 
 管理员创建完成后，建议删除或更换这些变量，避免后续误用。
 
+也可以使用 CLI 创建管理员：
+
+```bash
+flask --app app create-admin
+```
+
 ## 启动
 
 ```bash

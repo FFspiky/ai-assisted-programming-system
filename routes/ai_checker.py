@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required
 from routes.guards import rate_limit
+from routes.validators import validate_ai_prompt, validate_language
 from services.ai_code_checker import check_code
 
 ai_checker_blueprint = Blueprint("ai_checker", __name__)
@@ -13,8 +14,12 @@ def ai_check_code():
         return jsonify({'status': 'ok'}), 200
 
     data = request.get_json(silent=True) or {}
-    code = data.get("code", "")
-    language = data.get("language", "Python")
+    code, error_response, status = validate_ai_prompt(data.get("code", ""))
+    if error_response:
+        return error_response, status
+    language, error_response, status = validate_language(data.get("language", "python"))
+    if error_response:
+        return error_response, status
 
     try:
         report = check_code(code, language)

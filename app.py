@@ -2,6 +2,7 @@
 
 import os
 import secrets
+import click
 from flask import Flask, render_template, redirect, url_for
 from flask_cors import CORS
 from flask_migrate import Migrate
@@ -62,6 +63,24 @@ def handle_unauthorized():
 def load_user(user_id):
     # 这个函数现在可以安全地查询数据库了
     return db.session.get(User, int(user_id))
+
+
+@app.cli.command("create-admin")
+@click.option("--username", prompt=True)
+@click.option("--email", prompt=True)
+@click.password_option()
+def create_admin(username, email, password):
+    existing = User.query.filter(
+        (User.username == username) | (User.email == email)
+    ).first()
+    if existing:
+        raise click.ClickException("用户名或邮箱已存在")
+
+    admin_user = User(username=username, email=email, is_admin=True)
+    admin_user.set_password(password)
+    db.session.add(admin_user)
+    db.session.commit()
+    click.echo(f"管理员账号已创建: {username}")
 
 
 @app.before_request
