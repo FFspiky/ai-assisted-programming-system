@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+    <style>/* 复用注册页面的CSS */ body{font-family:sans-serif;background:#f0f2f5;display:flex;justify-content:center;align-items:center;height:100vh;}.card{background:white;padding:2rem;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.1);width:360px;}.card h1{text-align:center;margin-bottom:1.5rem;}input{width:100%;padding:10px;margin-bottom:1rem;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;}button{width:100%;padding:10px;background:#1877f2;color:white;border:none;border-radius:4px;font-size:1rem;cursor:pointer;}p{text-align:center;margin-top:1rem;}a{color:#1877f2;text-decoration:none;}</style>
+</head>
+<body>
+<div class="card">
+    <h1>登录</h1>
+    <form id="loginForm">
+        <input type="text" id="username" placeholder="用户名" required>
+        <input type="password" id="password" placeholder="密码" required>
+        <button type="submit">登录</button>
+    </form>
+    <p>还没有账户？ <a href="/register.html">立即注册</a></p>
+</div>
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ username, password })
+        });
+        const result = await response.json();
+        if (result.success) {
+            alert('登录成功！');
+            window.location.href = '/'; // 跳转到首页
+        } else {
+            alert('登录失败: ' + result.error);
+        }
+    });
+</script>
+</body>
+</html>

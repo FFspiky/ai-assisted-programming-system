@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>选择题目 - 刷题挑战</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Source+Code+Pro:wght@400;600&display=swap"
+        rel="stylesheet">
+    <style>
+        /* Reusing some styles from practice.html */
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4895ef;
+            --light: #f8f9fa;
+            --dark: #121826;
+            --darker: #0c101c;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+            --code-bg: #1e293b;
+            --frog-green: #4CAF50;
+            --ai-purple: #8a2be2;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, var(--darker), var(--dark));
+            color: var(--light);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding: 20px;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            padding: 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            font-size: 2.5rem;
+            color: var(--success);
+        }
+
+        .logo-text {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--accent), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        nav ul {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        nav a {
+            color: var(--light);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1.1rem;
+            transition: color 0.3s;
+            position: relative;
+        }
+
+        nav a:hover {
+            color: var(--accent);
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: width 0.3s;
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--light);
+            margin-bottom: 40px;
+            font-size: 2.5rem;
+            background: linear-gradient(to right, var(--accent), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .problem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+            padding: 20px 0;
+        }
+
+        .problem-card {
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .problem-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+
+        .card-description {
+            font-size: 0.95rem;
+            color: var(--light-gray);
+            line-height: 1.5;
+            flex-grow: 1;
+            margin-bottom: 15px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3; /* Limit to 3 lines */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn-select {
+            background: linear-gradient(to right, var(--frog-green), #2E7D32);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none; /* For the anchor tag */
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-select:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 125, 50, 0.4);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 900px) {
+            .problem-grid {
+                grid-template-columns: 1fr; /* Stack cards on small screens */
+            }
+            nav ul {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="logo-text">说的都队</div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="./index.html" class="nav-link">首页</a></li>
+                    <li><a href="./practice.html">刷题</a></li>
+                    <li><a href="./learn-analytics.html">学习分析</a></li>
+                    <li><a href="https://baike.baidu.com/item/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD%E7%94%9F%E6%88%90%E5%86%85%E5%AE%B9/65200497">了解更多</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <h1>选择你的题目</h1>
+
+        <div class="problem-grid" id="problemGrid">
+            </div>
+    </div>
+
+    <script>
+         document.addEventListener('DOMContentLoaded', async function() {
+        const problemGrid = document.getElementById('problemGrid');
+        
+        try {
+            const response = await fetch('/api/problems');
+            const result = await response.json();
+
+            if (result.success) {
+                problemGrid.innerHTML = ''; // 清空占位内容
+                result.problems.forEach(problem => {
+                    const card = document.createElement('div');
+                    card.className = 'problem-card';
+                    // 注意这里的 description 是从后端来的短描述
+                    card.innerHTML = `
+                        <div class="card-title">${problem.title}</div>
+                        <div class="card-description">${problem.difficulty}</div>
+                        <div class="card-actions">
+                            <a href="practice.html?problem=${problem.id}" class="btn btn-select">
+                                <i class="fas fa-play-circle"></i> 选择
+                            </a>
+                        </div>
+                    `;
+                    problemGrid.appendChild(card);
+                });
+            } else {
+                problemGrid.innerHTML = '<p>加载题目失败...</p>';
+            }
+        } catch (error) {
+            console.error('加载题目列表失败', error);
+            problemGrid.innerHTML = '<p>网络错误，无法加载题目。</p>';
+        }
+    });
+    </script>
+</body>
+</html>

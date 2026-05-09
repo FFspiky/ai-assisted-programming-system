@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>题目导入模板</title>
+</head>
+<body>
+    <h1>题目导入模板说明</h1>
+    <p>请按照以下HTML结构来组织您的题目文件。所有题目都应包含在一个根`div`中，每个题目是一个`div class="problem-item"`。</p>
+    <hr>
+
+    <div id="problem-container">
+    
+        <div class="problem-item">
+            <h2 data-id="two-sum">两数之和</h2>
+            
+            <div class="difficulty">简单</div>
+            
+            <div class="description">
+                <p>给定一个整数数组 <code>nums</code> 和一个整数目标值 <code>target</code>，请你在该数组中找出 <strong>和为目标值</strong> <em><code>target</code></em>  的那 <strong>两个</strong> 整数，并返回它们的数组下标。</p>
+                <p>你可以假设每种输入只会对应一个答案。但是，数组中同一个元素在答案里不能重复出现。</p>
+                <p>你可以按任意顺序返回答案。</p>
+                <p><strong>示例 1：</strong></p>
+                <pre>
+<strong>输入：</strong>nums = [2,7,11,15], target = 9
+<strong>输出：</strong>[0,1]
+<strong>解释：</strong>因为 nums[0] + nums[1] == 9 ，返回 [0, 1] 。</pre>
+            </div>
+            
+            <div class="test-case">
+                <pre class="input">2 7 11 15
+9</pre>
+                <pre class="output">[0, 1]</pre>
+            </div>
+            
+            <div class="test-case">
+                <pre class="input">3 2 4
+6</pre>
+                <pre class="output">[1, 2]</pre>
+            </div>
+        </div>
+
+        <div class="problem-item">
+            <h2 data-id="reverse-string">反转字符串</h2>
+            <div class="difficulty">简单</div>
+            <div class="description">
+                <p>编写一个函数，其作用是将输入的字符串反转过来。输入字符串以字符数组 <code>s</code> 的形式给出。</p>
+                <p>不要给另外的数组分配额外的空间，你必须<strong>原地修改输入数组</strong>、使用 O(1) 的额外空间解决这一问题。</p>
+            </div>
+            <div class="test-case">
+                <pre class="input">hello</pre>
+                <pre class="output">olleh</pre>
+            </div>
+        </div>
+        
+    </div>
+
+</body>
+</html>

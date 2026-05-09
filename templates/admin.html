@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>管理员后台</title>
+    <style>
+        body { font-family: sans-serif; max-width: 900px; margin: 2rem auto; }
+        .card { border: 1px solid #ccc; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; }
+        h1, h2 { text-align: center; }
+        form { display: flex; flex-direction: column; gap: 1rem; }
+        input, textarea, button { padding: 10px; border-radius: 4px; border: 1px solid #ccc; font-size: 1rem; }
+        textarea { min-height: 100px; }
+        button { background-color: #007bff; color: white; cursor: pointer; }
+        .file-upload { border: 2px dashed #007bff; padding: 2rem; text-align: center; }
+        .file-upload p { margin: 0; }
+        #fileName { margin-top: 1rem; font-style: italic; color: #555; }
+    </style>
+</head>
+<body>
+    <h1>管理员后台</h1>
+    <a href="/" style="display:block; text-align:center; margin-bottom: 2rem;">返回首页</a>
+
+    <div class="card">
+        <h2>通过HTML文件批量导入/更新题目</h2>
+        <p style="text-align:center; margin-bottom:1rem;">文件格式必须遵循<a href="/templates/problem_import_template.html" target="_blank">此模板</a>。</p>
+        <form id="uploadForm">
+            <div class="file-upload" id="dropZone">
+                <p>将HTML文件拖拽到此处，或点击选择</p>
+                <input type="file" id="fileInput" name="file" accept=".html" style="display: none;">
+            </div>
+            <p id="fileName">未选择文件</p>
+            <button type="submit">上传并导入</button>
+        </form>
+    </div>
+
+<script>
+    const uploadForm = document.getElementById('uploadForm');
+    const fileInput = document.getElementById('fileInput');
+    const dropZone = document.getElementById('dropZone');
+    const fileNameDisplay = document.getElementById('fileName');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length > 0) {
+            fileNameDisplay.textContent = fileInput.files[0].name;
+        } else {
+            fileNameDisplay.textContent = '未选择文件';
+        }
+    });
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
+    });
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.style.borderColor = '#0056b3', false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.style.borderColor = '#007bff', false);
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        fileInput.files = e.dataTransfer.files;
+        fileNameDisplay.textContent = fileInput.files[0].name;
+    });
+
+    uploadForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (fileInput.files.length === 0) {
+            alert('请先选择一个HTML文件！');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+        
+        const response = await fetch('/api/admin/problems/upload', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        alert(result.message || result.error);
+        if (result.success) {
+            fileInput.value = '';
+            fileNameDisplay.textContent = '未选择文件';
+        }
+    });
+</script>
+</body>
+</html>

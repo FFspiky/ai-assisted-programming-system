@@ -1,0 +1,9 @@
+Flask
+Flask-Cors
+Flask-Login
+Flask-Migrate
+Flask-SQLAlchemy
+requests
+python-dotenv
+beautifulsoup4
+lxml

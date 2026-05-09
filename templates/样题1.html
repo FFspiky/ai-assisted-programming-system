@@ -1,0 +1,2507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>题目导入模板</title>
+</head>
+<body>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P021</div>
+        <h2>问题二十一：环形链表</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个链表的头节点 <code>head</code> ，判断链表中是否有环。</p>
+            <p>如果链表中有某个节点，可以通过连续跟踪 <code>next</code> 指针再次到达，则链表中存在环。 为了表示给定链表中的环，评测系统内部使用整数 <code>pos</code> 来表示链表尾连接到链表中的位置（索引从 0 开始）。如果 <code>pos</code> 是 <code>-1</code>，则在该链表中没有环。<b>注意：<code>pos</code> 不作为参数进行传递</b>。仅仅是为了标识链表的实际情况。</p>
+            <p>（注：此题通常需要定义链表节点，此处简化为数组输入和 `pos` 值）</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>head = [3,2,0,-4], pos = 1</pre>
+            <pre><b>输出：</b>true</pre>
+            <pre><b>解释：</b>链表中有一个环，其尾部连接到第二个节点。</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[1,2], 0</pre>
+            <pre class="output">true</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[1], -1</pre>
+            <pre class="output">false</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P022</div>
+        <h2>问题二十二：相交链表</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你两个单链表的头节点 <code>headA</code> 和 <code>headB</code> ，请你找出并返回两个单链表相交的起始节点。如果两个链表没有交点，返回 <code>null</code> 。</p>
+            <p>题目数据 <b>保证</b> 整个链式结构中不存在环。</p>
+            <p><b>注意</b>，函数返回结果后，链表必须 <b>保持其原始结构</b> 。</p>
+            <p>（注：此题通常需要定义链表节点，此处简化输入输出来表示链表结构和相交点）</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>intersectVal = 8, listA = [4,1,8,4,5], listB = [5,6,1,8,4,5], skipA = 2, skipB = 3</pre>
+            <pre><b>输出：</b>Intersected at '8'</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">2, [1,9,1,2,4], [3,2,4], 3, 1</pre>
+            <pre class="output">Intersected at '2'</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">0, [2,6,4], [1,5], 3, 2</pre>
+            <pre class="output">null</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P023</div>
+        <h2>问题二十三：最小栈</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>设计一个支持 <code>push</code> ，<code>pop</code> ，<code>top</code> 操作，并能在常数时间内检索到最小元素的栈。</p>
+            <ul>
+                <li><code>push(x)</code> —— 将元素 x 推入栈中。</li>
+                <li><code>pop()</code> —— 删除栈顶的元素。</li>
+                <li><code>top()</code> —— 获取栈顶元素。</li>
+                <li><code>getMin()</code> —— 检索栈中的最小元素。</li>
+            </ul>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>["MinStack","push","push","push","getMin","pop","top","getMin"]
+[[],[-2],[0],[-3],[],[],[],[]]</pre>
+            <pre><b>输出：</b>[null,null,null,null,-3,null,0,-2]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">["MinStack","push","push","getMin","pop","getMin"]
+[[],[0],[1],[],[],[]]</pre>
+            <pre class="output">[null,null,null,0,null,0]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">["MinStack","push","push","push","pop","getMin"]
+[[],[1],[2],[-1],[],[]]</pre>
+            <pre class="output">[null,null,null,null,null,1]</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P024</div>
+        <h2>问题二十四：买卖股票的最佳时机</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给定一个数组 <code>prices</code> ，它的第 <code>i</code> 个元素 <code>prices[i]</code> 表示一支给定股票第 <code>i</code> 天的价格。</p>
+            <p>你只能选择 <b>某一天</b> 买入这只股票，并选择在 <b>未来的某一个不同的日子</b> 卖出该股票。设计一个算法来计算你所能获取的最大利润。</p>
+            <p>返回你可以从这笔交易中获取的最大利润。如果你不能获取任何利润，返回 0 。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>[7,1,5,3,6,4]</pre>
+            <pre><b>输出：</b>5</pre>
+            <pre><b>解释：</b>在第 2 天（股票价格 = 1）的时候买入，在第 5 天（股票价格 = 6）的时候卖出，最大利润 = 6-1 = 5 。
+注意利润不能是 7-1 = 6, 因为卖出价格需要大于买入价格。</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[7,6,4,3,1]</pre>
+            <pre class="output">0</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[2,4,1]</pre>
+            <pre class="output">2</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P025</div>
+        <h2>问题二十五：验证回文串</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给定一个字符串，验证它是否是回文串，只考虑字母和数字字符，可以忽略字母的大小写。</p>
+            <p><b>说明：</b>本题中，我们将空字符串定义为有效的回文串。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>s = "A man, a plan, a canal: Panama"</pre>
+            <pre><b>输出：</b>true</pre>
+            <pre><b>解释：</b>"amanaplanacanalpanama" 是回文串。</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">"race a car"</pre>
+            <pre class="output">false</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">" "</pre>
+            <pre class="output">true</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P026</div>
+        <h2>问题二十六：杨辉三角</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给定一个非负整数 `numRows`，生成杨辉三角的前 `numRows` 行。</p>
+            <p>在杨辉三角中，每个数是它左上方和右上方的数的和。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入:</b> 5</pre>
+            <pre><b>输出:</b> [[1],[1,1],[1,2,1],[1,3,3,1],[1,4,6,4,1]]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">1</pre>
+            <pre class="output">[[1]]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">3</pre>
+            <pre class="output">[[1],[1,1],[1,2,1]]</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P027</div>
+        <h2>问题二十七：杨辉三角 II</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给定一个非负索引 `k`，其中 `k` ≤ 33，返回杨辉三角的第 `k` 行。</p>
+            <p><b>注意：</b> 你可以优化你的算法到 O(k) 空间复杂度吗？</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入:</b> 3</pre>
+            <pre><b>输出:</b> [1,3,3,1]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">0</pre>
+            <pre class="output">[1]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">4</pre>
+            <pre class="output">[1,4,6,4,1]</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P028</div>
+        <h2>问题二十八：Excel表列名称</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个整数 `columnNumber` ，返回它在 Excel 表中相对应的列名称。</p>
+            <p>例如：</p>
+            <ul>
+              <li>A -> 1</li>
+              <li>B -> 2</li>
+              <li>C -> 3</li>
+              <li>...</li>
+              <li>Z -> 26</li>
+              <li>AA -> 27</li>
+              <li>AB -> 28</li>
+              <li>...</li>
+            </ul>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>columnNumber = 1</pre>
+            <pre><b>输出：</b>"A"</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">28</pre>
+            <pre class="output">"AB"</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">701</pre>
+            <pre class="output">"ZY"</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P029</div>
+        <h2>问题二十九：Excel表列序号</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个字符串 `columnTitle` ，表示 Excel 表格中的列名称。返回 该列名称对应的列序号 。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入:</b> "A"</pre>
+            <pre><b>输出:</b> 1</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">"AB"</pre>
+            <pre class="output">28</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">"ZY"</pre>
+            <pre class="output">701</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P030</div>
+        <h2>问题三十：阶乘后的零</h2>
+        <div class="difficulty">中等</div>
+        <div class="description">
+            <p>给定一个整数 `n` ，返回 `n!` 结果中尾随零的数量。</p>
+            <p>提示 `n!` = n * (n - 1) * (n - 2) * ... * 1</p>
+            <p><b>进阶：</b>你可以设计并实现一个对数时间复杂度的算法来解决此问题吗？</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>n = 3</pre>
+            <pre><b>输出：</b>0</pre>
+            <pre><b>解释：</b>3! = 6 ，不含尾随 0</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">5</pre>
+            <pre class="output">1</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">10</pre>
+            <pre class="output">2</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P031</div>
+        <h2>问题三十一：旋转数组</h2>
+        <div class="difficulty">中等</div>
+        <div class="description">
+            <p>给定一个整数数组 `nums`，将数组中的元素向右轮转 `k` 个位置，其中 `k` 是非负数。</p>
+            <p><b>进阶：</b></p>
+            <ul>
+              <li>尽可能想出更多的解决方案，至少有三种不同的方法可以解决这个问题。</li>
+              <li>你可以使用空间复杂度为 O(1) 的 <b>原地</b> 算法解决这个问题吗？</li>
+            </ul>
+            <h3>示例 1：</h3>
+            <pre><b>输入:</b> nums = [1,2,3,4,5,6,7], k = 3</pre>
+            <pre><b>输出:</b> [5,6,7,1,2,3,4]</pre>
+            <pre><b>解释:</b>
+向右轮转 1 步: [7,1,2,3,4,5,6]
+向右轮转 2 步: [6,7,1,2,3,4,5]
+向右轮转 3 步: [5,6,7,1,2,3,4]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[-1,-100,3,99], 2</pre>
+            <pre class="output">[3,99,-1,-100]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[1,2], 3</pre>
+            <pre class="output">[2,1]</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P032</div>
+        <h2>问题三十二：颠倒二进制位</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>颠倒给定的 32 位无符号整数的二进制位。</p>
+            <p><b>提示:</b></p>
+            <ul>
+                <li>请注意，在某些语言（如 Java）中，没有无符号整数类型。在这种情况下，输入和输出都将被指定为有符号整数类型，并且不应影响您的实现，因为无论整数是有符号的还是无符号的，其内部的二进制表示形式都是相同的。</li>
+                <li>在 Java 中，编译器使用二进制补码记法来表示有符号整数。</li>
+            </ul>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>n = 00000010100101000001111010011100</pre>
+            <pre><b>输出：</b>964176192 (00111001011110000010100101000000)</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">1</pre>
+            <pre class="output">2147483648</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">43261596</pre>
+            <pre class="output">964176192</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P033</div>
+        <h2>问题三十三：位1的个数</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>编写一个函数，输入是一个无符号整数（以二进制串的形式），返回其二进制表达式中数字位数为 '1' 的个数（也被称为汉明重量）。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>00000000000000000000000000001011</pre>
+            <pre><b>输出：</b>3</pre>
+            <pre><b>解释：</b>输入的二进制串 00000000000000000000000000001011 中，共有三位为 '1'。</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">00000000000000000000000010000000</pre>
+            <pre class="output">1</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">11111111111111111111111111111101</pre>
+            <pre class="output">31</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P034</div>
+        <h2>问题三十四：打家劫舍</h2>
+        <div class="difficulty">中等</div>
+        <div class="description">
+            <p>你是一个专业的小偷，计划偷窃沿街的房屋。每间房内都藏有一定的现金，影响你偷窃的唯一制约因素就是相邻的房屋装有相互连通的防盗系统，<b>如果两间相邻的房屋在同一晚上被小偷闯入，系统会自动报警</b>。</p>
+            <p>给定一个代表每个房屋存放金额的非负整数数组，计算你 <b>不触动警报装置的情况下</b> ，一夜之内能够偷窃到的最高金额。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>[1,2,3,1]</pre>
+            <pre><b>输出：</b>4</pre>
+            <pre><b>解释：</b>偷窃 1 号房屋 (金额 = 1) ，然后偷窃 3 号房屋 (金额 = 3)。
+     偷窃到的最高金额 = 1 + 3 = 4 。</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[2,7,9,3,1]</pre>
+            <pre class="output">12</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[2,1,1,2]</pre>
+            <pre class="output">4</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P035</div>
+        <h2>问题三十五：快乐数</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>编写一个算法来判断一个数 `n` 是不是快乐数。</p>
+            <p>「快乐数」 定义为：</p>
+            <ul>
+              <li>对于一个正整数，每一次将该数替换为它每个位置上的数字的平方和。</li>
+              <li>然后重复这个过程直到这个数变为 1，也可能是 <b>无限循环</b> 但始终变不到 1。</li>
+              <li>如果这个过程 <b>结果为</b> 1，那么这个数就是快乐数。</li>
+            </ul>
+            <p>如果 `n` 是 快乐数 就返回 `true` ；不是，则返回 `false` 。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>n = 19</pre>
+            <pre><b>输出：</b>true</pre>
+            <pre><b>解释：</b>
+1<sup>2</sup> + 9<sup>2</sup> = 82
+8<sup>2</sup> + 2<sup>2</sup> = 68
+6<sup>2</sup> + 8<sup>2</sup> = 100
+1<sup>2</sup> + 0<sup>2</sup> + 0<sup>2</sup> = 1</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">2</pre>
+            <pre class="output">false</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">7</pre>
+            <pre class="output">true</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P036</div>
+        <h2>问题三十六：移除链表元素</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个链表的头节点 `head` 和一个整数 `val` ，请你删除链表中所有满足 `Node.val == val` 的节点，并返回 <b>新的头节点</b> 。</p>
+             <p>（注：此题通常需要定义链表节点，此处简化为数组输入输出）</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>head = [1,2,6,3,4,5,6], val = 6</pre>
+            <pre><b>输出：</b>[1,2,3,4,5]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[], 1</pre>
+            <pre class="output">[]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[7,7,7,7], 7</pre>
+            <pre class="output">[]</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P037</div>
+        <h2>问题三十七：计数质数</h2>
+        <div class="difficulty">中等</div>
+        <div class="description">
+            <p>给定整数 `n` ，返回 <i>所有小于非负整数 `n` 的质数的数量</i> 。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>n = 10</pre>
+            <pre><b>输出：</b>4</pre>
+            <pre><b>解释：</b>小于 10 的质数一共有 4 个, 它们是 2, 3, 5, 7 。</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">0</pre>
+            <pre class="output">0</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">1</pre>
+            <pre class="output">0</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P038</div>
+        <h2>问题三十八：同构字符串</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给定两个字符串 `s` 和 `t` ，判断它们是否是同构的。</p>
+            <p>如果 `s` 中的字符可以按某种映射关系替换得到 `t` ，那么这两个字符串是同构的。</p>
+            <p>每个出现的字符都应当映射到另一个字符，同时不改变字符的顺序。不同字符不能映射到同一个字符上，相同字符只能映射到同一个字符上，字符可以映射到自己本身。</p>
+            <h3>示例 1:</h3>
+            <pre><b>输入：</b>s = "egg", t = "add"</pre>
+            <pre><b>输出：</b>true</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">"foo", "bar"</pre>
+            <pre class="output">false</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">"paper", "title"</pre>
+            <pre class="output">true</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P039</div>
+        <h2>问题三十九：反转链表</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你单链表的头节点 `head` ，请你反转链表，并返回反转后的链表。</p>
+            <p>（注：此题通常需要定义链表节点，此处简化为数组输入输出）</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>head = [1,2,3,4,5]</pre>
+            <pre><b>输出：</b>[5,4,3,2,1]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[1,2]</pre>
+            <pre class="output">[2,1]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[]</pre>
+            <pre class="output">[]</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P040</div>
+        <h2>问题四十：存在重复元素</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个整数数组 `nums` 。如果任一值在数组中出现 <b>至少两次</b> ，返回 `true` ；如果数组中每个元素互不相同，返回 `false` 。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>nums = [1,2,3,1]</pre>
+            <pre><b>输出：</b>true</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[1,2,3,4]</pre>
+            <pre class="output">false</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[1,1,1,3,3,4,3,2,4,2]</pre>
+            <pre class="output">true</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P041</div>
+        <h2>问题四十一：存在重复元素 II</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个整数数组 `nums` 和一个整数 `k` ，判断数组中是否存在两个 <b>不同的索引</b> `i` 和 `j` ，满足 `nums[i] == nums[j]` 且 `abs(i - j) <= k` 。如果存在，返回 `true` ；否则，返回 `false` 。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>nums = [1,2,3,1], k = 3</pre>
+            <pre><b>输出：</b>true</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[1,0,1,1], 1</pre>
+            <pre class="output">true</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[1,2,3,1,2,3], 2</pre>
+            <pre class="output">false</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P042</div>
+        <h2>问题四十二：用栈实现队列</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>请你仅使用两个栈实现先入先出队列。队列应当支持一般队列支持的所有操作（`push`、`pop`、`peek`、`empty`）：</p>
+            <p>实现 `MyQueue` 类：</p>
+            <ul>
+                <li>`void push(int x)` 将元素 x 推到队列的末尾</li>
+                <li>`int pop()` 从队列的开头移除并返回元素</li>
+                <li>`int peek()` 返回队列开头的元素</li>
+                <li>`boolean empty()` 如果队列为空，返回 `true` ；否则，返回 `false`</li>
+            </ul>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>["MyQueue", "push", "push", "peek", "pop", "empty"]
+[[], [1], [2], [], [], []]</pre>
+            <pre><b>输出：</b>[null, null, null, 1, 1, false]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">["MyQueue", "push", "pop", "empty"]
+[[], [1], [], []]</pre>
+            <pre class="output">[null, null, 1, true]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">["MyQueue", "push", "push", "pop", "peek"]
+[[], [1], [2], [], []]</pre>
+            <pre class="output">[null, null, null, 1, 2]</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P043</div>
+        <h2>问题四十三：翻转二叉树</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一棵二叉树的根节点 `root` ，翻转这棵二叉树，并返回其根节点。</p>
+            <p>（注：此题通常需要定义树节点，此处简化为层序遍历数组输入）</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>root = [4,2,7,1,3,6,9]</pre>
+            <pre><b>输出：</b>[4,7,2,9,6,3,1]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[2,1,3]</pre>
+            <pre class="output">[2,3,1]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[]</pre>
+            <pre class="output">[]</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P044</div>
+        <h2>问题四十四：有效的字母异位词</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给定两个字符串 `s` 和 `t` ，编写一个函数来判断 `t` 是否是 `s` 的字母异位词。</p>
+            <p><b>注意：</b>若 `s` 和 `t` 中每个字符出现的次数都相同，则称 `s` 和 `t` 互为字母异位词。</p>
+            <h3>示例 1:</h3>
+            <pre><b>输入:</b> s = "anagram", t = "nagaram"</pre>
+            <pre><b>输出:</b> true</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">"rat", "car"</pre>
+            <pre class="output">false</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">"a", "ab"</pre>
+            <pre class="output">false</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P045</div>
+        <h2>问题四十五：二叉树的所有路径</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个二叉树的根节点 `root` ，按 <b>任意顺序</b> ，返回所有从根节点到叶子节点的路径。</p>
+            <p><b>叶子节点</b> 是指没有子节点的节点。</p>
+            <p>（注：此题通常需要定义树节点，此处简化为层序遍历数组输入）</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>root = [1,2,3,null,5]</pre>
+            <pre><b>输出：</b>["1->2->5", "1->3"]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[1]</pre>
+            <pre class="output">["1"]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[3,9,20,null,null,15,7]</pre>
+            <pre class="output">["3->9", "3->20->15", "3->20->7"]</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P046</div>
+        <h2>问题四十六：丑数</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个整数 `n` ，请你判断 `n` 是否为 <b>丑数</b> 。如果是，返回 `true` ；否则，返回 `false` 。</p>
+            <p><b>丑数</b> 就是只包含质因数 `2`、`3` 和 `5` 的正整数。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>n = 6</pre>
+            <pre><b>输出：</b>true</pre>
+            <pre><b>解释：</b>6 = 2 × 3</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">14</pre>
+            <pre class="output">false</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">1</pre>
+            <pre class="output">true</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P047</div>
+        <h2>问题四十七：缺失数字</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给定一个包含 `[0, n]` 中 `n` 个数的数组 `nums` ，找出 `[0, n]` 这个范围内没有出现在数组中的那个数。</p>
+            <p><b>进阶：</b>你能否实现线性时间复杂度、仅使用额外常数空间的算法解决此问题?</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>nums = [3,0,1]</pre>
+            <pre><b>输出：</b>2</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[0,1]</pre>
+            <pre class="output">2</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[9,6,4,2,3,5,7,0,1]</pre>
+            <pre class="output">8</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P048</div>
+        <h2>问题四十八：第一个错误的版本</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>你是产品经理，目前正在带领一个团队开发新的产品。不幸的是，你的产品的最新版本没有通过质量检测。由于每个版本都是基于之前的版本开发的，所以错误的版本之后的所有版本都是错的。</p>
+            <p>假设你有 `n` 个版本 `[1, 2, ..., n]`，你想找出导致之后所有版本出错的第一个错误的版本。</p>
+            <p>你可以通过调用 `bool isBadVersion(version)` 接口来判断版本号 `version` 是否在单元测试中出错。实现一个函数来查找第一个错误的版本。你应该尽量减少对调用 API 的次数。</p>
+            <p>（注：此题需要与一个预定义的API `isBadVersion` 交互，此处简化输入输出）</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>n = 5, bad = 4</pre>
+            <pre><b>输出：</b>4</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">n = 1, bad = 1</pre>
+            <pre class="output">1</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">n = 20, bad = 15</pre>
+            <pre class="output">15</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P049</div>
+        <h2>问题四十九：移动零</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给定一个数组 `nums`，编写一个函数将所有 `0` 移动到数组的末尾，同时保持非零元素的相对顺序。</p>
+            <p><b>请注意</b> ，必须在不复制数组的情况下原地对数组进行操作。</p>
+            <h3>示例 1:</h3>
+            <pre><b>输入:</b> nums = [0,1,0,3,12]</pre>
+            <pre><b>输出:</b> [1,3,12,0,0]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[0]</pre>
+            <pre class="output">[0]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[4,2,4,0,0,3,0,5,1,0]</pre>
+            <pre class="output">[4,2,4,3,5,1,0,0,0,0]</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P050</div>
+        <h2>问题五十：单词规律</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给定一种 `pattern` (模式) 和一个字符串 `s` ，判断 `s` 是否遵循相同的模式。</p>
+            <p>这里的 <b>遵循</b> 指完全匹配，例如， `pattern` 里的每个字母和字符串 `s` 中的每个非空单词之间存在着双向连接的对应规律。</p>
+            <h3>示例 1:</h3>
+            <pre><b>输入:</b> pattern = "abba", s = "dog cat cat dog"</pre>
+            <pre><b>输出:</b> true</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">"abba", "dog cat cat fish"</pre>
+            <pre class="output">false</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">"aaaa", "dog cat cat dog"</pre>
+            <pre class="output">false</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P051</div>
+        <h2>问题五十一：Nim 游戏</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>你和你的朋友，两个人一起玩 Nim 游戏：</p>
+            <ul>
+                <li>桌子上有一堆石头。</li>
+                <li>你们轮流进行自己的回合， <b>你作为先手</b> 。</li>
+                <li>每一回合，轮到的人拿掉 1 - 3 块石头。</li>
+                <li>拿掉最后一块石头的人就是获胜者。</li>
+            </ul>
+            <p>给你一个整数 `n` ，表示石头的数目。如果最优策略下你可以获胜，则返回 `true` ，否则返回 `false` 。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>n = 4</pre>
+            <pre><b>输出：</b>false</pre>
+            <pre><b>解释：</b>如果堆中有 4 块石头，那么你永远不会赢得比赛。
+             因为无论你拿走 1 块、2 块 还是 3 块石头，最后一块石头总是会被你的朋友拿走。</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">1</pre>
+            <pre class="output">true</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">5</pre>
+            <pre class="output">true</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P052</div>
+        <h2>问题五十二：3的幂</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给定一个整数，写一个函数来判断它是否是 3 的幂次方。如果是，返回 `true` ；否则，返回 `false` 。</p>
+            <p>整数 `n` 是 3 的幂次方需满足：存在整数 `x` 使得 `n == 3^x`</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>n = 27</pre>
+            <pre><b>输出：</b>true</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">0</pre>
+            <pre class="output">false</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">45</pre>
+            <pre class="output">false</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P053</div>
+        <h2>问题五十三：4的幂</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给定一个整数，写一个函数来判断它是否是 4 的幂次方。如果是，返回 `true` ；否则，返回 `false` 。</p>
+            <p>整数 `n` 是 4 的幂次方需满足：存在整数 `x` 使得 `n == 4^x`</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>n = 16</pre>
+            <pre><b>输出：</b>true</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">5</pre>
+            <pre class="output">false</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">1</pre>
+            <pre class="output">true</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P054</div>
+        <h2>问题五十四：反转字符串中的元音字母</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个字符串 `s` ，仅反转字符串中的所有元音字母，并返回结果字符串。</p>
+            <p>元音字母包括 `'a'`、`'e'`、`'i'`、`'o'`、`'u'`，且可能以大小写两种形式出现。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>s = "hello"</pre>
+            <pre><b>输出：</b>"holle"</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">"leetcode"</pre>
+            <pre class="output">"leotcede"</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">"aA"</pre>
+            <pre class="output">"Aa"</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P055</div>
+        <h2>问题五十五：两个数组的交集</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给定两个数组 `nums1` 和 `nums2` ，返回 <i>它们的交集</i> 。输出结果中的每个元素一定是 <b>唯一</b> 的。我们可以不考虑输出结果的顺序。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>nums1 = [1,2,2,1], nums2 = [2,2]</pre>
+            <pre><b>输出：</b>[2]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[4,9,5], [9,4,9,8,4]</pre>
+            <pre class="output">[9,4]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[1,2,3], [4,5,6]</pre>
+            <pre class="output">[]</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P056</div>
+        <h2>问题五十六：两个数组的交集 II</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你两个整数数组 `nums1` 和 `nums2` ，请你以数组形式返回两数组的交集。返回结果中每个元素出现的次数，应与该元素在两个数组中都出现的次数一致（如果出现次数不一致，则考虑取较小值）。可以不考虑输出结果的顺序。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>nums1 = [1,2,2,1], nums2 = [2,2]</pre>
+            <pre><b>输出：</b>[2,2]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[4,9,5], [9,4,9,8,4]</pre>
+            <pre class="output">[4,9]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[1,2], [1,1]</pre>
+            <pre class="output">[1]</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P057</div>
+        <h2>问题五十七：最长回文串</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给定一个包含大写字母和小写字母的字符串 `s` ，返回 <i>通过这些字母构造成的 <b>最长的回文串</b></i> 。</p>
+            <p>在构造过程中，请注意 <b>区分大小写</b> 。比如 `"Ab"` 不能当做一个回文字符串。</p>
+            <h3>示例 1:</h3>
+            <pre><b>输入:</b>s = "abccccdd"</pre>
+            <pre><b>输出:</b>7</pre>
+            <pre><b>解释:</b>
+我们可以构造的最长的回文串是"dccaccd", 它的长度是 7。</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">"a"</pre>
+            <pre class="output">1</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">"bb"</pre>
+            <pre class="output">2</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P058</div>
+        <h2>问题五十八：第三大的数</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个非空数组，返回此数组中 <b>第三大的数</b> 。如果不存在，则返回数组中最大的数。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>[3, 2, 1]</pre>
+            <pre><b>输出：</b>1</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[1, 2]</pre>
+            <pre class="output">2</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[2, 2, 3, 1]</pre>
+            <pre class="output">1</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P059</div>
+        <h2>问题五十九：字符串相加</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给定两个字符串形式的非负整数 `num1` 和`num2` ，计算它们的和并同样以字符串形式返回。</p>
+            <p>你不能使用任何內建的用于处理大整数的库（比如 `BigInteger`）， 也不能直接将输入的字符串转换为整数形式。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>num1 = "11", num2 = "123"</pre>
+            <pre><b>输出：</b>"134"</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">"456", "77"</pre>
+            <pre class="output">"533"</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">"0", "0"</pre>
+            <pre class="output">"0"</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P060</div>
+        <h2>问题六十：赎金信</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你两个字符串：`ransomNote` 和 `magazine` ，判断 `ransomNote` 能不能由 `magazine` 里面的字符构成。</p>
+            <p>如果可以，返回 `true` ；否则返回 `false` 。</p>
+            <p>`magazine` 中的每个字符只能在 `ransomNote` 中使用一次。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>ransomNote = "a", magazine = "b"</pre>
+            <pre><b>输出：</b>false</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">"aa", "ab"</pre>
+            <pre class="output">false</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">"aa", "aab"</pre>
+            <pre class="output">true</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P061</div>
+        <h2>问题六十一：字符串中的第一个唯一字符</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给定一个字符串 `s` ，找到 <i>它的第一个不重复的字符，并返回它的索引</i> 。如果不存在，则返回 -1 。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入:</b> s = "leetcode"</pre>
+            <pre><b>输出:</b> 0</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">"loveleetcode"</pre>
+            <pre class="output">2</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">"aabb"</pre>
+            <pre class="output">-1</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P062</div>
+        <h2>问题六十二：找不同</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给定两个字符串 `s` 和 `t` ，它们只包含小写字母。</p>
+            <p>字符串 `t` 由字符串 `s` 随机重排，然后在随机位置添加一个字母。</p>
+            <p>请找出在 `t` 中被添加的字母。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>s = "abcd", t = "abcde"</pre>
+            <pre><b>输出：</b>"e"</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">"", "y"</pre>
+            <pre class="output">"y"</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">"a", "aa"</pre>
+            <pre class="output">"a"</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P063</div>
+        <h2>问题六十三：数字的补数</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>对整数的二进制表示取反（0 变 1 ，1 变 0）后，再转换为十进制表示，可以得到这个整数的补数。</p>
+            <p>例如，整数 5 的二进制表示是 "101" ，取反后得到 "010" ，再转回十进制表示得到补数 2 。</p>
+            <p>给你一个整数 `num` ，输出它的补数。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>num = 5</pre>
+            <pre><b>输出：</b>2</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">1</pre>
+            <pre class="output">0</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">2</pre>
+            <pre class="output">1</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P064</div>
+        <h2>问题六十四：重塑矩阵</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>在 MATLAB 中，有一个非常有用的函数 `reshape` ，它可以将一个 `m x n` 矩阵重塑为另一个 `r x c` 新矩阵，新矩阵和原矩阵的元素相同。</p>
+            <p>给你一个由二维数组 `mat` 表示的 `m x n` 矩阵，以及两个正整数 `r` 和 `c` ，分别表示想要的重构的矩阵的行数和列数。</p>
+            <p>重构后的矩阵需要将原始矩阵的所有元素以相同的 <b>行遍历顺序</b> 填充。</p>
+            <p>如果具有给定参数的 `reshape` 操作是可行且合理的，则输出新的重塑矩阵；否则，输出原始矩阵。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>mat = [[1,2],[3,4]], r = 1, c = 4</pre>
+            <pre><b>输出：</b>[[1,2,3,4]]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[[1,2],[3,4]], 2, 4</pre>
+            <pre class="output">[[1,2],[3,4]]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[[1,2,3,4]], 2, 2</pre>
+            <pre class="output">[[1,2],[3,4]]</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P065</div>
+        <h2>问题六十五：范围求和 II</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个 `m x n` 的矩阵 `M` ，初始化时所有的 0 和一个操作数组 `op` 。</p>
+            <p>其中, `ops[i] = [ai, bi]` 意味着当 `0 <= x < ai` 和 `0 <= y < bi` 时，`M[x][y]` 应该加 1。</p>
+            <p>在执行完所有操作后，计算并返回矩阵中最大整数的个数。</p>
+            <h3>示例 1:</h3>
+            <pre><b>输入:</b> m = 3, n = 3, ops = [[2,2],[3,3]]</pre>
+            <pre><b>输出:</b> 4</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">3, 3, []</pre>
+            <pre class="output">9</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">40, 40, [[39,39]]</pre>
+            <pre class="output">1521</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P066</div>
+        <h2>问题六十六：非递减数列</h2>
+        <div class="difficulty">中等</div>
+        <div class="description">
+            <p>给你一个长度为 `n` 的整数数组 `nums` ，请你判断在 <b>最多</b> 修改 `1` 个元素的情况下，该数组能否变成一个非递减数列。</p>
+            <p>我们是这样定义一个非递减数列的： 对于数组中任意的 `i` (0 <= i <= n-2)，总满足 `nums[i] <= nums[i + 1]`。</p>
+            <h3>示例 1:</h3>
+            <pre><b>输入:</b> nums = [4,2,3]</pre>
+            <pre><b>输出:</b> true</pre>
+            <pre><b>解释:</b> 你可以通过把第一个 4 变成 1 来使得它成为一个非递减数列。</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[4,2,1]</pre>
+            <pre class="output">false</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[3,4,2,3]</pre>
+            <pre class="output">false</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P067</div>
+        <h2>问题六十七：最短无序连续子数组</h2>
+        <div class="difficulty">中等</div>
+        <div class="description">
+            <p>给你一个整数数组 `nums` ，你需要找出一个 <b>连续子数组</b> ，如果对这个子数组进行升序排序，那么整个数组都会变为升序排序。</p>
+            <p>请你找出符合题意的 <b>最短</b> 子数组，并输出它的长度。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>nums = [2,6,4,8,10,9,15]</pre>
+            <pre><b>输出：</b>5</pre>
+            <pre><b>解释：</b>你只需要对 [6, 4, 8, 10, 9] 进行升序排序，那么整个表都会变为升序排序。</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[1,2,3,4]</pre>
+            <pre class="output">0</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[1]</pre>
+            <pre class="output">0</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P068</div>
+        <h2>问题六十八：二叉树的层平均值</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给定一个非空二叉树的根节点 `root` , 以数组的形式返回每一层节点的平均值。与实际答案相差 `10^-5` 以内的答案可以被接受。</p>
+             <p>（注：此题通常需要定义树节点，此处简化为层序遍历数组输入）</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>root = [3,9,20,null,null,15,7]</pre>
+            <pre><b>输出：</b>[3.00000, 14.50000, 11.00000]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[2147483647,2147483647,2147483647]</pre>
+            <pre class="output">[2147483647.00000, 2147483647.00000]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[1]</pre>
+            <pre class="output">[1.00000]</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P069</div>
+        <h2>问题六十九：两数之和 IV - 输入 BST</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给定一个二叉搜索树的 <b>根节点</b> `root` 和一个整数 `k` , 请判断该二叉搜索树中是否存在两个节点它们的值之和等于 `k` 。假设二叉搜索树中节点的值均唯一。</p>
+            <p>（注：此题通常需要定义树节点，此处简化为层序遍历数组输入）</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入:</b> root = [5,3,6,2,4,null,7], k = 9</pre>
+            <pre><b>输出:</b> true</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[5,3,6,2,4,null,7], 28</pre>
+            <pre class="output">false</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[2,1,3], 4</pre>
+            <pre class="output">true</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P070</div>
+        <h2>问题七十：柠檬水找零</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>在柠檬水摊上，每一杯柠檬水的售价为 `5` 美元。顾客排队购买你的产品，（按账单 `bills` 疏的顺序）一次购买一杯。</p>
+            <p>每位顾客只买一杯柠檬水，然后向你付 `5` 美元、`10` 美元或 `20` 美元。你必须给每个顾客正确找零，也就是说净交易是每位顾客向你支付 `5` 美元。</p>
+            <p>注意，一开始你手头没有任何零钱。</p>
+            <p>如果你能给每位顾客正确找零，返回 `true` ，否则返回 `false` 。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>bills = [5,5,5,10,20]</pre>
+            <pre><b>输出：</b>true</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[5,5,10,10,20]</pre>
+            <pre class="output">false</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[5,5,10]</pre>
+            <pre class="output">true</pre>
+        </div>
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P071</div>
+        <h2>问题七十一：键盘行</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个字符串数组 `words` ，只返回可以使用在 <b>美式键盘</b> 同一行的字母打印出来的单词。</p>
+            <p>美式键盘中的字母排布为：</p>
+            <ul>
+                <li>第一行: "qwertyuiop"</li>
+                <li>第二行: "asdfghjkl"</li>
+                <li>第三行: "zxcvbnm"</li>
+            </ul>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>words = ["Hello","Alaska","Dad","Peace"]</pre>
+            <pre><b>输出：</b>["Alaska","Dad"]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">["omk"]</pre>
+            <pre class="output">[]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">["adsdf","sfd"]</pre>
+            <pre class="output">["adsdf","sfd"]</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P072</div>
+        <h2>问题七十二：最大连续1的个数</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给定一个二进制数组 `nums` ， 计算其中最大连续 `1` 的个数。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>nums = [1,1,0,1,1,1]</pre>
+            <pre><b>输出：</b>3</pre>
+            <pre><b>解释：</b>开头的两位和最后的三位都是连续 1 ，所以最大连续 1 的个数是 3.</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[1,0,1,1,0,1]</pre>
+            <pre class="output">2</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[0,0,0]</pre>
+            <pre class="output">0</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P073</div>
+        <h2>问题七十三：下一个更大元素 I</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>`nums1` 中数字 `x` 的 <b>下一个更大元素</b> 是指 `x` 在 `nums2` 中对应位置 <b>右侧</b> 的第一个比 `x` 大的元素。</p>
+            <p>给你两个 <b>没有重复元素</b> 的数组 `nums1` 和 `nums2` ，下标从 <b>0</b> 开始计数，其中`nums1` 是 `nums2` 的子集。</p>
+            <p>对于 `nums1` 中的每个 `0 <= i < nums1.length` 的数字 `nums1[i]` ，找出满足 `nums1[i] == nums2[j]` 的下标 `j` ，并且在 `nums2` 中寻找 `nums2[j]` 的 <b>下一个更大元素</b> 。如果不存在，那么对 `nums1[i]` 而言，答案为 `-1` 。</p>
+            <p>返回一个长度为 `nums1.length` 的数组 `ans` 作为答案，满足 `ans[i]` 是如上所述的 <b>下一个更大元素</b> 。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>nums1 = [4,1,2], nums2 = [1,3,4,2].</pre>
+            <pre><b>输出：</b>[-1,3,-1]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[2,4], [1,2,3,4]</pre>
+            <pre class="output">[3,-1]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[1,3,5,2,4], [6,5,4,3,2,1,7]</pre>
+            <pre class="output">[7,7,7,7,7]</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P074</div>
+        <h2>问题七十四：相对名次</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个长度为 `n` 的整数数组 `score` ，其中 `score[i]` 是第 `i` 位运动员在比赛中的得分。所有得分都 <b>互不相同</b> 。</p>
+            <p>运动员将根据得分 <b>从高到低</b> 进行排名。第 `1` 名的运动员得分最高，第 `2` 名的运动员得分第 `2` 高，依此类推。排名后，排名前 `3` 的运动员将获得奖牌：</p>
+            <ul>
+                <li>第 `1` 名， "Gold Medal" 。</li>
+                <li>第 `2` 名， "Silver Medal" 。</li>
+                <li>第 `3` 名， "Bronze Medal" 。</li>
+            </ul>
+            <p>从第 `4` 名到第 `n` 名的运动员，只能获得他们的排名编号（即，第 `x` 名的运动员获得编号 `"x"`）。</p>
+            <p>使用长度为 `n` 的数组 `answer` 返回获奖情况，其中 `answer[i]` 是第 `i` 位运动员的获奖情况。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>score = [5,4,3,2,1]</pre>
+            <pre><b>输出：</b>["Gold Medal","Silver Medal","Bronze Medal","4","5"]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[10,3,8,9,4]</pre>
+            <pre class="output">["Gold Medal","5","Bronze Medal","Silver Medal","4"]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[1]</pre>
+            <pre class="output">["Gold Medal"]</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P075</div>
+        <h2>问题七十五：完美数</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>对于一个 <b>正整数</b>，如果它和除了它自身以外的所有正因子之和相等，我们称它为 「完美数」。</p>
+            <p>给定一个 整数 `n`， 如果是完美数，返回 `true`，否则返回 `false`。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>num = 28</pre>
+            <pre><b>输出：</b>true</pre>
+            <pre><b>解释：</b>28 = 1 + 2 + 4 + 7 + 14</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">6</pre>
+            <pre class="output">true</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">7</pre>
+            <pre class="output">false</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P076</div>
+        <h2>问题七十六：斐波那契数</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>斐波那契数 （通常用 `F(n)` 表示）形成的序列称为 <b>斐波那契数列</b> 。该数列由 `0` 和 `1` 开始，后面的每一项数字都是前面两项数字的和。</p>
+            <p>F(0) = 0, F(1) = 1</p>
+            <p>F(n) = F(n - 1) + F(n - 2)，其中 n > 1</p>
+            <p>给你 `n` ，请计算 `F(n)` 。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>n = 2</pre>
+            <pre><b>输出：</b>1</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">3</pre>
+            <pre class="output">2</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">4</pre>
+            <pre class="output">3</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P077</div>
+        <h2>问题七十七：检测大写字母</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>我们定义，在以下情况时，单词的大写用法是正确的：</p>
+            <ul>
+                <li>全部字母都是大写，比如 "USA" 。</li>
+                <li>单词中所有字母都不是大写，比如 "leetcode" 。</li>
+                <li>如果单词不只含有一个字母，只有首字母大写， 比如 "Google" 。</li>
+            </ul>
+            <p>给你一个字符串 `word` 。如果大写用法正确，返回 `true` ；否则，返回 `false` 。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>word = "USA"</pre>
+            <pre><b>输出：</b>true</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">"FlaG"</pre>
+            <pre class="output">false</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">"g"</pre>
+            <pre class="output">true</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P078</div>
+        <h2>问题七十八：反转字符串 II</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给定一个字符串 `s` 和一个整数 `k`，从字符串开头算起，每计数 `2k` 个字符，就反转这 `2k` 个字符中的前 `k` 个字符。</p>
+            <ul>
+                <li>如果剩余字符少于 `k` 个，则将剩余字符全部反转。</li>
+                <li>如果剩余字符小于 `2k` 但大于或等于 `k` 个，则反转前 `k` 个字符，其余字符保持原样。</li>
+            </ul>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>s = "abcdefg", k = 2</pre>
+            <pre><b>输出：</b>"bacdfeg"</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">"abcd", k = 2</pre>
+            <pre class="output">"bacd"</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">"a", k = 2</pre>
+            <pre class="output">"a"</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P079</div>
+        <h2>问题七十九：学生出勤记录 I</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个字符串 `s` 表示一个学生的出勤记录，其中的每个字符用来标记当天的出勤情况（缺勤、迟到、到场）。记录中只含下面三种字符：</p>
+            <ul>
+                <li>`'A'`：Absent，缺勤</li>
+                <li>`'L'`：Late，迟到</li>
+                <li>`'P'`：Present，到场</li>
+            </ul>
+            <p>如果学生能够 同时 满足下面两个条件，则可以获得出勤奖励：</p>
+            <ol>
+                <li>按 <b>总出勤</b> 计，学生缺勤（`'A'`）严格 <b>少于</b> 两天。</li>
+                <li>学生 <b>不会</b> 有连续 3 天或 3 天以上的迟到（`'L'`）记录。</li>
+            </ol>
+            <p>如果学生可以获得出勤奖励，返回 `true` ；否则，返回 `false` 。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>s = "PPALLP"</pre>
+            <pre><b>输出：</b>true</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">"PPALLL"</pre>
+            <pre class="output">false</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">"LALL"</pre>
+            <pre class="output">true</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P080</div>
+        <h2>问题八十：数组的度</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给定一个非空且只包含非负数的整数数组 `nums`，数组的 <b>度</b> 的定义是指数组里任一元素出现频数的最大值。</p>
+            <p>你的任务是在 `nums` 中找到与 `nums` 拥有相同大小的度的最短连续子数组，返回其长度。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>nums = [1,2,2,3,1]</pre>
+            <pre><b>输出：</b>2</pre>
+            <pre><b>解释：</b>
+输入数组的度是 2 ，因为元素 1 和 2 的出现频数最大，均为 2 。
+连续子数组里面拥有相同度的有 [1, 2, 2, 3, 1], [1, 2, 2], [2, 2, 3, 1], [1, 2, 2, 3], [2, 2], [1, 2, 2, 3, 1] 。
+最短连续子数组 [2, 2] 的长度为 2 ，所以返回 2 。</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[1,2,2,3,1,4,2]</pre>
+            <pre class="output">6</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[1]</pre>
+            <pre class="output">1</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P081</div>
+        <h2>问题八十一：二叉搜索树中的搜索</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给定二叉搜索树（BST）的根节点 `root` 和一个整数值 `val`。</p>
+            <p>你需要在 BST 中找到节点值等于 `val` 的节点。 返回以该节点为根的子树。 如果节点不存在，则返回 `null` 。</p>
+            <p>（注：此题通常需要定义树节点，此处简化为层序遍历数组输入）</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>root = [4,2,7,1,3], val = 2</pre>
+            <pre><b>输出：</b>[2,1,3]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[4,2,7,1,3], 5</pre>
+            <pre class="output">[]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[18,2,22,null,null,null,63], 63</pre>
+            <pre class="output">[63]</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P082</div>
+        <h2>问题八十二：自除数</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p><b>自除数</b> 是指可以被它包含的每一位数整除的数。</p>
+            <p>例如，`128` 是一个 <b>自除数</b> ，因为 `128 % 1 == 0`，`128 % 2 == 0`，`128 % 8 == 0`。</p>
+            <p><b>自除数</b> 不允许包含 0 。</p>
+            <p>给定两个整数 `left` 和 `right` ，返回一个列表，<em>j</em>表示在 `[left, right]` 范围内所有 <b>自除数</b> 。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>left = 1, right = 22</pre>
+            <pre><b>输出：</b>[1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 15, 22]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">47, 85</pre>
+            <pre class="output">[48, 55, 66, 77]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">10, 15</pre>
+            <pre class="output">[11, 12, 15]</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P083</div>
+        <h2>问题八十三：最常见的单词</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个字符串 `paragraph` 和一个表示禁用单词的字符串数组 `banned` ，返回出现频率最高的非禁用单词。题目保证至少有一个非禁用单词，且答案是唯一的。</p>
+            <p>`paragraph` 中的单词不区分大小写，答案应以小写形式返回。</p>
+            <h3>示例 1:</h3>
+            <pre><b>输入:</b> paragraph = "Bob hit a ball, the hit BALL flew far after it was hit.", banned = ["hit"]</pre>
+            <pre><b>输出:</b> "ball"</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">"a.", []</pre>
+            <pre class="output">"a"</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">"Bob", []</pre>
+            <pre class="output">"bob"</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P084</div>
+        <h2>问题八十四：山羊拉丁文</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个由若干单词组成的句子 `sentence` ，单词间由空格分隔。每个单词仅由大写和小写英文字母组成。</p>
+            <p>请你将句子转换为 “山羊拉丁文（Goat Latin）”（一种类似于 猪拉丁文 - Pig Latin 的虚构语言）。山羊拉丁文的规则如下：</p>
+            <ol>
+                <li>如果单词以元音开头（`'a'`, `'e'`, `'i'`, `'o'`, `'u'`），在单词后添加`"ma"`。
+                    <ul><li>例如，单词 `"apple"` 变为 `"applema"` 。</li></ul>
+                </li>
+                <li>如果单词以辅音字母开头（即，非元音字母），移除第一个字符并将它放到末尾，之后再添加`"ma"`。
+                    <ul><li>例如，单词 `"goat"` 变为 `"oatgma"` 。</li></ul>
+                </li>
+                <li>根据单词在句子中的索引，在单词最后添加与索引相同数量的字母`'a'`，索引从 1 开始。
+                    <ul><li>例如，在第一个单词后添加 `"a"` ，在第二个单词后添加 `"aa"` ，以此类推。</li></ul>
+                </li>
+            </ol>
+            <p>返回将 `sentence` 转换为山羊拉丁文后的句子。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>sentence = "I speak Goat Latin"</pre>
+            <pre><b>输出：</b>"Imaa peaksmaaa oatGmaaaa atinLmaaaaa"</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">"The quick brown fox jumped over the lazy dog"</pre>
+            <pre class="output">"heTmaa uickqmaaa rownbmaaaa oxfmaaaaa umpedjmaaaaaa overmaaaaaaa hetmaaaaaaaa azylmaaaaaaaaa ogdmaaaaaaaaaa"</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">"Each word consists of lowercase and uppercase letters only"</pre>
+            <pre class="output">"Eachmaa ordwmaaa onsistscmaaaa ofmaaaaa owercaselmaaaaaa andmaaaaaaa uppercasemaaaaaaaa etterslmaaaaaaaaa onlymaaaaaaaaaa"</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P085</div>
+        <h2>问题八十五：唯一摩尔斯密码词</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>国际摩尔斯密码定义一种标准编码方式，将每个字母映射到一系列点和短线， 如下所示：</p>
+            <ul>
+                <li>'a' -> ".-"</li>
+                <li>'b' -> "-..."</li>
+                ...
+                <li>'z' -> "--.."</li>
+            </ul>
+            <p>给你一个字符串数组 `words` ，每个单词可以写成每个字母对应摩尔斯密码的组合。返回 `words` 中所有单词翻译后不同摩尔斯码的数量。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入:</b> words = ["gin","zen","gig","msg"]</pre>
+            <pre><b>输出:</b> 2</pre>
+            <pre><b>解释:</b> 
+"gin" -> "--...-."
+"zen" -> "--...-."
+"gig" -> "--.--."
+"msg" -> "--...--."
+共有 2 种不同的翻译。
+            </pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">["a"]</pre>
+            <pre class="output">1</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">["a", "b"]</pre>
+            <pre class="output">2</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P086</div>
+        <h2>问题八十六：叶子相似的树</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>请考虑一棵二叉树上所有的叶子，这些叶子的值按从左到右的顺序排列形成一个 <b>叶值序列</b> 。</p>
+            <p>举个例子，给定一棵叶值序列为 `(6, 7, 4, 9, 8)` 的树。</p>
+            <p>如果两棵二叉树的叶值序列相同，我们就认为它们是 <b>叶相似</b> 的。</p>
+            <p>如果给定的两个根节点为 `root1` 和 `root2` 的树是叶相似的，则返回 `true`；否则返回 `false` 。</p>
+            <p>（注：此题通常需要定义树节点，此处简化为层序遍历数组输入）</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>root1 = [3,5,1,6,2,9,8,null,null,7,4], root2 = [3,5,1,6,7,4,2,null,null,null,null,null,null,9,8]</pre>
+            <pre><b>输出：</b>true</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[1], [1]</pre>
+            <pre class="output">true</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[1,2], [2,2]</pre>
+            <pre class="output">false</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P087</div>
+        <h2>问题八十七：单调数列</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>如果数组是单调递增或单调递减的，那么它是 <b>单调</b> 的。</p>
+            <p>如果对于所有 `i <= j`，`A[i] <= A[j]`，那么数组 `A` 是单调递增的。 如果对于所有 `i <= j`，`A[i] >= A[j]`，那么数组 `A` 是单调递减的。</p>
+            <p>当给定的数组 `A` 是单调数组时返回 `true`，否则返回 `false`。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>[1,2,2,3]</pre>
+            <pre><b>输出：</b>true</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[6,5,4,4]</pre>
+            <pre class="output">true</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[1,3,2]</pre>
+            <pre class="output">false</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P088</div>
+        <h2>问题八十八：按奇偶排序数组</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个整数数组 `nums`，将 `nums` 中的的所有偶数元素移动到数组的前面，后跟所有奇数元素。</p>
+            <p>返回满足此条件的 <b>任一数组</b> 作为答案。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>nums = [3,1,2,4]</pre>
+            <pre><b>输出：</b>[2,4,3,1]</pre>
+            <pre><b>解释：</b>[4,2,3,1]、[2,4,1,3] 和 [4,2,1,3] 也会被视作正确答案。</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[0]</pre>
+            <pre class="output">[0]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[1,3,5,7]</pre>
+            <pre class="output">[1,3,5,7]</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P089</div>
+        <h2>问题八十九：按奇偶排序数组 II</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给定一个非负整数数组 `A`， `A` 中一半整数是奇数，一半整数是偶数。</p>
+            <p>对数组进行排序，以便当 `A[i]` 为奇数时，`i` 也是奇数；当 `A[i]` 为偶数时， `i` 也是偶数。</p>
+            <p>你可以返回任何满足上述条件的数组作为答案。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>[4,2,5,7]</pre>
+            <pre><b>输出：</b>[4,5,2,7]</pre>
+            <pre><b>解释：</b>[4,7,2,5]，[2,5,4,7]，[2,7,4,5] 也会被接受。</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[2,3]</pre>
+            <pre class="output">[2,3]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[648,831,560,986,192,424,997,829,897,843]</pre>
+            <pre class="output">[648,831,560,997,192,829,986,897,424,843]</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P090</div>
+        <h2>问题九十：验证外星语词典</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>某种外星语也使用英文小写字母，但可能顺序 `order` 不同。数组 `words` 中包含了一些外星语的单词，`words` 中的单词是 <b>按此种外星语的字典序排序</b> 的。</p>
+            <p>请你根据该语言的字典序，判断 `words` 中的单词是否按此字典序排序。如果是，返回 `true`；否则，返回 `false`。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>words = ["hello","leetcode"], order = "hlabcdefgijkmnopqrstuvwxyz"</pre>
+            <pre><b>输出：</b>true</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">["word","world","row"], "worldabcefghijkmnpqstuvxyz"</pre>
+            <pre class="output">false</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">["apple","app"], "abcdefghijklmnopqrstuvwxyz"</pre>
+            <pre class="output">false</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P091</div>
+        <h2>问题九十一：三维形体的表面积</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个 `n * n` 的网格 `grid` ，上面放置着一些 `1 x 1 x 1` 的正方体。</p>
+            <p>每个值 `v = grid[i][j]` 表示 `v` 个正方体叠放在单元格 `(i, j)` 上。</p>
+            <p>放置好正方体后，任何直接相邻的正方体都会互相粘在一起， образуя некие странные трехмерные фигуры.</p>
+            <p>请你返回最终这些形体的总表面积。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>grid = [[2]]</pre>
+            <pre><b>输出：</b>10</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[[1,2],[3,4]]</pre>
+            <pre class="output">34</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[[1,0],[0,2]]</pre>
+            <pre class="output">16</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P092</div>
+        <h2>问题九十二：卡牌分组</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给定一副牌，每张牌上都写着一个整数。</p>
+            <p>此时，你需要选定一个数字 `X`，使我们可以将整副牌按下述规则分成 1 组或更多组：</p>
+            <ul>
+                <li>每组都有 `X` 张牌。</li>
+                <li>组内所有的牌上都写着相同的整数。</li>
+            </ul>
+            <p>仅当可选的 `X >= 2` 时返回 `true`。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>deck = [1,2,3,4,4,3,2,1]</pre>
+            <pre><b>输出：</b>true</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[1,1,1,2,2,2,3,3]</pre>
+            <pre class="output">false</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[1,1]</pre>
+            <pre class="output">true</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P093</div>
+        <h2>问题九十三：字符串的最大公因子</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>对于字符串 `s` 和 `t`，只有在 `s = t + ... + t`（`t` 自身连接 1 次或多次）时，我们才认定 “`t` 能除尽 `s`”。</p>
+            <p>给定两个字符串 `str1` 和 `str2` 。返回 <i>可以同时整除 `str1` 和 `str2` 的最长字符串 `x`</i> 。如果不存在，返回 `""` 。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>str1 = "ABCABC", str2 = "ABC"</pre>
+            <pre><b>输出：</b>"ABC"</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">"ABABAB", "ABAB"</pre>
+            <pre class="output">"AB"</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">"LEET", "CODE"</pre>
+            <pre class="output">""</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P094</div>
+        <h2>问题九十四：Bigram 分词</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给出第一个词 `first` 和第二个词 `second`，考虑在某些文本 `text` 中可能出现的三元组 `(first, second, third)` ，其中 `second` 跟在 `first` 后面，`third` 跟在 `second` 后面。</p>
+            <p>返回所有这样的  `third` 单词的列表。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>text = "alice is a good girl she is a good student", first = "a", second = "good"</pre>
+            <pre><b>输出：</b>["girl","student"]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">"we will we will rock you", "we", "will"</pre>
+            <pre class="output">["we","rock"]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">"alice is good", "alice", "is"</pre>
+            <pre class="output">["good"]</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P095</div>
+        <h2>问题九十五：可以形成最大正方形的矩形数目</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个数组 `rectangles` ，其中 `rectangles[i] = [li, wi]` 表示第 `i` 个矩形的长度和宽度。</p>
+            <p>如果存在 `k` 同时满足 `k <= li` 和 `k <= wi` ，就可以将第 `i` 个矩形切成一个边长为 `k` 的正方形。这个正方形的面积是 `k * k` 。</p>
+            <p>找到能从 `rectangles` 切出的 <b>最大正方形</b> 的边长 `maxLen` ，并统计有多少个矩形可以切出边长为 `maxLen` 的正方形。返回可以切出最大正方形的矩形 <b>数目</b> 。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>rectangles = [[5,8],[3,9],[5,12],[16,5]]</pre>
+            <pre><b>输出：</b>3</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[[2,3],[3,7],[4,3],[3,7]]</pre>
+            <pre class="output">3</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[[5,8],[3,9],[3,12]]</pre>
+            <pre class="output">1</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P096</div>
+        <h2>问题九十六：高度检查器</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>学校在拍年度纪念照时，一般要求学生按照 <b>非递减</b> 的高度顺序排列。</p>
+            <p>请你返回至少有多少个学生没有站在正确位置数量。该人数指的是：能让所有学生以 <b>非递减</b> 高度排列的必要移动人数。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>heights = [1,1,4,2,1,3]</pre>
+            <pre><b>输出：</b>3</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[5,1,2,3,4]</pre>
+            <pre class="output">5</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[1,2,3,4,5]</pre>
+            <pre class="output">0</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P097</div>
+        <h2>问题九十七：删去字符串中的所有相邻重复项</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给出由小写字母组成的字符串 `S`，<b>重复项删除操作</b>会选择两个相邻且相同的字母，并删除它们。</p>
+            <p>在 `S` 上反复执行重复项删除操作，直到无法继续删除。</p>
+            <p>在完成所有重复项删除操作后返回最终的字符串。答案保证唯一。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>"abbaca"</pre>
+            <pre><b>输出：</b>"ca"</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">"azxxzy"</pre>
+            <pre class="output">"ay"</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">"a"</pre>
+            <pre class="output">"a"</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P098</div>
+        <h2>问题九十八：查询后的偶数和</h2>
+        <div class="difficulty">中等</div>
+        <div class="description">
+            <p>给出一个整数数组 `A` 和一个查询数组 `queries`。</p>
+            <p>对于第 `i` 次查询，有 `val = queries[i][0], index = queries[i][1]`，我们会把 `val` 加到 `A[index]` 上。然后，查询 `A` 中所有偶数元素的和。</p>
+            <p>请注意，每次查询都会永久修改数组 `A`。</p>
+            <p>返回所有查询的答案。答案应当是一个整数数组 `answer`，`answer[i]` 为第 `i` 次查询的结果。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>A = [1,2,3,4], queries = [[1,0],[-3,1],[-4,0],[2,3]]</pre>
+            <pre><b>输出：</b>[8,6,2,4]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[1], [[4,0]]</pre>
+            <pre class="output">[0]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[3,2], [[4,0],[3,1]]</pre>
+            <pre class="output">[2,12]</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P099</div>
+        <h2>问题九十九：独一无二的出现次数</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个整数数组 `arr`，请你帮忙统计数组中每个数的出现次数。</p>
+            <p>如果每个数的出现次数都是独一无二的，就返回 `true`；否则返回 `false`。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>arr = [1,2,2,1,1,3]</pre>
+            <pre><b>输出：</b>true</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[1,2]</pre>
+            <pre class="output">false</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[-3,0,1,-3,1,1,1,-3,10,0]</pre>
+            <pre class="output">true</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P100</div>
+        <h2>问题一百：N-Repeated Element in Size 2N Array</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个整数数组 `nums` ，该数组具有以下属性：</p>
+            <ul>
+                <li>`nums.length == 2 * n`.</li>
+                <li>`nums` 包含 `n + 1` 个 <b>独特</b> 元素</li>
+                <li>`nums` 中有 <b>正好一个</b> 元素重复 `n` 次</li>
+            </ul>
+            <p>找出并返回重复了 `n` 次的那个元素。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>nums = [1,2,3,3]</pre>
+            <pre><b>输出：</b>3</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[2,1,2,5,3,2]</pre>
+            <pre class="output">2</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[5,1,5,2,5,3,5,4]</pre>
+            <pre class="output">5</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P101</div>
+        <h2>问题一百零一：错误的集合</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>集合 `s` 包含从 `1` 到 `n` 的整数。不幸的是，因为数据错误，导致集合里面某一个数字复制了成了集合里面的另外一个数字的值，导致集合 <b>丢失了一个数字</b> 并且 <b>有了一个重复的数字</b> 。</p>
+            <p>给定一个数组 `nums` 代表了集合 `s` 出错后的状态。请你找出重复出现的整数，再找到丢失的整数，将它们以数组的形式返回。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>nums = [1,2,2,4]</pre>
+            <pre><b>输出：</b>[2,3]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[1,1]</pre>
+            <pre class="output">[1,2]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[2,2]</pre>
+            <pre class="output">[2,1]</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P102</div>
+        <h2>问题一百零二：公平的糖果交换</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>爱丽丝和鲍勃拥有不同总数量的糖果。给你两个数组 `aliceSizes` 和 `bobSizes` ，`aliceSizes[i]` 是爱丽丝拥有的第 `i` 盒糖果中的糖果数量，`bobSizes[j]` 是鲍勃拥有的第 `j` 盒糖果中的糖果数量。</p>
+            <p>两人想要互相交换一盒糖果，这样在交换之后，他们就可以拥有相同总数量的糖果。一个人拥有的糖果总数量是他们拥有的每一盒糖果数量之和。</p>
+            <p>返回一个整数数组 `answer`，其中 `answer[0]` 是爱丽丝必须交换的糖果盒中的糖果的数目，`answer[1]` 是鲍勃必须交换的糖果盒中的糖果的数目。如果存在多个答案，你可以返回其中 <b>任何一个</b> 。题目测试用例保证存在与输入对应的答案。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>aliceSizes = [1,1], bobSizes = [2,2]</pre>
+            <pre><b>输出：</b>[1,2]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[1,2], [2,3]</pre>
+            <pre class="output">[1,2]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[2], [1,3]</pre>
+            <pre class="output">[2,3]</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P103</div>
+        <h2>问题一百零三：二进制间距</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给定一个正整数 `n`，找到并返回 `n` 的二进制表示中两个 <b>相邻 1</b> 之间的 <b>最长距离</b> 。如果不存在两个相邻的 1，返回 `0` 。</p>
+            <p>如果只有 0 将两个 1 分开，那么这两个 1 就是 <b>相邻</b> 的。两个 1 之间的距离是它们的绝对差，也就是它们位置的差值。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>n = 22</pre>
+            <pre><b>输出：</b>2</pre>
+            <pre><b>解释：</b>22 的二进制是 "10110" 。
+在 22 的二进制表示中，有三个 1，组成两对相邻的 1 。
+第一对相邻的 1 中，两个 1 之间的距离为 2 。
+第二对相邻的 1 中，两个 1 之间的距离为 1 。
+答案是这两对中最大的距离 2 。</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">8</pre>
+            <pre class="output">0</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">5</pre>
+            <pre class="output">2</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P104</div>
+        <h2>问题一百零四：可被 5 整除的二进制前缀</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给定一个二进制数组 `nums` ( 索引从0开始 )。 </p>
+            <p>我们定义 `xi` 是数组 `nums` 从 `0` 到 `i`（含 `i`）所表示的二进制数。 </p>
+            <ul>
+                <li>例如，如果 `nums = [1,0,1]`，那么 `x0 = 1`, `x1 = 2`, `x2 = 5`。 </li>
+            </ul>
+            <p>返回布尔值列表 `answer`，只有当 `xi` 可以被 5 整除时，`answer[i]` 为 `true`，否则为 `false`。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>nums = [0,1,1]</pre>
+            <pre><b>输出：</b>[true,false,false]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[1,1,1]</pre>
+            <pre class="output">[false,false,false]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[0,1,1,1,1,1]</pre>
+            <pre class="output">[true,false,false,false,true,false]</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P105</div>
+        <h2>问题一百零五：两句话中的不常见单词</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p><b>句子</b> 是一串由空格分隔的单词。每个 <b>单词</b> 仅由小写字母组成。</p>
+            <p>如果某个单词在其中一个句子中恰好出现一次，在另一个句子中却没有出现，那么这个单词就是 <b>不常见的</b> 。</p>
+            <p>给你两个 <b>句子</b> `s1` 和 `s2` ，返回所有 <b>不常用单词</b> 的列表。返回列表中单词的顺序无所谓。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>s1 = "this apple is sweet", s2 = "this apple is sour"</pre>
+            <pre><b>输出：</b>["sweet","sour"]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">"apple apple", "banana"</pre>
+            <pre class="output">["banana"]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">"s z z", "s z only"</pre>
+            <pre class="output">["only"]</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P106</div>
+        <h2>问题一百零六：有效的山脉数组</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给定一个整数数组 `arr`，如果它是有效的山脉数组就返回 `true`，否则返回 `false`。</p>
+            <p>让我们回顾一下，如果 `A` 满足下述条件，那么它是一个山脉数组：</p>
+            <ul>
+                <li>`arr.length >= 3`</li>
+                <li>在 `0 < i < arr.length - 1` 存在 `i` 使得：
+                    <ul>
+                        <li>`arr[0] < arr[1] < ... < arr[i-1] < arr[i]`</li>
+                        <li>`arr[i] > arr[i+1] > ... > arr[arr.length - 1]`</li>
+                    </ul>
+                </li>
+            </ul>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>arr = [2,1]</pre>
+            <pre><b>输出：</b>false</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[3,5,5]</pre>
+            <pre class="output">false</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[0,3,2,1]</pre>
+            <pre class="output">true</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P107</div>
+        <h2>问题一百零七：数组形式的整数加法</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p><b>整数的 数组形式</b> 是一个表示其数字的数组。例如，`1321` 的数组形式是 `[1,3,2,1]`。</p>
+            <p>给定 `num`，一个整数的 <b>数组形式</b>，和 `k`，一个整数，返回 `num + k` 的 <b>数组形式</b>。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>num = [1,2,0,0], k = 34</pre>
+            <pre><b>输出：</b>[1,2,3,4]</pre>
+            <pre><b>解释：</b>1200 + 34 = 1234</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[2,7,4], 181</pre>
+            <pre class="output">[4,5,5]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[9,9,9], 1</pre>
+            <pre class="output">[1,0,0,0]</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P108</div>
+        <h2>问题一百零八：有多少小于当前数字的数字</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个数组 `nums`，对于其中每个元素 `nums[i]`，请你统计数组中比它小的所有数字的数目。</p>
+            <p>换而言之，对于每个 `nums[i]` 你必须计算出有效的 `j` 的数量，其中 `j != i` 且 `nums[j] < nums[i]`。</p>
+            <p>以数组形式返回答案。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>nums = [8,1,2,2,3]</pre>
+            <pre><b>输出：</b>[4,0,1,1,3]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[6,5,4,8]</pre>
+            <pre class="output">[2,1,0,3]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[7,7,7,7]</pre>
+            <pre class="output">[0,0,0,0]</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P109</div>
+        <h2>问题一百零九：玩筹码</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>有 `n` 个筹码。第 `i` 个筹码的位置是 `position[i]`。</p>
+            <p>我们需要把所有筹码移到同一个位置。在一步中，我们可以将第 `i` 个筹码的位置从 `position[i]` 改变为:</p>
+            <ul>
+                <li>`position[i] + 2` 或 `position[i] - 2`，此时 `cost = 0`</li>
+                <li>`position[i] + 1` 或 `position[i] - 1`，此时 `cost = 1`</li>
+            </ul>
+            <p>返回将所有筹码移动到同一位置上所需要的 <b>最小代价</b> 。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>position = [1,2,3]</pre>
+            <pre><b>输出：</b>1</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[2,2,2,3,3]</pre>
+            <pre class="output">2</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[1,1000000000]</pre>
+            <pre class="output">1</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P110</div>
+        <h2>问题一百一十：二进制链表转整数</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个单链表的头节点 `head` ，其中的节点要么是 `0` 要么是 `1`，代表一个二进制数。</p>
+            <p>请你返回该链表所表示数字的 <b>十进制值</b> 。</p>
+            <p>（注：此题通常需要定义链表节点，此处简化为数组输入输出）</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>head = [1,0,1]</pre>
+            <pre><b>输出：</b>5</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[0]</pre>
+            <pre class="output">0</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[1,0,0,1,0,0,1,1,1,0,0,0,0,0,0]</pre>
+            <pre class="output">18880</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P111</div>
+        <h2>问题一百一十一：将数字变成 0 的操作次数</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个非负整数 `num` ，请你返回将它变成 0 所需要的步数。 如果当前数字是偶数，你需要把它除以 2 ；否则，减去 1 。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>num = 14</pre>
+            <pre><b>输出：</b>6</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">8</pre>
+            <pre class="output">4</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">123</pre>
+            <pre class="output">12</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P112</div>
+        <h2>问题一百一十二：统计有序矩阵中的负数</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个 `m * n` 的矩阵 `grid`，矩阵中的元素无论是按行还是按列，都以非递增顺序排列。 请你统计并返回 `grid` 中 <b>负数</b> 的数目。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>grid = [[4,3,2,-1],[3,2,1,-1],[1,1,-1,-2],[-1,-1,-2,-3]]</pre>
+            <pre><b>输出：</b>8</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[[3,2],[1,0]]</pre>
+            <pre class="output">0</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[[1,-1],[-1,-1]]</pre>
+            <pre class="output">3</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P113</div>
+        <h2>问题一百一十三：解压缩编码列表</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个以行程长度编码压缩的整数列表 `nums` 。</p>
+            <p>考虑每对相邻的元素 `[freq, val] = [nums[2*i], nums[2*i+1]]` （其中 `i >= 0` ），每一对都表示解压后有 `freq` 个值为 `val` 的元素，你需要从左到右连接所有子列表以生成解压后的列表。</p>
+            <p>请你返回解压后的列表。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>nums = [1,2,3,4]</pre>
+            <pre><b>输出：</b>[2,4,4,4]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[1,1,2,3]</pre>
+            <pre class="output">[1,3,3]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[4,5]</pre>
+            <pre class="output">[5,5,5,5]</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P114</div>
+        <h2>问题一百一十四：和为零的N个唯一整数</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个整数 `n`，请你返回 <b>任意</b> 一个由 `n` 个 <b>不相同</b> 的整数组成的数组，并且这 `n` 个数之和为 `0` 。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>n = 5</pre>
+            <pre><b>输出：</b>[-7,-1,1,3,4]</pre>
+            <pre><b>解释：</b>这些数组也是可以被接受的：[-5,-1,1,2,3]，[-3,-1,2,-2,4]。</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">3</pre>
+            <pre class="output">[-1,0,1]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">1</pre>
+            <pre class="output">[0]</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P115</div>
+        <h2>问题一百一十五：二进制表示中质数个计算置位</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你两个整数 `left` 和 `right` ，在闭区间 `[left, right]` 范围内，统计并返回 **计算置位** 为质数的整数个数。</p>
+            <p>**计算置位** 就是二进制表示中 `1` 的个数。</p>
+            <p>例如，`21` 的二进制是 `10101` ，所以有 `3` 个计算置位。`2`, `3`, `5`, `7`, `11`, `13`, `17`, `19` 是质数。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>left = 6, right = 10</pre>
+            <pre><b>输出：</b>4</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">10, 15</pre>
+            <pre class="output">5</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">244, 269</pre>
+            <pre class="output">12</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P116</div>
+        <h2>问题一百一十六：最富有客户的资产总量</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个 `m x n` 的整数网格 `accounts` ，其中 `accounts[i][j]` 是第 `i` 位客户在第 `j` 家银行托管的资产数量。返回最富有客户所拥有的 <b>资产总量</b> 。</p>
+            <p>客户的 <b>资产总量</b> 就是他们在各家银行托管的资产数量之和。最富有客户就是 <b>资产总量</b> 最大的客户。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>accounts = [[1,2,3],[3,2,1]]</pre>
+            <pre><b>输出：</b>6</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[[1,5],[7,3],[3,5]]</pre>
+            <pre class="output">10</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[[2,8,7],[7,1,3],[1,9,5]]</pre>
+            <pre class="output">17</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P117</div>
+        <h2>问题一百一十七：生成每种字符都是奇数个的字符串</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个整数 `n`，请你返回一个含 `n` 个字符的字符串，其中每种字符在该字符串中都出现 <b>奇数</b> 次。</p>
+            <p>返回的字符串只包含小写英文字母。如果存在多个满足题目要求的字符串，则返回其中任意一个即可。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>n = 4</pre>
+            <pre><b>输出：</b>"pppz"</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">2</pre>
+            <pre class="output">"xy"</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">7</pre>
+            <pre class="output">"abccccc"</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P118</div>
+        <h2>问题一百一十八：数组中两元素的最大乘积</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个整数数组 `nums`，请你选择数组的两个不同下标 `i` 和 `j`，使 `(nums[i]-1)*(nums[j]-1)` 取得最大值。</p>
+            <p>请你计算并返回该式的最大值。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>nums = [3,4,5,2]</pre>
+            <pre><b>输出：</b>12</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[1,5,4,5]</pre>
+            <pre class="output">16</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[3,7]</pre>
+            <pre class="output">12</pre>
+        </div>
+    </div>
+
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P119</div>
+        <h2>问题一百一十九：重新排列数组</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你一个数组 `nums` ，数组中有 `2n` 个元素，按 `[x1,x2,...,xn,y1,y2,...,yn]` 的格式排列。</p>
+            <p>请你将数组按 `[x1,y1,x2,y2,...,xn,yn]` 格式重新排列，返回重排后的数组。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>nums = [2,5,1,3,4,7], n = 3</pre>
+            <pre><b>输出：</b>[2,3,5,4,1,7]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">[1,2,3,4,4,3,2,1], 4</pre>
+            <pre class="output">[1,4,2,3,3,2,4,1]</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">[1,1,2,2], 2</pre>
+            <pre class="output">[1,2,1,2]</pre>
+        </div>
+    </div>
+    
+    <div class="problem-item">
+        <div class="prob-id" style="display:none;">P120</div>
+        <h2>问题一百二十：数组异或操作</h2>
+        <div class="difficulty">简单</div>
+        <div class="description">
+            <p>给你两个整数，`n` 和 `start` 。</p>
+            <p>数组 `nums` 定义为：`nums[i] = start + 2*i`（下标从 0 开始）且 `n == nums.length` 。</p>
+            <p>请返回 `nums` 中所有元素按位异或（`XOR`）后得到的结果。</p>
+            <h3>示例 1：</h3>
+            <pre><b>输入：</b>n = 5, start = 0</pre>
+            <pre><b>输出：</b>8</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 1</h4>
+            <pre class="input">4, 3</pre>
+            <pre class="output">8</pre>
+        </div>
+        <div class="test-case">
+            <h4>测试用例 2</h4>
+            <pre class="input">1, 7</pre>
+            <pre class="output">7</pre>
+        </div>
+    </div>
+
+</body>
+</html>
