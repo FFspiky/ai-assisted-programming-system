@@ -1,13 +1,8 @@
-import json
-import requests
-from config import API_KEY, API_URL, AUTOCOMPLETE_MODEL_NAME
+from config import AUTOCOMPLETE_MODEL_NAME
+from services.ai_client import AIClientError, stream_chat_deltas
 
 
 def stream_inline_completion(prefix: str, suffix: str, language: str, max_tokens: int = 128):
-    if not API_KEY:
-        yield "【AI未配置】：缺少 SILICONFLOW_API_KEY（可在 .env 或环境变量中设置）"
-        return
-
     system_prompt = (
         "你是代码补全引擎。只输出要插入到光标处的文本，不要解释，不要Markdown，不要代码围栏，"
         "不要输出思考过程或任何分析。"
@@ -27,10 +22,6 @@ def stream_inline_completion(prefix: str, suffix: str, language: str, max_tokens
 {suffix}
 """
 
-    headers = {
-        "Authorization": f"Bearer {API_KEY}",
-        "Content-Type": "application/json",
-    }
     payload = {
         "model": AUTOCOMPLETE_MODEL_NAME,
         "messages": [
@@ -40,37 +31,26 @@ def stream_inline_completion(prefix: str, suffix: str, language: str, max_tokens
         "temperature": 0.2,
         "max_tokens": max_tokens,
         "enable_thinking": False,
-        "stream": True,
     }
 
     try:
-        with requests.post(API_URL, headers=headers, json=payload, stream=True, timeout=60) as resp:
-            resp.raise_for_status()
-            in_think = False
-            for line in resp.iter_lines():
-                if line and line.startswith(b"data: "):
-                    raw = line[6:].decode("utf-8")
-                    if raw.strip() == "[DONE]":
-                        break
-                    delta = json.loads(raw)["choices"][0]["delta"].get("content", "")
-                    if not delta:
-                        continue
-                    # 过滤模型可能返回的 <think>...</think> 思考内容
-                    output = ""
-                    i = 0
-                    while i < len(delta):
-                        if delta.startswith("<think>", i):
-                            in_think = True
-                            i += len("<think>")
-                            continue
-                        if delta.startswith("</think>", i):
-                            in_think = False
-                            i += len("</think>")
-                            continue
-                        if not in_think:
-                            output += delta[i]
-                        i += 1
-                    if output:
-                        yield output
-    except Exception as e:
+        in_think = False
+        for delta in stream_chat_deltas(payload, timeout=60):
+            output = ""
+            i = 0
+            while i < len(delta):
+                if delta.startswith("<think>", i):
+                    in_think = True
+                    i += len("<think>")
+                    continue
+                if delta.startswith("</think>", i):
+                    in_think = False
+                    i += len("</think>")
+                    continue
+                if not in_think:
+                    output += delta[i]
+                i += 1
+            if output:
+                yield output
+    except AIClientError as e:
         yield f"\n【补全失败】：{str(e)}"

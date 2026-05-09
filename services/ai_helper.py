@@ -1,11 +1,8 @@
-import requests
-from config import API_KEY, API_URL, MODEL_NAME
+from config import MODEL_NAME
+from services.ai_client import AIClientError, stream_chat_deltas
+
 
 def stream_code_from_prompt(prompt: str, language: str) -> str:
-    if not API_KEY:
-        yield "【AI未配置】：缺少 SILICONFLOW_API_KEY（可在 .env 或环境变量中设置）"
-        return
-
     full_prompt = f"""
 你是一个经验丰富的编程助手，擅长使用 {language} 语言，并能帮助用户解答各种编程相关的问题，包括但不限于：
 
@@ -27,11 +24,6 @@ def stream_code_from_prompt(prompt: str, language: str) -> str:
 4. 若有多种解决方案，请进行比较分析，指出各自的优缺点与适用场景。
 """
 
-    headers = {
-        "Authorization": f"Bearer {API_KEY}",
-        "Content-Type": "application/json"
-    }
-
     payload = {
         "model": MODEL_NAME,
         "messages": [
@@ -39,20 +31,9 @@ def stream_code_from_prompt(prompt: str, language: str) -> str:
             {"role": "user", "content": full_prompt}
         ],
         "temperature": 0.4,
-        "stream": True
     }
 
     try:
-        with requests.post(API_URL, headers=headers, json=payload, stream=True) as resp:
-            resp.raise_for_status()
-            for line in resp.iter_lines():
-                if line and line.startswith(b"data: "):
-                    raw = line[6:].decode("utf-8")
-                    if raw.strip() == "[DONE]":
-                        break
-                    import json
-                    delta = json.loads(raw)["choices"][0]["delta"].get("content", "")
-                    if delta:
-                        yield delta
-    except Exception as e:
+        yield from stream_chat_deltas(payload, timeout=120)
+    except AIClientError as e:
         yield f"\n【流式输出失败】：{str(e)}"

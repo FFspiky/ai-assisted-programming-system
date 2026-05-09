@@ -1,9 +1,8 @@
 import json
 import re
 
-import requests
-
-from config import API_KEY, API_URL, MODEL_NAME
+from config import MODEL_NAME
+from services.ai_client import AIClientError, chat_completion
 
 
 def _extract_json_object(text: str) -> dict | None:
@@ -99,12 +98,6 @@ def parse_ai_code_response(ai_response_content: str) -> dict:
 
 
 def check_code(code: str, language: str):
-    if not API_KEY:
-        return {
-            "success": False,
-            "error": "未配置 SILICONFLOW_API_KEY（可在 .env 或环境变量中设置）",
-        }
-
     full_prompt = f"""
 你是一位经验丰富的编程助教，请分析并优化以下 {language} 代码。
 
@@ -128,11 +121,6 @@ JSON 结构必须是：
 {code}
 """
 
-    headers = {
-        "Authorization": f"Bearer {API_KEY}",
-        "Content-Type": "application/json",
-    }
-
     payload = {
         "model": MODEL_NAME,
         "messages": [
@@ -143,19 +131,9 @@ JSON 结构必须是：
     }
 
     try:
-        response = requests.post(
-            API_URL,
-            headers=headers,
-            json=payload,
-            timeout=120,
-        )
-        response.raise_for_status()
-        ai_response_content = response.json()["choices"][0]["message"]["content"]
+        ai_response_content = chat_completion(payload, timeout=120)
         return parse_ai_code_response(ai_response_content)
-
-    except requests.exceptions.Timeout:
-        return {"success": False, "error": "AI服务响应超时"}
-    except requests.exceptions.RequestException as e:
-        return {"success": False, "error": f"AI服务请求失败: {str(e)}"}
+    except AIClientError as e:
+        return {"success": False, "error": str(e)}
     except Exception as e:
         return {"success": False, "error": f"AI响应解析失败: {str(e)}"}
