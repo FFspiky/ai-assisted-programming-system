@@ -1671,14 +1671,17 @@
                 }
 
                 const result = await response.json();
+                const safeOutput = escapeHtml(result.output || '无输出内容');
+                const safeError = escapeHtml(result.error || '未知错误');
+                const safeStderr = escapeHtml(result.stderr || '');
                 if (result.success) {
-                    outputContent.innerHTML = `<div style="margin-bottom:8px; color:var(--success)"><i class="fas fa-check-circle"></i> 执行成功 (${result.time}ms)</div><pre style="background:rgba(76,201,240,0.1); padding:12px; border-radius:6px;">${result.output || '无输出内容'}</pre>`;
+                    outputContent.innerHTML = `<div style="margin-bottom:8px; color:var(--success)"><i class="fas fa-check-circle"></i> 执行成功 (${result.time}ms)</div><pre style="background:rgba(76,201,240,0.1); padding:12px; border-radius:6px;">${safeOutput}</pre>`;
                 } else {
-                    outputContent.innerHTML = `<div style="margin-bottom:8px; color:var(--warning)"><i class="fas fa-times-circle"></i> 执行失败 (${result.time}ms)</div><div style="color:var(--warning); margin-bottom:8px;">${language}环境错误:</div><pre style="background:rgba(247,37,133,0.1); padding:12px; border-radius:6px;">${result.error || '未知错误'}</pre>${result.stderr ? `<pre style="background:rgba(247,37,133,0.1); padding:12px; border-radius:6px; margin-top:8px;">${result.stderr}</pre>` : ''}`;
+                    outputContent.innerHTML = `<div style="margin-bottom:8px; color:var(--warning)"><i class="fas fa-times-circle"></i> 执行失败 (${result.time}ms)</div><div style="color:var(--warning); margin-bottom:8px;">${escapeHtml(language)}环境错误:</div><pre style="background:rgba(247,37,133,0.1); padding:12px; border-radius:6px;">${safeError}</pre>${safeStderr ? `<pre style="background:rgba(247,37,133,0.1); padding:12px; border-radius:6px; margin-top:8px;">${safeStderr}</pre>` : ''}`;
                 }
             } catch (error) {
                 console.error('代码执行错误:', error);
-                outputContent.innerHTML = `<div style="margin-bottom:8px; color:var(--warning)"><i class="fas fa-exclamation-triangle"></i> 请求失败</div><pre style="background:rgba(247,37,133,0.1); padding:12px; border-radius:6px;">${error.message}</pre>${!navigator.onLine ? '<p style="color:var(--warning)">检测到网络离线</p>' : ''}<p style="color:var(--light-gray); margin-top:10px;">提示: 请确保已安装${language}运行环境并配置正确</p>`;
+                outputContent.innerHTML = `<div style="margin-bottom:8px; color:var(--warning)"><i class="fas fa-exclamation-triangle"></i> 请求失败</div><pre style="background:rgba(247,37,133,0.1); padding:12px; border-radius:6px;">${escapeHtml(error.message)}</pre>${!navigator.onLine ? '<p style="color:var(--warning)">检测到网络离线</p>' : ''}<p style="color:var(--light-gray); margin-top:10px;">提示: 请确保已安装${escapeHtml(language)}运行环境并配置正确</p>`;
             } finally {
                 runBtn.disabled = false;
                 runBtn.innerHTML = '<i class="fas fa-play"></i> 运行代码';
@@ -1790,14 +1793,16 @@
                     body: JSON.stringify({ code, language, problem_id: problemId })
                 });
                 const result = await response.json();
+                const safeDetails = escapeHtml(result.details || result.error || '没有返回详细信息。');
+                const safeStatus = escapeHtml(result.status || '提交失败');
 
                 if (result.success && result.status === "Accepted") {
-                    outputContent.innerHTML = `<div class="ai-response" style="border-left-color: var(--success);"><h4 style="color: var(--success); display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle"></i><span>${result.status}</span></h4><pre style="white-space: pre-wrap;">${result.details || '通过！'}</pre></div>`;
+                    outputContent.innerHTML = `<div class="ai-response" style="border-left-color: var(--success);"><h4 style="color: var(--success); display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle"></i><span>${safeStatus}</span></h4><pre style="white-space: pre-wrap;">${safeDetails || '通过！'}</pre></div>`;
                 } else {
-                    outputContent.innerHTML = `<div class="ai-response" style="border-left-color: var(--danger);"><h4 style="color: var(--danger); display: flex; align-items: center; gap: 8px;"><i class="fas fa-times-circle"></i><span>${result.status || '提交失败'}</span></h4><pre style="white-space: pre-wrap;">${result.details || result.error || '没有返回详细信息。'}</pre></div>`;
+                    outputContent.innerHTML = `<div class="ai-response" style="border-left-color: var(--danger);"><h4 style="color: var(--danger); display: flex; align-items: center; gap: 8px;"><i class="fas fa-times-circle"></i><span>${safeStatus}</span></h4><pre style="white-space: pre-wrap;">${safeDetails}</pre></div>`;
                 }
             } catch (error) {
-                outputContent.innerHTML = `<div style="margin-bottom:8px; color:var(--warning)"><i class="fas fa-exclamation-triangle"></i> 请求失败</div><pre style="background:rgba(247,37,133,0.1); padding:12px; border-radius:6px;">${error.message}</pre>`;
+                outputContent.innerHTML = `<div style="margin-bottom:8px; color:var(--warning)"><i class="fas fa-exclamation-triangle"></i> 请求失败</div><pre style="background:rgba(247,37,133,0.1); padding:12px; border-radius:6px;">${escapeHtml(error.message)}</pre>`;
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> 提交解答';
