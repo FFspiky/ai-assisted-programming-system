@@ -3,22 +3,44 @@ import sys
 import time
 import tempfile
 import os
+import shutil
+
+
+def _limit_child_process():
+    try:
+        import resource
+
+        resource.setrlimit(resource.RLIMIT_CPU, (3, 3))
+        resource.setrlimit(resource.RLIMIT_AS, (256 * 1024 * 1024, 256 * 1024 * 1024))
+        resource.setrlimit(resource.RLIMIT_FSIZE, (1024 * 1024, 1024 * 1024))
+        resource.setrlimit(resource.RLIMIT_NPROC, (32, 32))
+    except Exception:
+        pass
 
 # 1. 修改函数签名，增加 input_text 参数
 def run_code(code: str, language: str = "Python", input_text: str = None) -> dict:
+    tmp_dir = tempfile.mkdtemp(prefix="code-run-")
     try:
         start_time = time.time()
+        run_env = {
+            "PATH": os.getenv("PATH", ""),
+            "PYTHONIOENCODING": "utf-8",
+            "LANG": "C.UTF-8",
+        }
 
         if language.lower() == "python":
             result = subprocess.run(
-                [sys.executable, "-c", code],
+                [sys.executable, "-I", "-c", code],
                 capture_output=True,
                 text=True,
                 timeout=10,
-                input=input_text # 2. 将 input_text 传递给进程
+                input=input_text, # 2. 将 input_text 传递给进程
+                cwd=tmp_dir,
+                env=run_env,
+                preexec_fn=_limit_child_process if os.name == "posix" else None,
             )
         elif language.lower() == "cpp":
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.cpp', delete=False) as f:
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.cpp', dir=tmp_dir, delete=False) as f:
                 f.write(code)
                 file_path = f.name
             output_file = os.path.splitext(file_path)[0]
@@ -28,24 +50,26 @@ def run_code(code: str, language: str = "Python", input_text: str = None) -> dic
                 ["g++", "-std=c++17", file_path, "-o", output_file],
                 capture_output=True,
                 text=True,
-                timeout=10
+                timeout=10,
+                cwd=tmp_dir,
+                env=run_env,
             )
             if compile_result.returncode != 0:
-                os.remove(file_path)
                 return {
                     "success": False,
                     "error": compile_result.stderr
                 }
-            
+
             result = subprocess.run(
                 [output_file],
                 capture_output=True,
                 text=True,
                 timeout=10,
-                input=input_text # 2. 将 input_text 传递给进程
+                input=input_text, # 2. 将 input_text 传递给进程
+                cwd=tmp_dir,
+                env=run_env,
+                preexec_fn=_limit_child_process if os.name == "posix" else None,
             )
-            os.remove(file_path)
-            os.remove(output_file)
         else:
             return {
                 "success": False,
@@ -77,6 +101,8 @@ def run_code(code: str, language: str = "Python", input_text: str = None) -> dic
             "success": False,
             "error": str(e)
         }
+    finally:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
 
 # 保留命令行功能
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify
 from flask_login import login_required, current_user
-from models import Problem, Submission
+from models import Problem, Submission, db
 
 problems_blueprint = Blueprint('problems', __name__)
 
@@ -38,15 +38,20 @@ def get_problem_details(problem_id):
 @login_required
 def get_user_submissions():
     # 查询当前用户的所有提交记录，按时间倒序
-    submissions = Submission.query.filter_by(user_id=current_user.id).order_by(Submission.timestamp.desc()).all()
+    submissions = db.session.query(Submission, Problem.title)\
+        .join(Problem, Submission.problem_id == Problem.id)\
+        .filter(Submission.user_id == current_user.id)\
+        .order_by(Submission.timestamp.desc())\
+        .all()
     
     submissions_list = [
         {
-            "problem_title": Problem.query.get(s.problem_id).title,
+            "problem_title": title,
+            "problem_id": s.problem_id,
             "status": s.status,
             "language": s.language,
             "timestamp": s.timestamp.strftime('%Y-%m-%d %H:%M:%S') # 格式化时间
-        } for s in submissions
+        } for s, title in submissions
     ]
     
     return jsonify({"success": True, "submissions": submissions_list})

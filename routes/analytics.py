@@ -10,9 +10,9 @@ import time
 try:
     from config import API_KEY, API_URL, MODEL_NAME
 except ImportError:
-    API_KEY = "YOUR_FALLBACK_KEY"
-    API_URL = "YOUR_FALLBACK_URL"
-    MODEL_NAME = "default-model"
+    API_KEY = ""
+    API_URL = ""
+    MODEL_NAME = ""
 
 analytics_blueprint = Blueprint('analytics', __name__)
 
@@ -41,10 +41,15 @@ def learning_overview():
 @analytics_blueprint.route('/update_learning_time', methods=['POST'])
 @login_required
 def update_learning_time():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     duration_seconds = data.get('duration', 0)
 
-    if duration_seconds > 0:
+    try:
+        duration_seconds = int(duration_seconds)
+    except (TypeError, ValueError):
+        duration_seconds = 0
+
+    if 0 < duration_seconds <= 8 * 60 * 60:
         user = User.query.get(current_user.id)
         user.learning_duration += int(duration_seconds)
         db.session.commit()

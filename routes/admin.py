@@ -8,6 +8,23 @@ import os
 
 admin_blueprint = Blueprint('admin', __name__)
 
+
+def sanitize_description(tag):
+    for blocked in tag.find_all(["script", "style", "iframe", "object", "embed"]):
+        blocked.decompose()
+    for node in tag.find_all(True):
+        for attr in list(node.attrs):
+            attr_lower = attr.lower()
+            value = node.attrs.get(attr)
+            if attr_lower.startswith("on"):
+                del node.attrs[attr]
+                continue
+            if attr_lower in {"href", "src"}:
+                value_text = " ".join(value) if isinstance(value, list) else str(value)
+                if value_text.strip().lower().startswith("javascript:"):
+                    del node.attrs[attr]
+    return tag.decode_contents()
+
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -47,7 +64,7 @@ def upload_problems():
             difficulty = difficulty_tag.text.strip() if difficulty_tag else '简单' # 提供默认值
             
             description_tag = item.find('div', class_='description')
-            description = description_tag.prettify() if description_tag else ''
+            description = sanitize_description(description_tag) if description_tag else ''
             # --- 修改结束 ---
 
             if not all([prob_id, title, description]): # 确保核心数据存在

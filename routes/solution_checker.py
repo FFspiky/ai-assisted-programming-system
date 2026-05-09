@@ -9,7 +9,7 @@ solution_checker_blueprint = Blueprint("solution_checker", __name__)
 @solution_checker_blueprint.route("/check-solution", methods=["POST"])
 @login_required
 def check_solution():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     code = data.get("code", "")
     language = data.get("language", "Python")
     problem_id = data.get("problem_id", "")
@@ -44,6 +44,14 @@ def check_solution():
         
         feedback_details.append(f"测试用例 {i+1} 通过!")
 
+    already_accepted = None
+    if final_status == "Accepted":
+        already_accepted = Submission.query.filter_by(
+            user_id=current_user.id,
+            problem_id=problem_id,
+            status="Accepted"
+        ).first()
+
     # 保存提交记录
     new_submission = Submission(
         code_submitted=code,
@@ -55,9 +63,9 @@ def check_solution():
     )
     db.session.add(new_submission)
 
-    if final_status == "Accepted":
+    if final_status == "Accepted" and already_accepted is None:
         user = User.query.get(current_user.id)
-        user.points += 10 # 答对加分
+        user.points += 10 # 首次答对加分
     
     db.session.commit()
 

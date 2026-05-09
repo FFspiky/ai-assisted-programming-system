@@ -1609,7 +1609,10 @@
                 if (durationInSeconds > 10) {
                     // 使用 navigator.sendBeacon 发送数据
                     // 这种方式可以确保即使用户关闭了页面，请求也能大概率成功发送
-                    const data = JSON.stringify({ duration: durationInSeconds });
+                    const data = new Blob(
+                        [JSON.stringify({ duration: durationInSeconds })],
+                        { type: 'application/json' }
+                    );
                     navigator.sendBeacon('/api/update_learning_time', data);
                 }
             });
@@ -1656,7 +1659,7 @@
             runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 运行中';
 
             try {
-                const response = await fetch('http://localhost:5001/api/run-code', {
+                const response = await fetch('/api/run-code', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ code, language, input_text: customInput })
@@ -1705,7 +1708,7 @@
             `;
 
             try {
-                const response = await fetch('http://localhost:5001/api/optimize-code', {
+                const response = await fetch('/api/optimize-code', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

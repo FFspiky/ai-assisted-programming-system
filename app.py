@@ -1,6 +1,7 @@
 # app.py
 
 import os
+import secrets
 from flask import Flask, render_template, redirect, url_for
 from flask_cors import CORS
 from flask_migrate import Migrate
@@ -16,40 +17,46 @@ except Exception:
 
 # 1. 先从 models.py 导入 db 对象
 from models import db, User
-from config import ADMIN_USERNAME, ADMIN_PASSWORD, ADMIN_EMAIL
+from config import ADMIN_USERNAME, ADMIN_PASSWORD, ADMIN_EMAIL, CORS_ORIGINS
 
 # 2. 创建并配置 Flask 应用实例
 app = Flask(__name__, template_folder='templates', static_folder='static')
-CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
+CORS(app, resources={r"/api/*": {"origins": CORS_ORIGINS}}, supports_credentials=True)
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'app.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
+    'DATABASE_URL',
+    'sqlite:///' + os.path.join(basedir, 'app.db')
+)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'local-demo-secret-key') 
+app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY') or secrets.token_hex(32)
 
 # 3. 初始化数据库和迁移工具
 #    将 db 和 migrate 与 app 实例关联起来
 db.init_app(app)
 migrate = Migrate(app, db)
 
-# 本机演示：确保首次运行能直接注册/登录（没有执行迁移也能用）
+# 本机演示：没有执行迁移时也能创建表；管理员仅在显式配置环境变量时初始化。
 with app.app_context():
     db.create_all()
-    admin_user = User.query.filter_by(username=ADMIN_USERNAME).first()
-    if admin_user is None:
-        admin_user = User(username=ADMIN_USERNAME, email=ADMIN_EMAIL, is_admin=True)
-        admin_user.set_password(ADMIN_PASSWORD)
-        db.session.add(admin_user)
-    else:
-        admin_user.email = ADMIN_EMAIL
-        admin_user.is_admin = True
-        admin_user.set_password(ADMIN_PASSWORD)
-    db.session.commit()
+    if ADMIN_USERNAME and ADMIN_PASSWORD and ADMIN_EMAIL:
+        admin_user = User.query.filter_by(username=ADMIN_USERNAME).first()
+        if admin_user is None:
+            admin_user = User(username=ADMIN_USERNAME, email=ADMIN_EMAIL, is_admin=True)
+            admin_user.set_password(ADMIN_PASSWORD)
+            db.session.add(admin_user)
+            db.session.commit()
 
 # 4. 初始化登录管理器
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'auth.unauthorized' 
+
+
+@login_manager.unauthorized_handler
+def handle_unauthorized():
+    return {"success": False, "error": "需要登录"}, 401
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -113,7 +120,7 @@ def admin_page():
 
 # 只有在直接运行此脚本时，才启动服务器
 if __name__ == "__main__":
-    debug = os.getenv("FLASK_DEBUG", "1") == "1"
+    debug = os.getenv("FLASK_DEBUG", "0") == "1"
     host = os.getenv("FLASK_HOST", "127.0.0.1")
     port = int(os.getenv("FLASK_PORT", "5001"))
     app.run(debug=debug, port=port, host=host)

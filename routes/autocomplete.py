@@ -1,15 +1,17 @@
 from flask import Blueprint, request, jsonify, Response
+from flask_login import login_required
 from services.ai_autocomplete import stream_inline_completion
 
 autocomplete_blueprint = Blueprint("autocomplete", __name__)
 
 
 @autocomplete_blueprint.route("/api/ai-inline-complete-stream", methods=["POST", "OPTIONS"])
+@login_required
 def ai_inline_complete_stream():
     if request.method == "OPTIONS":
         return jsonify({"status": "ok"}), 200
 
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
     prefix = (data.get("prefix") or "").strip("\x00")
     suffix = data.get("suffix") or ""
     language = (data.get("language") or "python").strip()

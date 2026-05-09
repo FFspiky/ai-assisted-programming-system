@@ -1,15 +1,17 @@
 from flask import Blueprint, request, jsonify, Response
+from flask_login import login_required
 from services.ai_helper import  stream_code_from_prompt
 
 generate_blueprint = Blueprint('generate', __name__)
 
 # 新增：流式响应接口
 @generate_blueprint.route("/api/ai-chat-stream", methods=["POST", "OPTIONS"])
+@login_required
 def generate_code_stream():
     if request.method == 'OPTIONS':
         return jsonify({'status': 'ok'}), 200
 
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     prompt = data.get("message", "").strip()
     language = data.get("language", "Python").strip()
 
