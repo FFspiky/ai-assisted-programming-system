@@ -9,6 +9,7 @@ os.environ["FLASK_SECRET_KEY"] = "test-secret"
 
 from app import app
 from models import Problem, TestCase, User, db
+from routes.guards import _RATE_BUCKETS
 from services.ai_code_checker import parse_ai_code_response
 from services.execute_runner import run_code
 
@@ -22,6 +23,7 @@ class CoreSecurityTest(unittest.TestCase):
             pass
 
     def setUp(self):
+        _RATE_BUCKETS.clear()
         app.config["TESTING"] = True
         self.client = app.test_client()
         with app.app_context():
@@ -113,6 +115,27 @@ class CoreSecurityTest(unittest.TestCase):
 
         self.assertTrue(parsed["success"])
         self.assertEqual(parsed["optimizedVersions"][0]["code"], "print('ok')")
+
+    def test_run_code_is_rate_limited(self):
+        self.client.post(
+            "/api/register",
+            json={
+                "username": "runner",
+                "email": "runner@example.com",
+                "password": "strongpass",
+            },
+        )
+        self.client.post(
+            "/api/login",
+            json={"username": "runner", "password": "strongpass"},
+        )
+
+        payload = {"language": "Python", "code": "print('ok')"}
+        last_response = None
+        for _ in range(21):
+            last_response = self.client.post("/api/run-code", json=payload)
+
+        self.assertEqual(last_response.status_code, 429)
 
 
 if __name__ == "__main__":

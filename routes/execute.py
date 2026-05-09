@@ -2,12 +2,14 @@
 
 from flask import Blueprint, request, jsonify
 from flask_login import login_required
+from routes.guards import rate_limit
 from services.execute_runner import run_code
 
 execute_blueprint = Blueprint("execute", __name__)
 
 @execute_blueprint.route("/api/run-code", methods=["POST", "OPTIONS"])
 @login_required
+@rate_limit(max_calls=20, window_seconds=60)
 def execute_code():
     if request.method == 'OPTIONS':
         return jsonify({'status': 'ok'}), 200

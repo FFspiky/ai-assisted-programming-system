@@ -1,12 +1,14 @@
 # routes/assessment.py
 from flask import Blueprint, request, jsonify, Response # <-- 1. 从 flask 导入 Response
 from flask_login import login_required
+from routes.guards import rate_limit
 from services.learning_path_service import generate_learning_path
 
 assessment_blueprint = Blueprint('assessment', __name__)
 
 @assessment_blueprint.route('/api/assess-learning-path', methods=['POST'])
 @login_required
+@rate_limit(max_calls=5, window_seconds=60)
 def assess_learning_path():
     data = request.get_json(silent=True) or {}
     answers = data.get('answers', [])

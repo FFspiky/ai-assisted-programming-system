@@ -2,12 +2,14 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 from models import db, Submission, Problem, TestCase, User
+from routes.guards import rate_limit
 from services.execute_runner import run_code # 假设您的执行代码服务在这里
 
 solution_checker_blueprint = Blueprint("solution_checker", __name__)
 
 @solution_checker_blueprint.route("/check-solution", methods=["POST"])
 @login_required
+@rate_limit(max_calls=30, window_seconds=60)
 def check_solution():
     data = request.get_json(silent=True) or {}
     code = data.get("code", "")
