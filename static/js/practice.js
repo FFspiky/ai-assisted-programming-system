@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
-    fetchCurrentUser();
+    UserSession.init({ logoutRedirect: '/index.html' });
     loadProblem();
 
     // --- 主题切换功能 ---
@@ -19,60 +19,6 @@ document.addEventListener('DOMContentLoaded', function () {
         localStorage.setItem('selectedTheme', theme);
     });
 });
-
-async function fetchCurrentUser() {
-    try {
-        const response = await fetch('/api/current_user');
-        if (response.ok) {
-            const result = await response.json();
-            if (result.success) {
-                updateUserInfo(result.user);
-            } else {
-                showLoginRegister();
-            }
-        } else {
-            showLoginRegister();
-        }
-    } catch (error) {
-        console.error('获取用户信息失败', error);
-        showLoginRegister();
-    }
-}
-
-function updateUserInfo(user) {
-    const userInfoDiv = document.querySelector('.user-info');
-    userInfoDiv.innerHTML = `
-        <div class="user-details">
-            <div class="username">${user.username}</div>
-            <div class="user-stats">
-                <span>积分: ${user.points}</span>
-                <a href="#" id="logoutBtn" style="color: #f72585; cursor: pointer; margin-left: 15px; text-decoration: none;">登出</a>
-            </div>
-        </div>
-        <div class="user-avatar" id="userAvatar">
-            <img src="https://mms1.baidu.com/it/u=1390447151,3494080119&fm=253&app=138&f=JPEGw=500&h=500">
-        </div>
-    `;
-    document.getElementById('logoutBtn').addEventListener('click', handleLogout);
-}
-
-function showLoginRegister() {
-    const userInfoDiv = document.querySelector('.user-info');
-    userInfoDiv.innerHTML = `
-        <div style="display: flex; gap: 10px;">
-            <a href="/login.html" class="btn">登录</a>
-            <a href="/register.html" class="btn" style="background: var(--primary);">注册</a>
-        </div>
-    `;
-}
-
-async function handleLogout(e) {
-    e.preventDefault();
-    await fetch('/api/logout', { method: 'POST' });
-    alert("已成功登出");
-    window.location.href = '/index.html';
-}
-
 
 function getCurrentProblemId() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -707,4 +653,3 @@ renderGhostLayer();
         if (!isClick) { e.preventDefault(); e.stopPropagation(); }
     });
 })();
-

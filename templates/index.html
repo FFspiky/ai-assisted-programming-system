@@ -37,14 +37,14 @@
 
                 <div class="user-info">
                     <div class="user-details">
-                        <div class="username">小唐克</div>
+                        <div class="username">访客</div>
                         <div class="user-stats">
-                            <span id="showRecords">刷题记录</span>
-                            <span>积分: 1280</span>
+                            <a href="/login.html">登录</a>
+                            <a href="/register.html">注册</a>
                         </div>
                     </div>
-                    <div class="user-avatar" id="userAvatar">
-                        <img src="https://mms1.baidu.com/it/u=1390447151,3494080119&fm=253&app=138&f=JPEGw=500&h=500">
+                    <div class="user-avatar">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2EwYWVjMCI+PHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6bTAgM2MxLjY2IDAgMyAxLjM0IDMgM3MtMS4zNCAzLTMgMy0zLTEuMzQtMy0zIDEuMzQtMyAzLTN6bTAgMTRjLTIuNjcgMC04IDEuMzQtOCA0djJoMTZjMC0yLjY2LTUuMzMtNC04LTR6Ii8+PC9zdmc+" alt="默认头像">
                     </div>
                 </div>
             </header>
@@ -61,13 +61,13 @@
                             <span>AI代码编辑器</span>
                         </div>
                         <div class="editor-actions">
-                            <button class="btn btn-ai">
-                                <i class="fas fa-wand-magic-sparkles"></i>
-                                AI优化
+                            <button class="btn btn-ai" type="button">
+                                <i class="fas fa-list"></i>
+                                选择题目
                             </button>
-                            <button class="btn btn-run">
+                            <button class="btn btn-run" type="button">
                                 <i class="fas fa-play"></i>
-                                运行代码
+                                进入刷题
                             </button>
                         </div>
                     </div>
@@ -79,19 +79,14 @@
                                 <span>控制台输出</span>
                             </div>
                             <div class="output-content">
-                                <p>&gt; 编译成功！</p>
-                                <p>&gt; 运行结果：</p>
-                                <p>Hello, AI Code Assistant!</p>
-                                <p>5 + 7 = 12</p>
-                                <p>&gt; 程序执行完成 (耗时 0.23s)</p>
+                                <p>&gt; 在刷题页选择题目后，可运行 Python / C++ 代码。</p>
+                                <p>&gt; 提交后系统会按测试用例判题并记录学习数据。</p>
                             </div>
 
                             <div class="ai-response">
                                 <h4><i class="fas fa-lightbulb"></i> AI建议</h4>
-                                <p>您的代码结构良好！建议：</p>
-                                <p>1. 可以为加法函数添加参数类型检查</p>
-                                <p>2. 考虑使用更现代的C++特性如 std::function</p>
-                                <p>3. 添加异常处理增强健壮性</p>
+                                <p>在刷题页可以使用 AI 优化、代码补全和编程助手。</p>
+                                <p>学习分析页会基于真实提交记录生成成长建议。</p>
                             </div>
                         </div>
                     </div>
@@ -235,14 +230,14 @@
 
                     <div class="user-info">
                         <div class="user-details">
-                            <div class="username">小唐克</div>
+                            <div class="username">访客</div>
                             <div class="user-stats">
-                                <span>积分: 1280</span>
+                                <a href="/login.html">登录</a>
+                                <a href="/register.html">注册</a>
                             </div>
                         </div>
                         <div class="user-avatar">
-                            <img
-                                src="https://mms1.baidu.com/it/u=1390447151,3494080119&fm=253&app=138&f=JPEGw=500&h=500">
+                            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2EwYWVjMCI+PHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6bTAgM2MxLjY2IDAgMyAxLjM0IDMgM3MtMS4zNCAzLTMgMy0zLTEuMzQtMy0zIDEuMzQtMyAzLTN6bTAgMTRjLTIuNjcgMC04IDEuMzQtOCA0djJoMTZjMC0yLjY2LTUuMzMtNC04LTR6Ii8+PC9zdmc+" alt="默认头像">
                         </div>
                     </div>
                 </header>
@@ -254,6 +249,7 @@
 
     </div>
     </div>
+    <script src="{{ url_for('static', filename='js/user-session.js') }}"></script>
     <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 </body>
 

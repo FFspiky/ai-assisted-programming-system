@@ -214,70 +214,21 @@ pathContent.innerHTML = `<div class="error-message">请求失败: ${escapeHtml(e
     // --- 页面加载的完整逻辑 (已修正) ---
     document.addEventListener('DOMContentLoaded', function() {
 initAssessment();
-checkUserLoginStatus();
+UserSession.init({
+    showRecords: true,
+    onRecordsClick: function () {
+        window.location.href = '/practice.html';
+    },
+    onAuthenticated: function () {
+        fetchLearningOverview();
+        fetchAiAnalysisStream();
+    },
+    onGuest: showGuestAnalysisState
+});
 fetchLeaderboard();
     });
 
-    async function checkUserLoginStatus() {
-try {
-    const response = await fetch('/api/current_user');
-    if (response.ok) {
-        const result = await response.json();
-        if (result.success) {
-            updateUserInfo(result.user);
-            fetchLearningOverview();
-            fetchAiAnalysisStream();
-        } else {
-            showLoginRegister();
-        }
-    } else {
-        showLoginRegister();
-    }
-} catch (error) {
-    console.error('获取用户信息失败', error);
-    showLoginRegister();
-}
-    }
-
-    function updateUserInfo(user) {
-const userInfoContainer = document.querySelector('.user-info');
-userInfoContainer.innerHTML = `
-    <div class="user-details">
-        <div class="username">${escapeHtml(user.username)}</div>
-        <div class="user-stats">
-            <span id="showRecords" style="cursor:pointer;">刷题记录</span>
-            <span>积分: ${escapeHtml(user.points)}</span>
-            <a href="#" id="logoutBtn" style="color: #e53e3e; margin-left:10px; text-decoration:none;">登出</a>
-        </div>
-    </div>
-    <div class="user-avatar" id="userAvatar">
-        <img src="https://gravatar.com/avatar/${user.id}?d=identicon" alt="User Avatar">
-    </div>
-`;
-document.getElementById('logoutBtn').addEventListener('click', handleLogout);
-    }
-
-    async function handleLogout(e) {
-e.preventDefault();
-await fetch('/api/logout', { method: 'POST' });
-alert("已成功登出");
-window.location.reload();
-    }
-
-    function showLoginRegister() {
-const userInfoContainer = document.querySelector('.user-info');
-userInfoContainer.innerHTML = `
-    <div class="user-details">
-        <div class="username">访客</div>
-        <div class="user-stats">
-            <a href="/login.html" style="text-decoration:none; color:var(--light);">登录</a>
-            <a href="/register.html" style="text-decoration:none; color:var(--light);">注册</a>
-        </div>
-    </div>
-    <div class="user-avatar" id="userAvatar">
-        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2EwYWVjMCI+PHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6bTAgM2MxLjY2IDAgMyAxLjM0IDMgM3MtMS4zNCAzLTMgMy0zLTEuMzQtMy0zIDEuMzQtMyAzLTN6bTAgMTRjLTIuNjcgMC04IDEuMzQtOCA0djJoMTZjMC0yLjY2LTUuMzMtNC04LTR6Ii8+PC9zdmc+" alt="默认头像">
-    </div>
-`;
+    function showGuestAnalysisState() {
 document.getElementById('totalSolved').textContent = '-';
 document.getElementById('accuracyRate').textContent = '-';
 document.getElementById('learningHours').textContent = '-';

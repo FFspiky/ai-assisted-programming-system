@@ -47,14 +47,14 @@
 
             <div class="user-info">
                 <div class="user-details">
-                    <div class="username">小唐克</div>
+                    <div class="username">访客</div>
                     <div class="user-stats">
-                        <span id="showRecords">刷题记录</span>
-                        <span>积分: 1280</span>
+                        <a href="/login.html">登录</a>
+                        <a href="/register.html">注册</a>
                     </div>
                 </div>
-                <div class="user-avatar" id="userAvatar">
-                    <img src="https://mms1.baidu.com/it/u=1390447151,3494080119&fm=253&app=138&f=JPEGw=500&h=500">
+                <div class="user-avatar">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2EwYWVjMCI+PHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6bTAgM2MxLjY2IDAgMyAxLjM0IDMgM3MtMS4zNCAzLTMgMy0zLTEuMzQtMy0zIDEuMzQtMyAzLTN6bTAgMTRjLTIuNjcgMC04IDEuMzQtOCA0djJoMTZjMC0yLjY2LTUuMzMtNC04LTR6Ii8+PC9zdmc+" alt="默认头像">
                 </div>
             </div>
         </header>
@@ -178,6 +178,7 @@
         </button>
     </div>
 
+    <script src="{{ url_for('static', filename='js/user-session.js') }}"></script>
     <script src="{{ url_for('static', filename='js/practice.js') }}"></script>
 </body>
 
