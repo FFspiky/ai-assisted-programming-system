@@ -39,6 +39,26 @@ class CoreSecurityTest(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("密码长度", response.get_json()["error"])
 
+    def test_login_returns_current_user_payload(self):
+        self.client.post(
+            "/api/register",
+            json={
+                "username": "loginuser",
+                "email": "loginuser@example.com",
+                "password": "strongpass",
+            },
+        )
+
+        login_response = self.client.post(
+            "/api/login",
+            json={"username": "loginuser", "password": "strongpass"},
+        )
+        current_user_response = self.client.get("/api/current_user")
+
+        self.assertEqual(login_response.status_code, 200)
+        self.assertEqual(current_user_response.status_code, 200)
+        self.assertEqual(current_user_response.get_json()["user"]["username"], "loginuser")
+
     def test_run_code_requires_login(self):
         response = self.client.post(
             "/api/run-code",
@@ -92,6 +112,48 @@ class CoreSecurityTest(unittest.TestCase):
             user = User.query.filter_by(username="coder").first()
             self.assertEqual(user.points, 10)
 
+    def test_learning_overview_counts_submissions(self):
+        with app.app_context():
+            db.session.add(Problem(id="p2", title="Echo 2", description="Echo", difficulty="简单"))
+            db.session.add(TestCase(input_data="hello\n", expected_output="hello", problem_id="p2"))
+            db.session.commit()
+
+        self.client.post(
+            "/api/register",
+            json={
+                "username": "overview",
+                "email": "overview@example.com",
+                "password": "strongpass",
+            },
+        )
+        self.client.post("/api/login", json={"username": "overview", "password": "strongpass"})
+        self.client.post(
+            "/api/check-solution",
+            json={"problem_id": "p2", "language": "python", "code": "print(input())"},
+        )
+
+        response = self.client.get("/api/learning_overview")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()["data"]["total_solved"], 1)
+        self.assertEqual(response.get_json()["data"]["accuracy"], 100)
+
+    def test_leaderboard_returns_public_rankings(self):
+        self.client.post(
+            "/api/register",
+            json={
+                "username": "ranked",
+                "email": "ranked@example.com",
+                "password": "strongpass",
+            },
+        )
+
+        response = self.client.get("/api/leaderboard")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.get_json()["success"])
+        self.assertEqual(response.get_json()["data"][0]["username"], "ranked")
+
     def test_ai_code_response_prefers_structured_json(self):
         parsed = parse_ai_code_response(
             """
@@ -115,6 +177,26 @@ class CoreSecurityTest(unittest.TestCase):
 
         self.assertTrue(parsed["success"])
         self.assertEqual(parsed["optimizedVersions"][0]["code"], "print('ok')")
+
+    def test_ai_optimize_reports_missing_api_key(self):
+        self.client.post(
+            "/api/register",
+            json={
+                "username": "aiuser",
+                "email": "aiuser@example.com",
+                "password": "strongpass",
+            },
+        )
+        self.client.post("/api/login", json={"username": "aiuser", "password": "strongpass"})
+
+        response = self.client.post(
+            "/api/optimize-code",
+            json={"language": "python", "code": "print('hello')"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.get_json()["success"])
+        self.assertIn("SILICONFLOW_API_KEY", response.get_json()["error"])
 
     def test_run_code_is_rate_limited(self):
         self.client.post(

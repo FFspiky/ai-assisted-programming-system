@@ -59,6 +59,24 @@ http://127.0.0.1:5001
 
 生产或多人协作环境中，应使用迁移命令管理数据库结构。
 
+## 开发检查
+
+本地一次性运行语法检查、单元测试和前端 JS 语法检查：
+
+```bash
+make check
+```
+
+也可以分别运行：
+
+```bash
+make compile
+make test
+make js-check
+```
+
+GitHub Actions 会在推送到 `main` 或打开 PR 时执行同样的检查。
+
 ## 安全说明
 
 - `.env`、`app.db`、`__pycache__/`、IDE 配置不会提交到 Git。
