@@ -12,6 +12,7 @@ from models import Problem, TestCase, User, db
 from routes.guards import _RATE_BUCKETS
 from services.ai_code_checker import parse_ai_code_response
 from services.execute_runner import run_code
+from services.judge import outputs_match
 
 
 class CoreSecurityTest(unittest.TestCase):
@@ -111,6 +112,68 @@ class CoreSecurityTest(unittest.TestCase):
         with app.app_context():
             user = User.query.filter_by(username="coder").first()
             self.assertEqual(user.points, 10)
+
+    def test_judge_ignores_trailing_line_whitespace(self):
+        self.assertTrue(outputs_match("hello  \nworld\t\n", "hello\nworld"))
+
+    def test_judge_accepts_float_tolerance(self):
+        self.assertTrue(outputs_match("3.1415927 2.0000001", "3.1415926 2.0000000"))
+
+    def test_solution_checker_accepts_whitespace_tolerant_output(self):
+        with app.app_context():
+            db.session.add(Problem(id="p-space", title="Space", description="Space", difficulty="简单"))
+            db.session.add(TestCase(input_data="", expected_output="hello\nworld", problem_id="p-space"))
+            db.session.commit()
+
+        self.client.post(
+            "/api/register",
+            json={
+                "username": "spaceuser",
+                "email": "spaceuser@example.com",
+                "password": "strongpass",
+            },
+        )
+        self.client.post("/api/login", json={"username": "spaceuser", "password": "strongpass"})
+
+        response = self.client.post(
+            "/api/check-solution",
+            json={
+                "problem_id": "p-space",
+                "language": "python",
+                "code": "print('hello  '); print('world\\t')",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()["status"], "Accepted")
+
+    def test_solution_checker_reports_compile_error(self):
+        with app.app_context():
+            db.session.add(Problem(id="p-compile", title="Compile", description="Compile", difficulty="简单"))
+            db.session.add(TestCase(input_data="", expected_output="ok", problem_id="p-compile"))
+            db.session.commit()
+
+        self.client.post(
+            "/api/register",
+            json={
+                "username": "compileuser",
+                "email": "compileuser@example.com",
+                "password": "strongpass",
+            },
+        )
+        self.client.post("/api/login", json={"username": "compileuser", "password": "strongpass"})
+
+        response = self.client.post(
+            "/api/check-solution",
+            json={
+                "problem_id": "p-compile",
+                "language": "cpp",
+                "code": "int main() { syntax error }",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()["status"], "Compile Error")
 
     def test_learning_overview_counts_submissions(self):
         with app.app_context():

@@ -5,6 +5,7 @@ from models import db, Submission, Problem, TestCase, User
 from routes.guards import rate_limit
 from routes.validators import validate_code_payload
 from services.execute_runner import run_code # 假设您的执行代码服务在这里
+from services.judge import outputs_match
 
 solution_checker_blueprint = Blueprint("solution_checker", __name__)
 
@@ -32,18 +33,18 @@ def check_solution():
     for i, case in enumerate(test_cases):
         # 修正此处的函数调用，使用关键字参数传递输入
         run_result = run_code(code, language, input_text=case.input_data)
-        
-        actual_output = run_result.get("output", "").strip()
-        expected_output = case.expected_output.strip()
+
+        actual_output = run_result.get("output", "")
+        expected_output = case.expected_output
 
         if not run_result.get("success"):
-            final_status = "Runtime Error"
-            feedback_details.append(f"测试用例 {i+1} 发生运行时错误: {run_result.get('error', '')}")
+            final_status = run_result.get("status") or "Runtime Error"
+            feedback_details.append(f"测试用例 {i+1} 执行失败 ({final_status}): {run_result.get('error', '')}")
             break # 出现错误，直接中断
-        
-        if actual_output != expected_output:
+
+        if not outputs_match(actual_output, expected_output):
             final_status = "Wrong Answer"
-            feedback_details.append(f"测试用例 {i+1} 未通过: \n输入:\n{case.input_data}\n预期输出:\n{expected_output}\n你的输出:\n{actual_output}")
+            feedback_details.append(f"测试用例 {i+1} 未通过: \n输入:\n{case.input_data}\n预期输出:\n{expected_output.strip()}\n你的输出:\n{actual_output.strip()}")
             break # 答案错误，直接中断
         
         feedback_details.append(f"测试用例 {i+1} 通过!")

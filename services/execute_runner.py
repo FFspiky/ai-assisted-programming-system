@@ -78,6 +78,7 @@ def run_code(code: str, language: str = "Python", input_text: str = None) -> dic
             if compile_result.returncode != 0:
                 return {
                     "success": False,
+                    "status": "Compile Error",
                     "error": _truncate_output(compile_result.stderr)
                 }
 
@@ -101,6 +102,7 @@ def run_code(code: str, language: str = "Python", input_text: str = None) -> dic
 
         return {
             "success": result.returncode == 0,
+            "status": "Accepted" if result.returncode == 0 else "Runtime Error",
             "output": _truncate_output(result.stdout),
             "error": _truncate_output(result.stderr),
             "time": elapsed_time,
@@ -110,16 +112,19 @@ def run_code(code: str, language: str = "Python", input_text: str = None) -> dic
     except subprocess.TimeoutExpired:
         return {
             "success": False,
+            "status": "Time Limit Exceeded",
             "error": f"Execution timed out after {CODE_RUN_TIMEOUT_SECONDS} seconds"
         }
     except FileNotFoundError:
         return {
             "success": False,
+            "status": "Environment Error",
             "error": f"未找到执行 {language} 代码所需的命令，请确保已安装相应的编译器或解释器。"
         }
     except Exception as e:
         return {
             "success": False,
+            "status": "Runtime Error",
             "error": str(e)
         }
     finally:
