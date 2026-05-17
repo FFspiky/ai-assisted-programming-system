@@ -131,6 +131,16 @@ class CoreSecurityTest(unittest.TestCase):
 
         self.assertTrue(result["success"])
         self.assertEqual(result["output"].strip(), "hello")
+        self.assertEqual(result["compile_time"], 0)
+        self.assertGreaterEqual(result["run_time"], 0)
+        self.assertFalse(result["output_truncated"])
+
+    def test_python_runner_marks_truncated_output(self):
+        result = run_code("print('x' * 25000)", "Python")
+
+        self.assertTrue(result["success"])
+        self.assertTrue(result["output_truncated"])
+        self.assertIn("输出过长，已截断", result["output"])
 
     def test_repeated_accept_does_not_add_points_twice(self):
         with app.app_context():
@@ -178,6 +188,11 @@ class CoreSecurityTest(unittest.TestCase):
     def test_judge_accepts_float_tolerance(self):
         self.assertTrue(outputs_match("3.1415927 2.0000001", "3.1415926 2.0000000"))
 
+    def test_judge_accepts_multiple_valid_outputs(self):
+        expected = "YES\n---OR---\nYes\n---OR---\nyes"
+        self.assertTrue(outputs_match("Yes", expected))
+        self.assertFalse(outputs_match("NO", expected))
+
     def test_solution_checker_accepts_whitespace_tolerant_output(self):
         with app.app_context():
             db.session.add(Problem(id="p-space", title="Space", description="Space", difficulty="简单"))
@@ -206,6 +221,55 @@ class CoreSecurityTest(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_json()["status"], "Accepted")
+        self.assertTrue(response.get_json()["test_results"][0]["passed"])
+
+    def test_solution_checker_returns_structured_test_results_for_multiple_answers(self):
+        with app.app_context():
+            db.session.add(
+                Problem(
+                    id="p-multi",
+                    title="Multiple Answers",
+                    description="Any valid answer",
+                    difficulty="简单",
+                )
+            )
+            db.session.add(
+                TestCase(
+                    input_data="",
+                    expected_output="YES\n---OR---\nYes",
+                    problem_id="p-multi",
+                )
+            )
+            db.session.commit()
+
+        self.client.post(
+            "/api/register",
+            json={
+                "username": "multiuser",
+                "email": "multiuser@example.com",
+                "password": "strongpass",
+            },
+        )
+        self.client.post("/api/login", json={"username": "multiuser", "password": "strongpass"})
+
+        response = self.client.post(
+            "/api/check-solution",
+            json={
+                "problem_id": "p-multi",
+                "language": "python",
+                "code": "print('Yes')",
+            },
+            headers=self.csrf_headers(),
+        )
+
+        payload = response.get_json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(payload["status"], "Accepted")
+        self.assertEqual(payload["data"]["status"], "Accepted")
+        self.assertEqual(payload["test_results"][0]["status"], "Accepted")
+        self.assertEqual(payload["test_results"][0]["actual_output"].strip(), "Yes")
+        self.assertIn("run_time", payload["test_results"][0])
+        self.assertIn("output_truncated", payload["test_results"][0])
 
     def test_solution_checker_reports_compile_error(self):
         with app.app_context():
@@ -235,6 +299,8 @@ class CoreSecurityTest(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_json()["status"], "Compile Error")
+        self.assertFalse(response.get_json()["test_results"][0]["passed"])
+        self.assertGreaterEqual(response.get_json()["test_results"][0]["compile_time"], 0)
 
     def test_learning_overview_counts_submissions(self):
         with app.app_context():

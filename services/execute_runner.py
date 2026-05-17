@@ -22,6 +22,12 @@ def _truncate_output(text):
     return text[:CODE_RUN_MAX_OUTPUT_CHARS] + "\n... 输出过长，已截断"
 
 
+def _truncate_output_with_flag(text):
+    text = text or ""
+    truncated = len(text) > CODE_RUN_MAX_OUTPUT_CHARS
+    return _truncate_output(text), truncated
+
+
 def _limit_child_process():
     try:
         import resource
@@ -43,6 +49,7 @@ def run_code(code: str, language: str = "Python", input_text: str = None) -> dic
     tmp_dir = tempfile.mkdtemp(prefix="code-run-")
     try:
         start_time = time.time()
+        compile_time = 0
         run_env = {
             "PATH": os.getenv("PATH", ""),
             "PYTHONIOENCODING": "utf-8",
@@ -50,6 +57,7 @@ def run_code(code: str, language: str = "Python", input_text: str = None) -> dic
         }
 
         if language.lower() == "python":
+            run_start = time.time()
             result = subprocess.run(
                 [sys.executable, "-I", "-c", code],
                 capture_output=True,
@@ -60,6 +68,7 @@ def run_code(code: str, language: str = "Python", input_text: str = None) -> dic
                 env=run_env,
                 preexec_fn=_limit_child_process if os.name == "posix" else None,
             )
+            run_time = round((time.time() - run_start) * 1000, 2)
         elif language.lower() == "cpp":
             with tempfile.NamedTemporaryFile(mode='w', suffix='.cpp', dir=tmp_dir, delete=False) as f:
                 f.write(code)
@@ -67,6 +76,7 @@ def run_code(code: str, language: str = "Python", input_text: str = None) -> dic
             output_file = os.path.splitext(file_path)[0]
 
             # 3. 优化编译命令
+            compile_start = time.time()
             compile_result = subprocess.run(
                 ["g++", "-std=c++17", file_path, "-o", output_file],
                 capture_output=True,
@@ -75,13 +85,20 @@ def run_code(code: str, language: str = "Python", input_text: str = None) -> dic
                 cwd=tmp_dir,
                 env=run_env,
             )
+            compile_time = round((time.time() - compile_start) * 1000, 2)
             if compile_result.returncode != 0:
+                error, error_truncated = _truncate_output_with_flag(compile_result.stderr)
                 return {
                     "success": False,
                     "status": "Compile Error",
-                    "error": _truncate_output(compile_result.stderr)
+                    "error": error,
+                    "error_truncated": error_truncated,
+                    "time": compile_time,
+                    "compile_time": compile_time,
+                    "run_time": 0,
                 }
 
+            run_start = time.time()
             result = subprocess.run(
                 [output_file],
                 capture_output=True,
@@ -92,6 +109,7 @@ def run_code(code: str, language: str = "Python", input_text: str = None) -> dic
                 env=run_env,
                 preexec_fn=_limit_child_process if os.name == "posix" else None,
             )
+            run_time = round((time.time() - run_start) * 1000, 2)
         else:
             return {
                 "success": False,
@@ -99,13 +117,19 @@ def run_code(code: str, language: str = "Python", input_text: str = None) -> dic
             }
 
         elapsed_time = round((time.time() - start_time) * 1000, 2)
+        output, output_truncated = _truncate_output_with_flag(result.stdout)
+        error, error_truncated = _truncate_output_with_flag(result.stderr)
 
         return {
             "success": result.returncode == 0,
             "status": "Accepted" if result.returncode == 0 else "Runtime Error",
-            "output": _truncate_output(result.stdout),
-            "error": _truncate_output(result.stderr),
+            "output": output,
+            "error": error,
             "time": elapsed_time,
+            "compile_time": compile_time,
+            "run_time": run_time,
+            "output_truncated": output_truncated,
+            "error_truncated": error_truncated,
             "memory": "N/A"
         }
 

@@ -390,10 +390,16 @@ async function runCode() {
         const safeOutput = escapeHtml(result.output || '无输出内容');
         const safeError = escapeHtml(result.error || '未知错误');
         const safeStderr = escapeHtml(result.stderr || '');
+        const outputTruncatedNotice = result.output_truncated
+            ? '<div style="color:var(--warning); margin:8px 0;"><i class="fas fa-scissors"></i> 输出超过系统限制，已截断展示。</div>'
+            : '';
+        const errorTruncatedNotice = result.error_truncated
+            ? '<div style="color:var(--warning); margin:8px 0;"><i class="fas fa-scissors"></i> 错误输出超过系统限制，已截断展示。</div>'
+            : '';
         if (result.success) {
-            outputContent.innerHTML = `<div style="margin-bottom:8px; color:var(--success)"><i class="fas fa-check-circle"></i> 执行成功 (${result.time}ms)</div><pre style="background:rgba(76,201,240,0.1); padding:12px; border-radius:6px;">${safeOutput}</pre>`;
+            outputContent.innerHTML = `<div style="margin-bottom:8px; color:var(--success)"><i class="fas fa-check-circle"></i> 执行成功 (${result.time}ms)</div>${outputTruncatedNotice}<pre style="background:rgba(76,201,240,0.1); padding:12px; border-radius:6px;">${safeOutput}</pre>`;
         } else {
-            outputContent.innerHTML = `<div style="margin-bottom:8px; color:var(--warning)"><i class="fas fa-times-circle"></i> 执行失败 (${result.time}ms)</div><div style="color:var(--warning); margin-bottom:8px;">${escapeHtml(language)}环境错误:</div><pre style="background:rgba(247,37,133,0.1); padding:12px; border-radius:6px;">${safeError}</pre>${safeStderr ? `<pre style="background:rgba(247,37,133,0.1); padding:12px; border-radius:6px; margin-top:8px;">${safeStderr}</pre>` : ''}`;
+            outputContent.innerHTML = `<div style="margin-bottom:8px; color:var(--warning)"><i class="fas fa-times-circle"></i> 执行失败 (${result.time}ms)</div><div style="color:var(--warning); margin-bottom:8px;">${escapeHtml(language)}环境错误:</div>${errorTruncatedNotice}<pre style="background:rgba(247,37,133,0.1); padding:12px; border-radius:6px;">${safeError}</pre>${safeStderr ? `<pre style="background:rgba(247,37,133,0.1); padding:12px; border-radius:6px; margin-top:8px;">${safeStderr}</pre>` : ''}`;
         }
     } catch (error) {
         console.error('代码执行错误:', error);

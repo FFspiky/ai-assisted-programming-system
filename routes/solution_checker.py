@@ -29,25 +29,52 @@ def check_solution():
 
     final_status = "Accepted"
     feedback_details = []
+    test_results = []
 
-    for i, case in enumerate(test_cases):
+    for i, case in enumerate(test_cases, start=1):
         # 修正此处的函数调用，使用关键字参数传递输入
         run_result = run_code(code, language, input_text=case.input_data)
 
         actual_output = run_result.get("output", "")
         expected_output = case.expected_output
+        case_result = {
+            "index": i,
+            "input": case.input_data,
+            "expected_output": expected_output,
+            "actual_output": actual_output,
+            "status": "Accepted",
+            "passed": True,
+            "time": run_result.get("time"),
+            "compile_time": run_result.get("compile_time"),
+            "run_time": run_result.get("run_time"),
+            "output_truncated": run_result.get("output_truncated", False),
+            "error_truncated": run_result.get("error_truncated", False),
+            "error": "",
+        }
 
         if not run_result.get("success"):
             final_status = run_result.get("status") or "Runtime Error"
-            feedback_details.append(f"测试用例 {i+1} 执行失败 ({final_status}): {run_result.get('error', '')}")
+            case_result.update({
+                "status": final_status,
+                "passed": False,
+                "error": run_result.get("error", ""),
+            })
+            test_results.append(case_result)
+            feedback_details.append(f"测试用例 {i} 执行失败 ({final_status}): {run_result.get('error', '')}")
             break # 出现错误，直接中断
 
         if not outputs_match(actual_output, expected_output):
             final_status = "Wrong Answer"
-            feedback_details.append(f"测试用例 {i+1} 未通过: \n输入:\n{case.input_data}\n预期输出:\n{expected_output.strip()}\n你的输出:\n{actual_output.strip()}")
+            case_result.update({
+                "status": final_status,
+                "passed": False,
+            })
+            test_results.append(case_result)
+            feedback_details.append(f"测试用例 {i} 未通过: \n输入:\n{case.input_data}\n预期输出:\n{expected_output.strip()}\n你的输出:\n{actual_output.strip()}")
             break # 答案错误，直接中断
-        
-        feedback_details.append(f"测试用例 {i+1} 通过!")
+
+        test_results.append(case_result)
+        feedback_details.append(f"测试用例 {i} 通过!")
 
     already_accepted = None
     if final_status == "Accepted":
@@ -74,9 +101,17 @@ def check_solution():
     
     db.session.commit()
 
+    details = "\n".join(feedback_details)
     return jsonify({
         "success": True,
         "status": final_status,
-        "details": "\n".join(feedback_details),
-        "new_points": current_user.points
+        "details": details,
+        "new_points": current_user.points,
+        "test_results": test_results,
+        "data": {
+            "status": final_status,
+            "details": details,
+            "new_points": current_user.points,
+            "test_results": test_results,
+        },
     })

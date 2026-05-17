@@ -59,10 +59,14 @@ make check
 - 登录失败次数和昂贵接口限流抽象为共享限流服务。
 - 限流支持通过 `RATE_LIMIT_REDIS_URL` / `REDIS_URL` 接入 Redis，未配置时回退到进程内限流。
 - README 补充 Redis 限流生产环境配置说明。
+- 判题支持使用单独一行 `---OR---` 分隔多个合法答案。
+- 提交判题接口返回每个测试用例的结构化结果 `test_results`，并兼容旧字段。
+- 代码运行结果增加 `output_truncated` / `error_truncated`，前端对截断输出显示明确提示。
+- 代码运行结果拆分 `compile_time` 和 `run_time`，提交判题逐测试用例透传耗时信息。
 - 新增 `Makefile`。
 - 新增 GitHub Actions CI。
 - 新增 `pyproject.toml`。
-- 单元/API 测试扩展到 21 个。
+- 单元/API 测试扩展到 24 个。
 
 ## P0：必须优先处理
 
@@ -118,11 +122,7 @@ git push
 
 2. 判题能力继续增强
 
-- 多合法答案
 - Special Judge
-- 输出大小限制提示更友好
-- 编译耗时和运行耗时分开记录
-- 每个测试用例返回结构化结果
 
 ## P2：中优先级
 
