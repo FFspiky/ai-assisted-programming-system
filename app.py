@@ -2,11 +2,12 @@
 
 import os
 import secrets
+import sys
 import click
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, jsonify, render_template, redirect, request, session, url_for
 from flask_cors import CORS
 from flask_migrate import Migrate
-from flask_login import LoginManager, current_user, logout_user
+from flask_login import LoginManager, current_user, login_required, logout_user
 
 # 本机演示：支持从 .env 读取配置（不会影响线上部署）
 try:
@@ -37,16 +38,24 @@ app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY') or secrets.token_hex(32
 db.init_app(app)
 migrate = Migrate(app, db)
 
+
+def should_auto_create_database():
+    if os.getenv("AUTO_CREATE_DATABASE", "1") != "1":
+        return False
+    return "db" not in sys.argv
+
+
 # 本机演示：没有执行迁移时也能创建表；管理员仅在显式配置环境变量时初始化。
-with app.app_context():
-    db.create_all()
-    if ADMIN_USERNAME and ADMIN_PASSWORD and ADMIN_EMAIL:
-        admin_user = User.query.filter_by(username=ADMIN_USERNAME).first()
-        if admin_user is None:
-            admin_user = User(username=ADMIN_USERNAME, email=ADMIN_EMAIL, is_admin=True)
-            admin_user.set_password(ADMIN_PASSWORD)
-            db.session.add(admin_user)
-            db.session.commit()
+if should_auto_create_database():
+    with app.app_context():
+        db.create_all()
+        if ADMIN_USERNAME and ADMIN_PASSWORD and ADMIN_EMAIL:
+            admin_user = User.query.filter_by(username=ADMIN_USERNAME).first()
+            if admin_user is None:
+                admin_user = User(username=ADMIN_USERNAME, email=ADMIN_EMAIL, is_admin=True)
+                admin_user.set_password(ADMIN_PASSWORD)
+                db.session.add(admin_user)
+                db.session.commit()
 
 # 4. 初始化登录管理器
 login_manager = LoginManager()
@@ -91,6 +100,32 @@ def disable_remember_auto_login():
         from flask import session
         if not session.get("_fresh", False):
             logout_user()
+
+
+@app.before_request
+def protect_state_changing_requests():
+    if request.method in {"GET", "HEAD", "OPTIONS", "TRACE"}:
+        return None
+    if not request.path.startswith("/api/"):
+        return None
+    if not current_user.is_authenticated:
+        return None
+
+    expected_token = session.get("csrf_token")
+    provided_token = request.headers.get("X-CSRF-Token") or request.form.get("csrf_token")
+    if not expected_token or not secrets.compare_digest(expected_token, provided_token or ""):
+        return jsonify({"success": False, "error": "CSRF token 无效或缺失"}), 403
+    return None
+
+
+@app.get("/api/csrf-token")
+@login_required
+def csrf_token():
+    token = session.get("csrf_token")
+    if not token:
+        token = secrets.token_urlsafe(32)
+        session["csrf_token"] = token
+    return jsonify({"success": True, "csrf_token": token})
 
 # 5. 在所有东西都初始化完毕后，再导入并注册蓝图
 #    这是避免循环导入的关键！

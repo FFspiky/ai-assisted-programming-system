@@ -1,3 +1,4 @@
+import io
 import os
 import tempfile
 import unittest
@@ -31,6 +32,23 @@ class CoreSecurityTest(unittest.TestCase):
             db.drop_all()
             db.create_all()
 
+    def login_admin(self):
+        with app.app_context():
+            admin = User(username="admin", email="admin@example.com", is_admin=True)
+            admin.set_password("strongpass")
+            db.session.add(admin)
+            db.session.commit()
+
+        return self.client.post(
+            "/api/login",
+            json={"username": "admin", "password": "strongpass"},
+        )
+
+    def csrf_headers(self):
+        response = self.client.get("/api/csrf-token")
+        self.assertEqual(response.status_code, 200)
+        return {"X-CSRF-Token": response.get_json()["csrf_token"]}
+
     def test_register_requires_strong_password(self):
         response = self.client.post(
             "/api/register",
@@ -57,8 +75,29 @@ class CoreSecurityTest(unittest.TestCase):
         current_user_response = self.client.get("/api/current_user")
 
         self.assertEqual(login_response.status_code, 200)
+        self.assertIn("csrf_token", login_response.get_json())
         self.assertEqual(current_user_response.status_code, 200)
         self.assertEqual(current_user_response.get_json()["user"]["username"], "loginuser")
+
+    def test_login_failures_are_rate_limited(self):
+        self.client.post(
+            "/api/register",
+            json={
+                "username": "limited",
+                "email": "limited@example.com",
+                "password": "strongpass",
+            },
+        )
+
+        last_response = None
+        for _ in range(6):
+            last_response = self.client.post(
+                "/api/login",
+                json={"username": "limited", "password": "wrongpass"},
+            )
+
+        self.assertEqual(last_response.status_code, 429)
+        self.assertIn("登录失败次数过多", last_response.get_json()["error"])
 
     def test_run_code_requires_login(self):
         response = self.client.post(
@@ -67,6 +106,25 @@ class CoreSecurityTest(unittest.TestCase):
         )
 
         self.assertEqual(response.status_code, 401)
+
+    def test_authenticated_post_requires_csrf_token(self):
+        self.client.post(
+            "/api/register",
+            json={
+                "username": "csrfuser",
+                "email": "csrfuser@example.com",
+                "password": "strongpass",
+            },
+        )
+        self.client.post("/api/login", json={"username": "csrfuser", "password": "strongpass"})
+
+        response = self.client.post(
+            "/api/run-code",
+            json={"language": "Python", "code": "print('hello')"},
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertIn("CSRF", response.get_json()["error"])
 
     def test_python_runner_executes_basic_code(self):
         result = run_code("print('hello')", "Python")
@@ -104,8 +162,9 @@ class CoreSecurityTest(unittest.TestCase):
             "language": "Python",
             "code": "print(input())",
         }
-        first = self.client.post("/api/check-solution", json=payload)
-        second = self.client.post("/api/check-solution", json=payload)
+        headers = self.csrf_headers()
+        first = self.client.post("/api/check-solution", json=payload, headers=headers)
+        second = self.client.post("/api/check-solution", json=payload, headers=headers)
 
         self.assertEqual(first.status_code, 200)
         self.assertEqual(second.status_code, 200)
@@ -142,6 +201,7 @@ class CoreSecurityTest(unittest.TestCase):
                 "language": "python",
                 "code": "print('hello  '); print('world\\t')",
             },
+            headers=self.csrf_headers(),
         )
 
         self.assertEqual(response.status_code, 200)
@@ -170,6 +230,7 @@ class CoreSecurityTest(unittest.TestCase):
                 "language": "cpp",
                 "code": "int main() { syntax error }",
             },
+            headers=self.csrf_headers(),
         )
 
         self.assertEqual(response.status_code, 200)
@@ -193,6 +254,7 @@ class CoreSecurityTest(unittest.TestCase):
         self.client.post(
             "/api/check-solution",
             json={"problem_id": "p2", "language": "python", "code": "print(input())"},
+            headers=self.csrf_headers(),
         )
 
         response = self.client.get("/api/learning_overview")
@@ -255,6 +317,7 @@ class CoreSecurityTest(unittest.TestCase):
         response = self.client.post(
             "/api/optimize-code",
             json={"language": "python", "code": "print('hello')"},
+            headers=self.csrf_headers(),
         )
 
         self.assertEqual(response.status_code, 200)
@@ -276,9 +339,10 @@ class CoreSecurityTest(unittest.TestCase):
         )
 
         payload = {"language": "Python", "code": "print('ok')"}
+        headers = self.csrf_headers()
         last_response = None
         for _ in range(21):
-            last_response = self.client.post("/api/run-code", json=payload)
+            last_response = self.client.post("/api/run-code", json=payload, headers=headers)
 
         self.assertEqual(last_response.status_code, 429)
 
@@ -299,6 +363,7 @@ class CoreSecurityTest(unittest.TestCase):
         response = self.client.post(
             "/api/run-code",
             json={"language": "javascript", "code": "console.log('bad')"},
+            headers=self.csrf_headers(),
         )
 
         self.assertEqual(response.status_code, 400)
@@ -321,10 +386,73 @@ class CoreSecurityTest(unittest.TestCase):
         response = self.client.post(
             "/api/run-code",
             json={"language": "python", "code": "x" * 20001},
+            headers=self.csrf_headers(),
         )
 
         self.assertEqual(response.status_code, 400)
         self.assertIn("代码长度", response.get_json()["error"])
+
+    def test_admin_problem_upload_returns_detailed_import_report(self):
+        self.login_admin()
+        html = """
+        <div class="problem-item">
+            <h2 data-id="p-import">Imported Problem</h2>
+            <div class="difficulty">中等</div>
+            <div class="description">Solve it<script>alert(1)</script><a href="javascript:bad()">bad</a></div>
+            <div class="test-case">
+                <pre class="input"></pre>
+                <pre class="output">ready</pre>
+            </div>
+            <div class="test-case">
+                <pre class="input">1 2</pre>
+                <pre class="output">3</pre>
+            </div>
+            <div class="test-case">
+                <pre class="input">missing output</pre>
+            </div>
+        </div>
+        <div class="problem-item">
+            <h2>Missing ID</h2>
+            <div class="description">No id</div>
+        </div>
+        """
+
+        response = self.client.post(
+            "/api/admin/problems/upload",
+            data={"file": (io.BytesIO(html.encode("utf-8")), "problems.html")},
+            content_type="multipart/form-data",
+            headers=self.csrf_headers(),
+        )
+
+        payload = response.get_json()
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(payload["success"])
+        self.assertEqual(payload["data"]["imported_count"], 1)
+        self.assertEqual(payload["data"]["skipped_count"], 1)
+        self.assertEqual(payload["data"]["parse_error_count"], 1)
+        self.assertEqual(payload["data"]["imported"][0]["test_case_count"], 2)
+        self.assertIn("缺少核心字段", payload["data"]["skipped"][0]["reason"])
+        self.assertIn("缺少 input 或 output", payload["data"]["parse_errors"][0]["reason"])
+
+        with app.app_context():
+            problem = db.session.get(Problem, "p-import")
+            self.assertIsNotNone(problem)
+            self.assertNotIn("<script", problem.description)
+            self.assertNotIn("javascript:", problem.description)
+            self.assertEqual(problem.test_cases.count(), 2)
+
+    def test_admin_problem_upload_reports_empty_problem_file(self):
+        self.login_admin()
+
+        response = self.client.post(
+            "/api/admin/problems/upload",
+            data={"file": (io.BytesIO(b"<html></html>"), "empty.html")},
+            content_type="multipart/form-data",
+            headers=self.csrf_headers(),
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("problem-item", response.get_json()["error"])
 
 
 if __name__ == "__main__":

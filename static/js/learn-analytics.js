@@ -147,7 +147,7 @@ return;
 
     // --- 修改开始：替换整个 try...catch 块 ---
     try {
-const response = await fetch('/api/assess-learning-path', {
+const response = await UserSession.csrfFetch('/api/assess-learning-path', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({ answers: userAnswers })

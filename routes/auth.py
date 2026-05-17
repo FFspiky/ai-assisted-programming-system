@@ -1,12 +1,13 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
 from models import db, User
 from flask_login import login_user, logout_user, login_required, current_user
 import re
-import time
-from collections import defaultdict
+import secrets
+from services.rate_limiter import allow_request, reset_limit
 
 auth_blueprint = Blueprint('auth', __name__)
-LOGIN_ATTEMPTS = defaultdict(list)
+LOGIN_RATE_LIMIT_MAX_ATTEMPTS = 5
+LOGIN_RATE_LIMIT_WINDOW_SECONDS = 15 * 60
 
 @auth_blueprint.route('/register', methods=['POST'])
 def register():
@@ -42,31 +43,33 @@ def login():
     data = request.get_json(silent=True) or {}
     username = (data.get('username') or '').strip()
     password = data.get('password') or ''
-    client_key = f"{request.remote_addr or 'unknown'}:{username}"
-    now = time.time()
-    LOGIN_ATTEMPTS[client_key] = [
-        item for item in LOGIN_ATTEMPTS[client_key] if now - item < 15 * 60
-    ]
+    client_key = f"login:{request.remote_addr or 'unknown'}:{username}"
 
-    if len(LOGIN_ATTEMPTS[client_key]) >= 5:
+    if not allow_request(
+        client_key,
+        LOGIN_RATE_LIMIT_MAX_ATTEMPTS,
+        LOGIN_RATE_LIMIT_WINDOW_SECONDS,
+    ):
         return jsonify({"success": False, "error": "登录失败次数过多，请 15 分钟后再试"}), 429
 
     user = User.query.filter_by(username=username).first()
 
     if user is None or not user.check_password(password):
-        LOGIN_ATTEMPTS[client_key].append(now)
         return jsonify({"success": False, "error": "用户名或密码错误"}), 401
 
-    LOGIN_ATTEMPTS.pop(client_key, None)
+    reset_limit(client_key)
     login_user(user, remember=False) # 默认不持久化登录，关闭浏览器后需重新登录
+    session["csrf_token"] = secrets.token_urlsafe(32)
     return jsonify({
         "success": True, 
         "message": "登录成功",
-        "user": {"username": user.username, "points": user.points}
+        "user": {"username": user.username, "points": user.points},
+        "csrf_token": session["csrf_token"],
     }), 200
 
 @auth_blueprint.route('/logout', methods=['POST'])
 def logout():
+    session.pop("csrf_token", None)
     logout_user()
     return jsonify({"success": True, "message": "已成功登出"}), 200
 

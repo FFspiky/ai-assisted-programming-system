@@ -14,6 +14,12 @@
         .file-upload { border: 2px dashed #007bff; padding: 2rem; text-align: center; }
         .file-upload p { margin: 0; }
         #fileName { margin-top: 1rem; font-style: italic; color: #555; }
+        #importResult { display: none; margin-top: 1rem; border-top: 1px solid #ddd; padding-top: 1rem; }
+        #importResult h3 { margin: 1rem 0 0.5rem; }
+        #importResult ul { margin-top: 0.5rem; padding-left: 1.25rem; }
+        #importResult li { margin-bottom: 0.35rem; line-height: 1.4; }
+        .result-summary { font-weight: 700; }
+        .result-error { color: #b00020; }
     </style>
 </head>
 <body>
@@ -31,13 +37,58 @@
             <p id="fileName">未选择文件</p>
             <button type="submit">上传并导入</button>
         </form>
+        <div id="importResult" aria-live="polite"></div>
     </div>
 
+<script src="{{ url_for('static', filename='js/user-session.js') }}"></script>
 <script>
     const uploadForm = document.getElementById('uploadForm');
     const fileInput = document.getElementById('fileInput');
     const dropZone = document.getElementById('dropZone');
     const fileNameDisplay = document.getElementById('fileName');
+    const importResult = document.getElementById('importResult');
+
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        }[char]));
+    }
+
+    function renderItems(title, items, formatter) {
+        if (!items || items.length === 0) {
+            return '';
+        }
+        return `
+            <h3>${escapeHtml(title)}</h3>
+            <ul>${items.map((item) => `<li>${formatter(item)}</li>`).join('')}</ul>
+        `;
+    }
+
+    function renderImportResult(result) {
+        const data = result.data || {};
+        importResult.style.display = 'block';
+        if (!result.success) {
+            importResult.innerHTML = `<p class="result-error">${escapeHtml(result.error || '导入失败')}</p>`;
+            return;
+        }
+
+        importResult.innerHTML = `
+            <p class="result-summary">${escapeHtml(result.message || '导入完成')}</p>
+            ${renderItems('已导入/更新', data.imported, (item) => (
+                `${escapeHtml(item.id)} - ${escapeHtml(item.title)}，测试用例 ${escapeHtml(item.test_case_count)} 个，${item.action === 'created' ? '新增' : '更新'}`
+            ))}
+            ${renderItems('已跳过', data.skipped, (item) => (
+                `第 ${escapeHtml(item.index)} 题：${escapeHtml(item.id || '无ID')}，${escapeHtml(item.reason)}`
+            ))}
+            ${renderItems('解析问题', data.parse_errors, (item) => (
+                `第 ${escapeHtml(item.index)} 题 ${escapeHtml(item.id || '')} / 用例 ${escapeHtml(item.test_case_index)}：${escapeHtml(item.reason)}`
+            ))}
+        `;
+    }
 
     dropZone.addEventListener('click', () => fileInput.click());
     
@@ -79,13 +130,13 @@
         const formData = new FormData();
         formData.append('file', fileInput.files[0]);
         
-        const response = await fetch('/api/admin/problems/upload', {
+        const response = await UserSession.csrfFetch('/api/admin/problems/upload', {
             method: 'POST',
             body: formData
         });
         
         const result = await response.json();
-        alert(result.message || result.error);
+        renderImportResult(result);
         if (result.success) {
             fileInput.value = '';
             fileNameDisplay.textContent = '未选择文件';

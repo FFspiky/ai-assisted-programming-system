@@ -12,8 +12,43 @@
         return String(text || '').replace(/[&<>"']/g, function (m) { return map[m]; });
     }
 
+    let csrfToken = null;
+    let csrfTokenPromise = null;
+
+    async function getCsrfToken() {
+        if (csrfToken) {
+            return csrfToken;
+        }
+        if (!csrfTokenPromise) {
+            csrfTokenPromise = fetch('/api/csrf-token')
+                .then(async (response) => {
+                    if (!response.ok) {
+                        throw new Error('CSRF token 获取失败');
+                    }
+                    const result = await response.json();
+                    csrfToken = result.csrf_token;
+                    return csrfToken;
+                })
+                .finally(() => {
+                    csrfTokenPromise = null;
+                });
+        }
+        return csrfTokenPromise;
+    }
+
+    async function csrfFetch(url, options = {}) {
+        const method = (options.method || 'GET').toUpperCase();
+        if (!['GET', 'HEAD', 'OPTIONS', 'TRACE'].includes(method)) {
+            const token = await getCsrfToken();
+            const headers = new Headers(options.headers || {});
+            headers.set('X-CSRF-Token', token);
+            options = { ...options, headers };
+        }
+        return fetch(url, options);
+    }
+
     async function logout(redirectTo) {
-        await fetch('/api/logout', { method: 'POST' });
+        await csrfFetch('/api/logout', { method: 'POST' });
         window.location.href = redirectTo || '/index.html';
     }
 
@@ -87,6 +122,7 @@
             }
 
             containers.forEach((container) => renderUser(container, result.user, options));
+            getCsrfToken().catch((error) => console.error('CSRF token 初始化失败', error));
             if (typeof options.onAuthenticated === 'function') options.onAuthenticated(result.user);
             return result.user;
         } catch (error) {
@@ -99,7 +135,9 @@
 
     window.UserSession = {
         defaultAvatar,
+        csrfFetch,
         escapeHtml,
+        getCsrfToken,
         init,
         logout,
         renderGuest,

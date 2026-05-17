@@ -35,6 +35,12 @@ jobs:
       - name: Run tests
         run: python -m unittest discover -s tests
 
+      - name: Run migrations on clean database
+        run: |
+          tmp_db="$(mktemp)"
+          rm -f "$tmp_db"
+          DATABASE_URL="sqlite:///$tmp_db" FLASK_SECRET_KEY=ci-secret flask --app app db upgrade
+
       - name: Check JavaScript syntax
         run: |
           for f in static/js/*.js; do

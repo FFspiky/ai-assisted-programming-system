@@ -25,6 +25,14 @@ FLASK_SECRET_KEY=replace-with-a-random-secret
 SILICONFLOW_API_KEY=replace-with-your-api-key
 ```
 
+生产环境建议同时配置 Redis，用于登录失败次数和昂贵接口限流的跨进程共享：
+
+```bash
+RATE_LIMIT_REDIS_URL=redis://localhost:6379/0
+```
+
+未配置 Redis 时，系统会回退到进程内限流，适合本地演示但不适合多进程生产部署。
+
 如需首次启动时自动创建管理员账号，可临时配置：
 
 ```bash
@@ -82,4 +90,6 @@ GitHub Actions 会在推送到 `main` 或打开 PR 时执行同样的检查。
 - `.env`、`app.db`、`__pycache__/`、IDE 配置不会提交到 Git。
 - AI API Key 不应写入源码，只从环境变量读取。
 - 代码运行接口已经要求登录，并加入基础资源限制；如果部署到公网，仍应使用容器或独立沙箱隔离执行环境。
+- 已登录用户的高风险 POST 接口会校验 CSRF token。
+- 生产环境建议配置 `RATE_LIMIT_REDIS_URL`，避免限流状态因进程重启或多进程部署而失效。
 - 默认 `FLASK_DEBUG=0`，仅本地排查问题时临时开启。

@@ -189,7 +189,7 @@ async function requestInlineCompletion(requestId) {
     const language = document.getElementById('languageSelector').value || 'python';
 
     try {
-        const response = await fetch('/api/ai-inline-complete-stream', {
+        const response = await UserSession.csrfFetch('/api/ai-inline-complete-stream', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -324,7 +324,12 @@ function escapeHtml(text) {
                 [JSON.stringify({ duration: durationInSeconds })],
                 { type: 'application/json' }
             );
-            navigator.sendBeacon('/api/update_learning_time', data);
+            UserSession.csrfFetch('/api/update_learning_time', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: data,
+                keepalive: true
+            }).catch(() => {});
         }
     });
 
@@ -370,7 +375,7 @@ async function runCode() {
     runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 运行中';
 
     try {
-        const response = await fetch('/api/run-code', {
+        const response = await UserSession.csrfFetch('/api/run-code', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ code, language, input_text: customInput })
@@ -422,7 +427,7 @@ async function optimizeCode() {
     `;
 
     try {
-        const response = await fetch('/api/optimize-code', {
+        const response = await UserSession.csrfFetch('/api/optimize-code', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -498,7 +503,7 @@ async function submitCode() {
     outputContent.innerHTML = `<div style="display:flex; align-items:center; gap:10px;"><i class="fas fa-spinner fa-spin" style="color:var(--accent)"></i><span>正在提交代码并检查...</span></div>`;
 
     try {
-        const response = await fetch('/api/check-solution', {
+        const response = await UserSession.csrfFetch('/api/check-solution', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ code, language, problem_id: problemId })
@@ -553,7 +558,7 @@ async function sendMessage() {
     const aiContentDiv = addChatMessage('<span class="thinking">🤔 AI助手正在思考中...</span>', 'ai', aiId, true);
 
     try {
-        const response = await fetch('/api/ai-chat-stream', {
+        const response = await UserSession.csrfFetch('/api/ai-chat-stream', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message, language: 'Python' })

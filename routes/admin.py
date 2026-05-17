@@ -25,6 +25,14 @@ def sanitize_description(tag):
                     del node.attrs[attr]
     return tag.decode_contents()
 
+
+def _text_or_none(tag):
+    if not tag:
+        return None
+    text = tag.get_text().strip()
+    return text or None
+
+
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -52,25 +60,43 @@ def upload_problems():
         if not problem_items:
             return jsonify({"success": False, "error": "在文件中未找到 class='problem-item' 的题目"}), 400
             
-        count = 0
-        for item in problem_items:
-            # --- 修改开始 ---
-            # 1. 从 <div class="prob-id"> 获取ID
-            prob_id_tag = item.find('div', class_='prob-id')
-            prob_id = prob_id_tag.text.strip() if prob_id_tag else None
+        imported = []
+        skipped = []
+        parse_errors = []
 
-            title = item.find('h2').text.strip()
+        for index, item in enumerate(problem_items, start=1):
+            prob_id_tag = item.find('div', class_='prob-id')
+            title_tag = item.find('h2')
+            prob_id = _text_or_none(prob_id_tag)
+            if not prob_id and title_tag:
+                prob_id = (title_tag.get("data-id") or "").strip() or None
+
+            title = _text_or_none(title_tag)
             difficulty_tag = item.find('div', class_='difficulty')
-            difficulty = difficulty_tag.text.strip() if difficulty_tag else '简单' # 提供默认值
+            difficulty = _text_or_none(difficulty_tag) or '简单'
             
             description_tag = item.find('div', class_='description')
             description = sanitize_description(description_tag) if description_tag else ''
-            # --- 修改结束 ---
 
-            if not all([prob_id, title, description]): # 确保核心数据存在
+            missing_fields = []
+            if not prob_id:
+                missing_fields.append("题目ID")
+            if not title:
+                missing_fields.append("标题")
+            if not description.strip():
+                missing_fields.append("题目描述")
+
+            if missing_fields:
+                skipped.append({
+                    "index": index,
+                    "id": prob_id,
+                    "title": title,
+                    "reason": f"缺少核心字段: {', '.join(missing_fields)}",
+                })
                 continue 
 
             problem = db.session.get(Problem, prob_id)
+            action = "updated" if problem else "created"
             if not problem:
                 problem = Problem(id=prob_id)
             
@@ -80,25 +106,64 @@ def upload_problems():
             db.session.merge(problem)
 
             TestCase.query.filter_by(problem_id=prob_id).delete()
+            valid_test_case_count = 0
             test_cases = item.find_all('div', class_='test-case')
-            for case in test_cases:
-                # --- 修改开始 ---
-                # 2. 确保能安全地找到input和output
+            for case_index, case in enumerate(test_cases, start=1):
                 input_tag = case.find('pre', class_='input')
                 output_tag = case.find('pre', class_='output')
                 
-                if input_tag and output_tag:
-                    input_data = input_tag.get_text().strip()
-                    output_data = output_tag.get_text().strip()
-                    if input_data and output_data: # 确保内容不为空
-                        new_case = TestCase(input_data=input_data, expected_output=output_data, problem_id=prob_id)
-                        db.session.add(new_case)
-                # --- 修改结束 ---
+                if not input_tag or not output_tag:
+                    parse_errors.append({
+                        "index": index,
+                        "id": prob_id,
+                        "test_case_index": case_index,
+                        "reason": "测试用例缺少 input 或 output",
+                    })
+                    continue
+
+                input_data = input_tag.get_text().strip()
+                output_data = output_tag.get_text().strip()
+                if not output_data:
+                    parse_errors.append({
+                        "index": index,
+                        "id": prob_id,
+                        "test_case_index": case_index,
+                        "reason": "测试用例 output 为空",
+                    })
+                    continue
+
+                new_case = TestCase(
+                    input_data=input_data,
+                    expected_output=output_data,
+                    problem_id=prob_id,
+                )
+                db.session.add(new_case)
+                valid_test_case_count += 1
             
-            count += 1
+            imported.append({
+                "index": index,
+                "id": prob_id,
+                "title": title,
+                "action": action,
+                "test_case_count": valid_test_case_count,
+            })
             
         db.session.commit()
-        return jsonify({"success": True, "message": f"成功导入/更新了 {count} 道题目。"}), 200
+        return jsonify({
+            "success": True,
+            "message": (
+                f"成功导入/更新了 {len(imported)} 道题目，"
+                f"跳过 {len(skipped)} 道，解析问题 {len(parse_errors)} 条。"
+            ),
+            "data": {
+                "imported_count": len(imported),
+                "skipped_count": len(skipped),
+                "parse_error_count": len(parse_errors),
+                "imported": imported,
+                "skipped": skipped,
+                "parse_errors": parse_errors,
+            },
+        }), 200
 
     except Exception as e:
         db.session.rollback()
