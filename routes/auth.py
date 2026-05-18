@@ -50,12 +50,18 @@ def login():
         LOGIN_RATE_LIMIT_MAX_ATTEMPTS,
         LOGIN_RATE_LIMIT_WINDOW_SECONDS,
     ):
-        return jsonify({"success": False, "error": "登录失败次数过多，请 15 分钟后再试"}), 429
+        return jsonify({
+            "success": False,
+            "error": "登录失败次数过多，请 15 分钟后再试",
+        }), 429
 
     user = User.query.filter_by(username=username).first()
 
     if user is None or not user.check_password(password):
-        return jsonify({"success": False, "error": "用户名或密码错误"}), 401
+        return jsonify({
+            "success": False,
+            "error": "用户名或密码错误",
+        }), 401
 
     reset_limit(client_key)
     login_user(user, remember=False) # 默认不持久化登录，关闭浏览器后需重新登录

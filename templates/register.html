@@ -2,35 +2,95 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>注册</title>
-    <style>/* 添加一些美观的CSS样式 */ body{font-family:sans-serif;background:#f0f2f5;display:flex;justify-content:center;align-items:center;height:100vh;}.card{background:white;padding:2rem;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.1);width:360px;}.card h1{text-align:center;margin-bottom:1.5rem;}input{width:100%;padding:10px;margin-bottom:1rem;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;}button{width:100%;padding:10px;background:#1877f2;color:white;border:none;border-radius:4px;font-size:1rem;cursor:pointer;}p{text-align:center;margin-top:1rem;}a{color:#1877f2;text-decoration:none;}</style>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 1rem; }
+        .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: min(100%, 380px); }
+        .card h1 { text-align: center; margin: 0 0 1.5rem; }
+        label { display: block; margin-bottom: 0.4rem; font-weight: 600; color: #333; }
+        input { width: 100%; padding: 10px; margin-bottom: 1rem; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
+        input:focus { border-color: #1877f2; outline: 2px solid rgba(24,119,242,0.16); }
+        button { width: 100%; padding: 10px; background: #1877f2; color: white; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer; }
+        button:disabled { cursor: not-allowed; opacity: 0.65; }
+        p { text-align: center; margin-top: 1rem; }
+        a { color: #1877f2; text-decoration: none; }
+        .message { display: none; margin-bottom: 1rem; padding: 0.75rem; border-radius: 4px; line-height: 1.45; }
+        .message.error { display: block; color: #9f1239; background: #fff1f2; border: 1px solid #fecdd3; }
+        .message.success { display: block; color: #166534; background: #f0fdf4; border: 1px solid #bbf7d0; }
+        .hint { margin: -0.4rem 0 1rem; color: #666; font-size: 0.88rem; line-height: 1.4; }
+    </style>
 </head>
 <body>
 <div class="card">
     <h1>创建新账户</h1>
-    <form id="registerForm">
-        <input type="text" id="username" placeholder="用户名" required>
-        <input type="email" id="email" placeholder="邮箱" required>
-        <input type="password" id="password" placeholder="密码" required>
-        <button type="submit">注册</button>
+    <div id="formMessage" class="message" role="status" aria-live="polite"></div>
+    <form id="registerForm" novalidate>
+        <label for="username">用户名</label>
+        <input type="text" id="username" autocomplete="username" required minlength="3" maxlength="80">
+        <label for="email">邮箱</label>
+        <input type="email" id="email" autocomplete="email" required>
+        <label for="password">密码</label>
+        <input type="password" id="password" autocomplete="new-password" required minlength="8">
+        <div class="hint">用户名 3-80 个字符；密码至少 8 个字符。</div>
+        <button type="submit" id="submitBtn">注册</button>
     </form>
     <p>已有账户？ <a href="/login.html">登录</a></p>
 </div>
 <script>
-    document.getElementById('registerForm').addEventListener('submit', async function(e) {
+    const form = document.getElementById('registerForm');
+    const messageBox = document.getElementById('formMessage');
+    const submitBtn = document.getElementById('submitBtn');
+
+    function showMessage(type, text) {
+        messageBox.className = `message ${type}`;
+        messageBox.textContent = text;
+    }
+
+    function validateForm(username, email, password) {
+        if (username.length < 3 || username.length > 80) {
+            return '用户名长度应为 3-80 个字符';
+        }
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+            return '邮箱格式不正确';
+        }
+        if (password.length < 8) {
+            return '密码长度至少为 8 个字符';
+        }
+        return '';
+    }
+
+    form.addEventListener('submit', async function(e) {
         e.preventDefault();
-        const username = document.getElementById('username').value;
-        const email = document.getElementById('email').value;
+        const username = document.getElementById('username').value.trim();
+        const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
-        const response = await fetch('/api/register', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ username, email, password })
-        });
-        const result = await response.json();
-        alert(result.message || result.error);
-        if (result.success) {
-            window.location.href = '/login.html';
+        const validationError = validateForm(username, email, password);
+        if (validationError) {
+            showMessage('error', validationError);
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = '注册中...';
+        try {
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ username, email, password })
+            });
+            const result = await response.json();
+            if (result.success) {
+                showMessage('success', '注册成功，正在前往登录页...');
+                window.location.href = '/login.html';
+                return;
+            }
+            showMessage('error', result.error || '注册失败');
+        } catch (error) {
+            showMessage('error', `请求失败：${error.message}`);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '注册';
         }
     });
 </script>

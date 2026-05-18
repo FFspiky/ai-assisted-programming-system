@@ -89,8 +89,14 @@ class CoreSecurityTest(unittest.TestCase):
             },
         )
 
+        first_response = self.client.post(
+            "/api/login",
+            json={"username": "limited", "password": "wrongpass"},
+        )
+        self.assertEqual(first_response.status_code, 401)
+
         last_response = None
-        for _ in range(6):
+        for _ in range(5):
             last_response = self.client.post(
                 "/api/login",
                 json={"username": "limited", "password": "wrongpass"},
