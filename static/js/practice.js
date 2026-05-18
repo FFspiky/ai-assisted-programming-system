@@ -307,35 +307,46 @@ function escapeHtml(text) {
     return String(text || '').replace(/[&<>"']/g, function (m) { return map[m]; });
 }
 
-            // 记录页面加载的时间戳
-    const startTime = Date.now();
+let visibleStudySeconds = 0;
+let lastStudyTick = document.visibilityState === 'visible' ? Date.now() : null;
 
-    // 当用户准备离开页面时（关闭、刷新、跳转）触发
-    window.addEventListener('beforeunload', function(event) {
-        // 计算停留时长（秒）
-        const endTime = Date.now();
-        const durationInSeconds = Math.round((endTime - startTime) / 1000);
+function collectVisibleStudySeconds() {
+    if (document.visibilityState !== 'visible' || lastStudyTick === null) {
+        return;
+    }
+    const now = Date.now();
+    visibleStudySeconds += Math.floor((now - lastStudyTick) / 1000);
+    lastStudyTick = now;
+}
 
-        // 只有当停留时间超过10秒时才记录，避免无效数据
-        if (durationInSeconds > 10) {
-            // 使用 navigator.sendBeacon 发送数据
-            // 这种方式可以确保即使用户关闭了页面，请求也能大概率成功发送
-            const data = new Blob(
-                [JSON.stringify({ duration: durationInSeconds })],
-                { type: 'application/json' }
-            );
-            UserSession.csrfFetch('/api/update_learning_time', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: data,
-                keepalive: true
-            }).catch(() => {});
-        }
+function reportStudyTime(keepalive = false) {
+    collectVisibleStudySeconds();
+    const duration = visibleStudySeconds;
+    if (duration < 10) {
+        return;
+    }
+    visibleStudySeconds = 0;
+    UserSession.csrfFetch('/api/update_learning_time', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ duration }),
+        keepalive
+    }).catch(() => {
+        visibleStudySeconds += duration;
     });
+}
 
-    // 注意：为了让 sendBeacon 生效，需要确保后端API支持 application/json
-    // Flask 默认支持，但如果您的服务器配置了严格的CORS或内容类型策略，请确保允许。
-    // 如果 sendBeacon 不可用或被阻止，可以退回到使用同步的 XMLHttpRequest，但这会阻塞页面关闭，体验不佳。
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        lastStudyTick = Date.now();
+        return;
+    }
+    reportStudyTime(true);
+    lastStudyTick = null;
+});
+
+setInterval(() => reportStudyTime(false), 60000);
+window.addEventListener('beforeunload', () => reportStudyTime(true));
 
 function formatAiResponse(text) {
     if (!text) return '';

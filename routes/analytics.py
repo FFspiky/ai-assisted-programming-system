@@ -5,6 +5,7 @@ from models import db, Submission, Problem, User
 import requests
 import json
 import time
+from datetime import datetime, timezone
 
 # 从配置文件导入API信息
 try:
@@ -15,6 +16,27 @@ except ImportError:
     MODEL_NAME = ""
 
 analytics_blueprint = Blueprint('analytics', __name__)
+LEARNING_TIME_DAILY_BUCKETS = {}
+MAX_LEARNING_TIME_REPORT_SECONDS = 5 * 60
+MAX_LEARNING_TIME_PER_DAY_SECONDS = 8 * 60 * 60
+
+
+def _learning_day_key():
+    return datetime.now(timezone.utc).date().isoformat()
+
+
+def _get_today_reported_seconds(user_id):
+    key = (_learning_day_key(), user_id)
+    return LEARNING_TIME_DAILY_BUCKETS.get(key, 0)
+
+
+def _add_today_reported_seconds(user_id, duration_seconds):
+    key = (_learning_day_key(), user_id)
+    reported = LEARNING_TIME_DAILY_BUCKETS.get(key, 0)
+    allowed = max(0, MAX_LEARNING_TIME_PER_DAY_SECONDS - reported)
+    accepted = min(duration_seconds, allowed)
+    LEARNING_TIME_DAILY_BUCKETS[key] = reported + accepted
+    return accepted, allowed
 
 # --- 学习概览 API (已更新) ---
 @analytics_blueprint.route('/learning_overview', methods=['GET'])
@@ -49,12 +71,30 @@ def update_learning_time():
     except (TypeError, ValueError):
         duration_seconds = 0
 
-    if 0 < duration_seconds <= 8 * 60 * 60:
+    if 0 < duration_seconds <= MAX_LEARNING_TIME_REPORT_SECONDS:
+        accepted_seconds, _ = _add_today_reported_seconds(current_user.id, duration_seconds)
+        if accepted_seconds <= 0:
+            return jsonify({
+                'success': False,
+                'message': '今日学习时长已达到上限',
+                'data': {
+                    'accepted_seconds': 0,
+                    'daily_reported_seconds': _get_today_reported_seconds(current_user.id),
+                },
+            }), 429
+
         user = db.session.get(User, current_user.id)
-        user.learning_duration += int(duration_seconds)
+        user.learning_duration += int(accepted_seconds)
         db.session.commit()
-        return jsonify({'success': True, 'message': '学习时长已更新'})
-    return jsonify({'success': False, 'message': '无效的时长'})
+        return jsonify({
+            'success': True,
+            'message': '学习时长已更新',
+            'data': {
+                'accepted_seconds': accepted_seconds,
+                'daily_reported_seconds': _get_today_reported_seconds(current_user.id),
+            },
+        })
+    return jsonify({'success': False, 'message': '无效的时长'}), 400
 
 # --- 排行榜 API (新增) ---
 @analytics_blueprint.route('/leaderboard', methods=['GET'])

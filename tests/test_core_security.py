@@ -11,6 +11,7 @@ os.environ["FLASK_SECRET_KEY"] = "test-secret"
 from app import app
 from models import Problem, TestCase, User, db
 from routes.guards import _RATE_BUCKETS
+from routes.analytics import LEARNING_TIME_DAILY_BUCKETS
 from services.ai_code_checker import parse_ai_code_response
 from services.execute_runner import run_code
 from services.judge import outputs_match
@@ -26,6 +27,7 @@ class CoreSecurityTest(unittest.TestCase):
 
     def setUp(self):
         _RATE_BUCKETS.clear()
+        LEARNING_TIME_DAILY_BUCKETS.clear()
         app.config["TESTING"] = True
         self.client = app.test_client()
         with app.app_context():
@@ -334,6 +336,49 @@ class CoreSecurityTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_json()["data"]["total_solved"], 1)
         self.assertEqual(response.get_json()["data"]["accuracy"], 100)
+
+    def test_learning_time_update_accepts_small_heartbeat(self):
+        self.client.post(
+            "/api/register",
+            json={
+                "username": "timeuser",
+                "email": "timeuser@example.com",
+                "password": "strongpass",
+            },
+        )
+        self.client.post("/api/login", json={"username": "timeuser", "password": "strongpass"})
+
+        response = self.client.post(
+            "/api/update_learning_time",
+            json={"duration": 60},
+            headers=self.csrf_headers(),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()["data"]["accepted_seconds"], 60)
+        with app.app_context():
+            user = User.query.filter_by(username="timeuser").first()
+            self.assertEqual(user.learning_duration, 60)
+
+    def test_learning_time_update_rejects_large_single_report(self):
+        self.client.post(
+            "/api/register",
+            json={
+                "username": "timeguard",
+                "email": "timeguard@example.com",
+                "password": "strongpass",
+            },
+        )
+        self.client.post("/api/login", json={"username": "timeguard", "password": "strongpass"})
+
+        response = self.client.post(
+            "/api/update_learning_time",
+            json={"duration": 301},
+            headers=self.csrf_headers(),
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(response.get_json()["success"])
 
     def test_leaderboard_returns_public_rankings(self):
         self.client.post(
