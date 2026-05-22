@@ -258,13 +258,15 @@ try {
     const response = await fetch('/api/leaderboard');
     const result = await response.json();
     if (result.success && result.data.length > 0) {
-        let tableHTML = '<table class="leaderboard-table"><thead><tr><th>排名</th><th>用户</th><th>解题数</th><th>学习时长 (h)</th></tr></thead><tbody>';
+        let tableHTML = '<table class="leaderboard-table"><thead><tr><th>排名</th><th>用户</th><th>解题数</th><th>积分</th><th>正确率</th><th>学习时长 (h)</th></tr></thead><tbody>';
         result.data.forEach(user => {
             tableHTML += `
                 <tr>
                     <td class="rank">${escapeHtml(user.rank)}</td>
                     <td class="username">${escapeHtml(user.username)}</td>
                     <td>${escapeHtml(user.solved_count)}</td>
+                    <td>${escapeHtml(user.points)}</td>
+                    <td>${escapeHtml(user.accuracy)}%</td>
                     <td>${escapeHtml(user.learning_hours)}</td>
                 </tr>
             `;

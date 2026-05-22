@@ -8,21 +8,63 @@ import os
 
 admin_blueprint = Blueprint('admin', __name__)
 
+ALLOWED_DESCRIPTION_TAGS = {
+    "a",
+    "blockquote",
+    "br",
+    "code",
+    "div",
+    "em",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "li",
+    "ol",
+    "p",
+    "pre",
+    "span",
+    "strong",
+    "table",
+    "tbody",
+    "td",
+    "th",
+    "thead",
+    "tr",
+    "ul",
+}
+ALLOWED_DESCRIPTION_ATTRS = {
+    "a": {"href", "title"},
+    "code": {"class"},
+    "pre": {"class"},
+}
+ALLOWED_LINK_SCHEMES = ("http://", "https://", "mailto:", "#", "/", "./", "../")
+
 
 def sanitize_description(tag):
-    for blocked in tag.find_all(["script", "style", "iframe", "object", "embed"]):
+    for blocked in tag.find_all(["script", "style", "iframe", "object", "embed", "svg", "math"]):
         blocked.decompose()
+
     for node in tag.find_all(True):
+        tag_name = (node.name or "").lower()
+        if tag_name not in ALLOWED_DESCRIPTION_TAGS:
+            node.unwrap()
+            continue
+
+        allowed_attrs = ALLOWED_DESCRIPTION_ATTRS.get(tag_name, set())
         for attr in list(node.attrs):
             attr_lower = attr.lower()
             value = node.attrs.get(attr)
-            if attr_lower.startswith("on"):
+            if attr_lower not in allowed_attrs:
                 del node.attrs[attr]
                 continue
-            if attr_lower in {"href", "src"}:
+            if tag_name == "a" and attr_lower == "href":
                 value_text = " ".join(value) if isinstance(value, list) else str(value)
-                if value_text.strip().lower().startswith("javascript:"):
+                href = value_text.strip()
+                if not href.lower().startswith(ALLOWED_LINK_SCHEMES):
                     del node.attrs[attr]
+                else:
+                    node.attrs[attr] = href
     return tag.decode_contents()
 
 

@@ -2,6 +2,7 @@
 from flask import Blueprint, jsonify, request, Response
 from flask_login import login_required, current_user
 from models import db, Submission, Problem, User
+from sqlalchemy import case
 import requests
 import json
 import time
@@ -99,23 +100,29 @@ def update_learning_time():
 # --- 排行榜 API (新增) ---
 @analytics_blueprint.route('/leaderboard', methods=['GET'])
 def leaderboard():
-    # 查询所有用户，并计算他们的解题数
+    # 查询所有用户，并计算解题数、提交数和通过数，让排行榜指标含义更清晰。
     users_with_stats = db.session.query(
         User,
-        db.func.count(db.func.distinct(Submission.problem_id)).label('solved_count')
-    ).outerjoin(Submission, (User.id == Submission.user_id) & (Submission.status == 'Accepted'))\
+        db.func.count(db.distinct(
+            case((Submission.status == 'Accepted', Submission.problem_id))
+        )).label('solved_count'),
+        db.func.count(Submission.id).label('submission_count'),
+        db.func.count(case((Submission.status == 'Accepted', 1))).label('accepted_count'),
+    ).outerjoin(Submission, User.id == Submission.user_id)\
      .group_by(User.id)\
-     .order_by(db.desc('solved_count'), db.desc(User.learning_duration))\
+     .order_by(db.desc('solved_count'), db.desc(User.points), db.desc(User.learning_duration))\
      .limit(10).all()
 
     leaderboard_data = []
-    for rank, (user, solved_count) in enumerate(users_with_stats, 1):
+    for rank, (user, solved_count, submission_count, accepted_count) in enumerate(users_with_stats, 1):
+        accuracy = round((accepted_count / submission_count) * 100) if submission_count else 0
         leaderboard_data.append({
             'rank': rank,
             'username': user.username,
             'solved_count': solved_count,
-            # 使用 or 0 来优雅地处理 None 的情况
-            'learning_hours': round((user.learning_duration or 0) / 3600, 1)
+            'points': user.points or 0,
+            'learning_hours': round((user.learning_duration or 0) / 3600, 1),
+            'accuracy': accuracy,
         })
 
     return jsonify({'success': True, 'data': leaderboard_data})

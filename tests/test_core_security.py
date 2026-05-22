@@ -395,6 +395,9 @@ class CoreSecurityTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.get_json()["success"])
         self.assertEqual(response.get_json()["data"][0]["username"], "ranked")
+        self.assertIn("points", response.get_json()["data"][0])
+        self.assertIn("accuracy", response.get_json()["data"][0])
+        self.assertIn("learning_hours", response.get_json()["data"][0])
 
     def test_ai_code_response_prefers_structured_json(self):
         parsed = parse_ai_code_response(
@@ -515,7 +518,14 @@ class CoreSecurityTest(unittest.TestCase):
         <div class="problem-item">
             <h2 data-id="p-import">Imported Problem</h2>
             <div class="difficulty">中等</div>
-            <div class="description">Solve it<script>alert(1)</script><a href="javascript:bad()">bad</a></div>
+            <div class="description">
+                <p style="color:red" onclick="bad()">Solve it</p>
+                <script>alert(1)</script>
+                <iframe src="https://example.com"></iframe>
+                <a href="javascript:bad()" onclick="bad()">bad</a>
+                <a href="https://example.com" style="color:red">safe</a>
+                <img src=x onerror=bad()>
+            </div>
             <div class="test-case">
                 <pre class="input"></pre>
                 <pre class="output">ready</pre>
@@ -555,7 +565,12 @@ class CoreSecurityTest(unittest.TestCase):
             problem = db.session.get(Problem, "p-import")
             self.assertIsNotNone(problem)
             self.assertNotIn("<script", problem.description)
+            self.assertNotIn("<iframe", problem.description)
+            self.assertNotIn("<img", problem.description)
             self.assertNotIn("javascript:", problem.description)
+            self.assertNotIn("onclick", problem.description)
+            self.assertNotIn("style=", problem.description)
+            self.assertIn('<a href="https://example.com">safe</a>', problem.description)
             self.assertEqual(problem.test_cases.count(), 2)
 
     def test_admin_problem_upload_reports_empty_problem_file(self):
