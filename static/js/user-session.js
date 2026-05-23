@@ -12,6 +12,14 @@
         return String(text || '').replace(/[&<>"']/g, function (m) { return map[m]; });
     }
 
+    function apiErrorMessage(result, fallback = '请求失败') {
+        if (!result) return fallback;
+        if (typeof result.error === 'string') return result.error;
+        if (result.error && result.error.message) return result.error.message;
+        if (result.message) return result.message;
+        return fallback;
+    }
+
     let csrfToken = null;
     let csrfTokenPromise = null;
 
@@ -135,6 +143,7 @@
 
     window.UserSession = {
         defaultAvatar,
+        apiErrorMessage,
         csrfFetch,
         escapeHtml,
         getCsrfToken,

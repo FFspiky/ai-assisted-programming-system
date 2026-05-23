@@ -94,7 +94,7 @@ async function loadProblem() {
             problemContentEl.innerHTML = problem.description || '<p>该题目没有描述信息。</p>';
         } else {
             problemTitleEl.textContent = '加载失败';
-            problemContentEl.innerHTML = `<p>无法加载题目详情，错误：${result.error || '未知错误'}</p>`;
+            problemContentEl.innerHTML = `<p>无法加载题目详情，错误：${apiErrorMessage(result, '未知错误')}</p>`;
         }
 
     } catch (error) {
@@ -307,6 +307,17 @@ function escapeHtml(text) {
     return String(text || '').replace(/[&<>"']/g, function (m) { return map[m]; });
 }
 
+function apiErrorMessage(result, fallback = '请求失败') {
+    if (window.UserSession && typeof UserSession.apiErrorMessage === 'function') {
+        return UserSession.apiErrorMessage(result, fallback);
+    }
+    if (!result) return fallback;
+    if (typeof result.error === 'string') return result.error;
+    if (result.error && result.error.message) return result.error.message;
+    if (result.message) return result.message;
+    return fallback;
+}
+
 let visibleStudySeconds = 0;
 let lastStudyTick = document.visibilityState === 'visible' ? Date.now() : null;
 
@@ -394,7 +405,7 @@ async function runCode() {
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || errorData.message || `服务器返回错误: ${response.status} ${response.statusText}`);
+            throw new Error(apiErrorMessage(errorData, `服务器返回错误: ${response.status} ${response.statusText}`));
         }
 
         const result = await response.json();
@@ -493,7 +504,7 @@ async function optimizeCode() {
                 ${versionsHtml}
             `;
         } else {
-            aiSuggestion.innerHTML = `<div style="color:var(--warning)"><i class="fas fa-exclamation-triangle"></i> AI优化失败: ${result.error}</div>`;
+            aiSuggestion.innerHTML = `<div style="color:var(--warning)"><i class="fas fa-exclamation-triangle"></i> AI优化失败: ${apiErrorMessage(result)}</div>`;
         }
     } catch (error) {
         aiSuggestion.innerHTML = `<div style="color:var(--warning)"><i class="fas fa-exclamation-triangle"></i> 请求失败: ${error.message}</div>`;
@@ -526,7 +537,7 @@ async function submitCode() {
             body: JSON.stringify({ code, language, problem_id: problemId })
         });
         const result = await response.json();
-        const safeDetails = escapeHtml(result.details || result.error || '没有返回详细信息。');
+        const safeDetails = escapeHtml(result.details || apiErrorMessage(result, '没有返回详细信息。'));
         const safeStatus = escapeHtml(result.status || '提交失败');
 
         if (result.success && result.status === "Accepted") {

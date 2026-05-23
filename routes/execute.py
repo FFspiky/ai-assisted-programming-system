@@ -1,9 +1,10 @@
 # routes/execute.py
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 from flask_login import login_required
 from routes.guards import rate_limit
 from routes.validators import validate_code_payload
+from routes.api_response import api_success
 from services.execute_runner import run_code
 
 execute_blueprint = Blueprint("execute", __name__)
@@ -13,7 +14,7 @@ execute_blueprint = Blueprint("execute", __name__)
 @rate_limit(max_calls=20, window_seconds=60)
 def execute_code():
     if request.method == 'OPTIONS':
-        return jsonify({'status': 'ok'}), 200
+        return api_success({"status": "ok"}, status="ok")
 
     data = request.get_json(silent=True) or {}
     code, language, input_text, error_response = validate_code_payload(data)
@@ -21,4 +22,4 @@ def execute_code():
         return error_response
 
     result = run_code(code, language, input_text=input_text)
-    return jsonify(result)
+    return api_success(result, **result)

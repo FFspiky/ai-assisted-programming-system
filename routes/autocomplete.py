@@ -1,7 +1,8 @@
-from flask import Blueprint, request, jsonify, Response
+from flask import Blueprint, request, Response
 from flask_login import login_required
 from routes.guards import rate_limit
 from routes.validators import trim_autocomplete_context, validate_language
+from routes.api_response import api_success
 from services.ai_autocomplete import stream_inline_completion
 
 autocomplete_blueprint = Blueprint("autocomplete", __name__)
@@ -12,7 +13,7 @@ autocomplete_blueprint = Blueprint("autocomplete", __name__)
 @rate_limit(max_calls=60, window_seconds=60)
 def ai_inline_complete_stream():
     if request.method == "OPTIONS":
-        return jsonify({"status": "ok"}), 200
+        return api_success({"status": "ok"}, status="ok")
 
     data = request.get_json(silent=True) or {}
     prefix, suffix = trim_autocomplete_context(data.get("prefix"), data.get("suffix"))

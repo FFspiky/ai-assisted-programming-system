@@ -20,6 +20,7 @@ except Exception:
 # 1. 先从 models.py 导入 db 对象
 from models import db, User
 from config import ADMIN_USERNAME, ADMIN_PASSWORD, ADMIN_EMAIL, CORS_ORIGINS
+from routes.api_response import api_error, api_success
 
 # 2. 创建并配置 Flask 应用实例
 app = Flask(__name__, template_folder='templates', static_folder='static')
@@ -65,7 +66,7 @@ login_manager.login_view = 'auth.unauthorized'
 
 @login_manager.unauthorized_handler
 def handle_unauthorized():
-    return {"success": False, "error": "需要登录"}, 401
+    return api_error("AUTH_REQUIRED", "需要登录", 401)
 
 
 @login_manager.user_loader
@@ -114,7 +115,7 @@ def protect_state_changing_requests():
     expected_token = session.get("csrf_token")
     provided_token = request.headers.get("X-CSRF-Token") or request.form.get("csrf_token")
     if not expected_token or not secrets.compare_digest(expected_token, provided_token or ""):
-        return jsonify({"success": False, "error": "CSRF token 无效或缺失"}), 403
+        return api_error("CSRF_INVALID", "CSRF token 无效或缺失", 403)
     return None
 
 
@@ -125,7 +126,7 @@ def csrf_token():
     if not token:
         token = secrets.token_urlsafe(32)
         session["csrf_token"] = token
-    return jsonify({"success": True, "csrf_token": token})
+    return api_success({"csrf_token": token}, csrf_token=token)
 
 # 5. 在所有东西都初始化完毕后，再导入并注册蓝图
 #    这是避免循环导入的关键！

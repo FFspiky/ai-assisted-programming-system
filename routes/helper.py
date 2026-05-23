@@ -1,7 +1,8 @@
-from flask import Blueprint, request, jsonify, Response
+from flask import Blueprint, request, Response
 from flask_login import login_required
 from routes.guards import rate_limit
 from routes.validators import validate_ai_prompt, validate_language
+from routes.api_response import api_error, api_success
 from services.ai_helper import  stream_code_from_prompt
 
 generate_blueprint = Blueprint('generate', __name__)
@@ -12,7 +13,7 @@ generate_blueprint = Blueprint('generate', __name__)
 @rate_limit(max_calls=10, window_seconds=60)
 def generate_code_stream():
     if request.method == 'OPTIONS':
-        return jsonify({'status': 'ok'}), 200
+        return api_success({"status": "ok"}, status="ok")
 
     data = request.get_json(silent=True) or {}
     prompt, error_response, status = validate_ai_prompt((data.get("message") or "").strip())
@@ -23,7 +24,7 @@ def generate_code_stream():
         return error_response, status
 
     if not prompt:
-        return jsonify({"success": False, "error": "消息内容不能为空"}), 400
+        return api_error("EMPTY_MESSAGE", "消息内容不能为空", 400)
 
     def generate():
         for chunk in stream_code_from_prompt(prompt, language):

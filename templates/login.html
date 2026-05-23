@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>登录</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
     <style>
         body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 1rem; }
         .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: min(100%, 360px); }
@@ -15,9 +16,6 @@
         button:disabled { cursor: not-allowed; opacity: 0.65; }
         p { text-align: center; margin-top: 1rem; }
         a { color: #1877f2; text-decoration: none; }
-        .message { display: none; margin-bottom: 1rem; padding: 0.75rem; border-radius: 4px; line-height: 1.45; }
-        .message.error { display: block; color: #9f1239; background: #fff1f2; border: 1px solid #fecdd3; }
-        .message.success { display: block; color: #166534; background: #f0fdf4; border: 1px solid #bbf7d0; }
         .hint { margin: -0.4rem 0 1rem; color: #666; font-size: 0.88rem; line-height: 1.4; }
     </style>
 </head>
@@ -35,14 +33,14 @@
     </form>
     <p>还没有账户？ <a href="/register.html">立即注册</a></p>
 </div>
+<script src="{{ url_for('static', filename='js/ui-feedback.js') }}"></script>
 <script>
     const form = document.getElementById('loginForm');
     const messageBox = document.getElementById('formMessage');
     const submitBtn = document.getElementById('submitBtn');
 
     function showMessage(type, text) {
-        messageBox.className = `message ${type}`;
-        messageBox.textContent = text;
+        UIFeedback.renderMessage(messageBox, type, text);
     }
 
     function validateForm(username, password) {
@@ -65,8 +63,7 @@
             return;
         }
 
-        submitBtn.disabled = true;
-        submitBtn.textContent = '登录中...';
+        UIFeedback.setButtonLoading(submitBtn, '登录中...', true);
         try {
             const response = await fetch('/api/login', {
                 method: 'POST',
@@ -79,12 +76,11 @@
                 window.location.href = '/';
                 return;
             }
-            showMessage('error', result.error || '登录失败');
+            showMessage('error', UIFeedback.apiErrorMessage(result, '登录失败'));
         } catch (error) {
             showMessage('error', `请求失败：${error.message}`);
         } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = '登录';
+            UIFeedback.setButtonLoading(submitBtn, '登录', false);
         }
     });
 </script>

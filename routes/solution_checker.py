@@ -1,9 +1,10 @@
 # routes/solution_checker.py
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 from flask_login import login_required, current_user
 from models import db, Submission, Problem, TestCase, User
 from routes.guards import rate_limit
 from routes.validators import validate_code_payload
+from routes.api_response import api_error, api_success
 from services.execute_runner import run_code # 假设您的执行代码服务在这里
 from services.judge import outputs_match
 
@@ -21,11 +22,11 @@ def check_solution():
 
     problem = db.session.get(Problem, problem_id)
     if not problem:
-        return jsonify({"success": False, "error": "题目不存在"}), 404
+        return api_error("PROBLEM_NOT_FOUND", "题目不存在", 404)
 
     test_cases = problem.test_cases.all()
     if not test_cases:
-        return jsonify({"success": False, "error": "该题目还没有测试用例"}), 400
+        return api_error("TEST_CASES_MISSING", "该题目还没有测试用例", 400)
 
     final_status = "Accepted"
     feedback_details = []
@@ -102,16 +103,10 @@ def check_solution():
     db.session.commit()
 
     details = "\n".join(feedback_details)
-    return jsonify({
-        "success": True,
+    data = {
         "status": final_status,
         "details": details,
         "new_points": current_user.points,
         "test_results": test_results,
-        "data": {
-            "status": final_status,
-            "details": details,
-            "new_points": current_user.points,
-            "test_results": test_results,
-        },
-    })
+    }
+    return api_success(data, **data)

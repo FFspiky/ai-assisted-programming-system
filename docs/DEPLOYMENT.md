@@ -1,0 +1,163 @@
+# 部署文档
+
+## 运行环境
+
+- Python 3.11+
+- Redis（推荐，用于跨进程限流）
+- 生产数据库（建议 PostgreSQL；本机演示可用 SQLite）
+- 反向代理（Nginx、Caddy 或云厂商网关）
+- HTTPS 证书
+
+## 安装依赖
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+## 生产环境变量
+
+至少配置：
+
+```bash
+FLASK_SECRET_KEY=replace-with-a-long-random-secret
+DATABASE_URL=sqlite:////absolute/path/app.db
+SILICONFLOW_API_KEY=replace-with-your-api-key
+RATE_LIMIT_REDIS_URL=redis://127.0.0.1:6379/0
+CORS_ORIGINS=https://your-domain.example
+FLASK_DEBUG=0
+```
+
+可选配置：
+
+```bash
+SILICONFLOW_API_URL=https://api.siliconflow.cn/v1/chat/completions
+SILICONFLOW_MODEL_NAME=deepseek-ai/DeepSeek-R1-Distill-Qwen-32B
+SILICONFLOW_AUTOCOMPLETE_MODEL_NAME=deepseek-ai/DeepSeek-R1-0528-Qwen3-8B
+SUPPORTED_LANGUAGES=python,cpp
+MAX_CODE_CHARS=20000
+MAX_STDIN_CHARS=10000
+MAX_AI_PROMPT_CHARS=8000
+CODE_RUN_TIMEOUT_SECONDS=10
+CODE_RUN_CPU_SECONDS=3
+CODE_RUN_MEMORY_MB=256
+CODE_RUN_FILE_SIZE_MB=1
+CODE_RUN_MAX_PROCESSES=32
+CODE_RUN_MAX_OUTPUT_CHARS=20000
+```
+
+首次部署如需自动创建管理员，可临时设置：
+
+```bash
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=replace-with-a-strong-password
+ADMIN_EMAIL=admin@example.com
+```
+
+管理员创建后应删除这些变量，改用 CLI 管理账号。
+
+## 数据库迁移
+
+生产环境不要依赖启动时自动建表。部署和升级时执行：
+
+```bash
+flask --app app db upgrade
+```
+
+可以显式关闭演示自动建表：
+
+```bash
+AUTO_CREATE_DATABASE=0 flask --app app db upgrade
+```
+
+## 管理员创建
+
+推荐使用 CLI：
+
+```bash
+flask --app app create-admin
+```
+
+## 启动应用
+
+开发或小规模演示：
+
+```bash
+FLASK_HOST=127.0.0.1 FLASK_PORT=5001 python app.py
+```
+
+生产建议使用 WSGI 服务器，例如 Gunicorn：
+
+```bash
+gunicorn -w 2 -b 127.0.0.1:5001 app:app
+```
+
+## 反向代理示例
+
+Nginx 示例：
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.example;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name your-domain.example;
+
+    ssl_certificate /etc/letsencrypt/live/your-domain.example/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/your-domain.example/privkey.pem;
+
+    client_max_body_size 5m;
+
+    location / {
+        proxy_pass http://127.0.0.1:5001;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+部署后将 `CORS_ORIGINS` 设置为真实 HTTPS 域名。
+
+## HTTPS
+
+必须使用 HTTPS 承载登录 Cookie 和 CSRF token。可使用：
+
+- Let's Encrypt + Certbot
+- Caddy 自动证书
+- 云厂商负载均衡 HTTPS 证书
+
+## 代码执行沙箱
+
+当前代码执行仍是本机进程级资源限制，不是强隔离。公网部署前应接入真正沙箱，例如：
+
+- Docker 隔离容器
+- nsjail
+- Firecracker
+- Judge0
+- 独立 worker + 低权限用户 + 容器网络隔离
+
+在接入真正沙箱前，不建议开放给不可信公网用户执行任意代码。
+
+## 部署后检查
+
+```bash
+make check
+flask --app app db upgrade
+```
+
+页面冒烟检查：
+
+- `/index.html`
+- `/login.html`
+- `/register.html`
+- `/problem_selector.html`
+- `/practice.html`
+- `/learn-analytics.html`
+

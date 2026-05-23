@@ -1,6 +1,7 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint
 from flask_login import login_required, current_user
 from models import Problem, Submission, db
+from routes.api_response import api_error, api_success
 
 problems_blueprint = Blueprint('problems', __name__)
 
@@ -16,23 +17,21 @@ def get_all_problems():
             "difficulty": p.difficulty
         } for p in problems
     ]
-    return jsonify({"success": True, "problems": problems_list})
+    return api_success({"problems": problems_list}, problems=problems_list)
 
 @problems_blueprint.route('/problems/<problem_id>', methods=['GET'])
 def get_problem_details(problem_id):
     problem = db.session.get(Problem, problem_id)
     if not problem:
-        return jsonify({"success": False, "error": "题目未找到"}), 404
-    
-    return jsonify({
-        "success": True,
-        "problem": {
+        return api_error("PROBLEM_NOT_FOUND", "题目未找到", 404)
+
+    problem_data = {
             "id": problem.id,
             "title": problem.title,
             "description": problem.description,
             "difficulty": problem.difficulty
-        }
-    })
+    }
+    return api_success({"problem": problem_data}, problem=problem_data)
 
 @problems_blueprint.route('/submissions', methods=['GET'])
 @login_required
@@ -54,4 +53,4 @@ def get_user_submissions():
         } for s, title in submissions
     ]
     
-    return jsonify({"success": True, "submissions": submissions_list})
+    return api_success({"submissions": submissions_list}, submissions=submissions_list)

@@ -17,6 +17,22 @@ from services.execute_runner import run_code
 from services.judge import outputs_match
 
 
+def api_error_message(response):
+    payload = response.get_json()
+    error = payload.get("error")
+    if isinstance(error, dict):
+        return error.get("message", "")
+    return error or payload.get("message", "")
+
+
+def api_error_code(response):
+    payload = response.get_json()
+    error = payload.get("error")
+    if isinstance(error, dict):
+        return error.get("code", "")
+    return ""
+
+
 class CoreSecurityTest(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
@@ -58,7 +74,8 @@ class CoreSecurityTest(unittest.TestCase):
         )
 
         self.assertEqual(response.status_code, 400)
-        self.assertIn("密码长度", response.get_json()["error"])
+        self.assertEqual(api_error_code(response), "VALIDATION_ERROR")
+        self.assertIn("密码长度", api_error_message(response))
 
     def test_login_returns_current_user_payload(self):
         self.client.post(
@@ -105,7 +122,7 @@ class CoreSecurityTest(unittest.TestCase):
             )
 
         self.assertEqual(last_response.status_code, 429)
-        self.assertIn("登录失败次数过多", last_response.get_json()["error"])
+        self.assertIn("登录失败次数过多", api_error_message(last_response))
 
     def test_run_code_requires_login(self):
         response = self.client.post(
@@ -132,7 +149,7 @@ class CoreSecurityTest(unittest.TestCase):
         )
 
         self.assertEqual(response.status_code, 403)
-        self.assertIn("CSRF", response.get_json()["error"])
+        self.assertIn("CSRF", api_error_message(response))
 
     def test_python_runner_executes_basic_code(self):
         result = run_code("print('hello')", "Python")
@@ -442,7 +459,7 @@ class CoreSecurityTest(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.get_json()["success"])
-        self.assertIn("SILICONFLOW_API_KEY", response.get_json()["error"])
+        self.assertIn("SILICONFLOW_API_KEY", api_error_message(response))
 
     def test_run_code_is_rate_limited(self):
         self.client.post(
@@ -487,7 +504,7 @@ class CoreSecurityTest(unittest.TestCase):
         )
 
         self.assertEqual(response.status_code, 400)
-        self.assertIn("不支持的语言", response.get_json()["error"])
+        self.assertIn("不支持的语言", api_error_message(response))
 
     def test_run_code_rejects_large_payload(self):
         self.client.post(
@@ -510,7 +527,7 @@ class CoreSecurityTest(unittest.TestCase):
         )
 
         self.assertEqual(response.status_code, 400)
-        self.assertIn("代码长度", response.get_json()["error"])
+        self.assertIn("代码长度", api_error_message(response))
 
     def test_admin_problem_upload_returns_detailed_import_report(self):
         self.login_admin()
@@ -584,7 +601,45 @@ class CoreSecurityTest(unittest.TestCase):
         )
 
         self.assertEqual(response.status_code, 400)
-        self.assertIn("problem-item", response.get_json()["error"])
+        self.assertIn("problem-item", api_error_message(response))
+
+    def test_admin_can_update_and_delete_problem(self):
+        self.login_admin()
+        with app.app_context():
+            db.session.add(Problem(id="admin-edit", title="Old", description="<p>Old</p>", difficulty="简单"))
+            db.session.add(TestCase(input_data="1", expected_output="1", problem_id="admin-edit"))
+            db.session.commit()
+
+        list_response = self.client.get("/api/admin/problems")
+        self.assertEqual(list_response.status_code, 200)
+        self.assertTrue(list_response.get_json()["success"])
+        self.assertGreaterEqual(len(list_response.get_json()["data"]["problems"]), 1)
+
+        update_response = self.client.put(
+            "/api/admin/problems/admin-edit",
+            json={
+                "title": "New",
+                "difficulty": "中等",
+                "description": '<p onclick="bad()">Safe</p><img src=x onerror=bad()>',
+                "test_cases": [{"input_data": "", "expected_output": "ok"}],
+            },
+            headers=self.csrf_headers(),
+        )
+        self.assertEqual(update_response.status_code, 200)
+        with app.app_context():
+            problem = db.session.get(Problem, "admin-edit")
+            self.assertEqual(problem.title, "New")
+            self.assertNotIn("onclick", problem.description)
+            self.assertNotIn("<img", problem.description)
+            self.assertEqual(problem.test_cases.count(), 1)
+
+        delete_response = self.client.delete(
+            "/api/admin/problems/admin-edit",
+            headers=self.csrf_headers(),
+        )
+        self.assertEqual(delete_response.status_code, 200)
+        with app.app_context():
+            self.assertIsNone(db.session.get(Problem, "admin-edit"))
 
 
 if __name__ == "__main__":

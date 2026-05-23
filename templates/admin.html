@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>管理员后台</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
     <style>
         body { font-family: sans-serif; max-width: 900px; margin: 2rem auto; }
         .card { border: 1px solid #ccc; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; }
@@ -20,6 +21,11 @@
         #importResult li { margin-bottom: 0.35rem; line-height: 1.4; }
         .result-summary { font-weight: 700; }
         .result-error { color: #b00020; }
+        .problem-list { margin-top: 1rem; display: grid; gap: 0.75rem; }
+        .problem-row { display: grid; grid-template-columns: 1fr auto auto; gap: 0.75rem; align-items: center; border: 1px solid #ddd; border-radius: 6px; padding: 0.75rem; }
+        .problem-title { font-weight: 700; }
+        .problem-meta { color: #666; font-size: 0.9rem; margin-top: 0.25rem; }
+        #editPanel { display: none; margin-top: 1rem; border-top: 1px solid #ddd; padding-top: 1rem; }
     </style>
 </head>
 <body>
@@ -40,6 +46,24 @@
         <div id="importResult" aria-live="polite"></div>
     </div>
 
+    <div class="card">
+        <h2>题目管理</h2>
+        <button type="button" id="refreshProblemsBtn" class="secondary-btn">刷新题目列表</button>
+        <div id="problemList" class="problem-list" aria-live="polite"></div>
+        <div id="editPanel">
+            <h3>编辑题目</h3>
+            <form id="editProblemForm">
+                <input type="text" id="editProblemId" disabled>
+                <input type="text" id="editTitle" placeholder="标题" required>
+                <input type="text" id="editDifficulty" placeholder="难度" required>
+                <textarea id="editDescription" placeholder="题目描述 HTML" required></textarea>
+                <textarea id="editTestCases" placeholder='测试用例 JSON，例如 [{"input_data":"","expected_output":"ok"}]' required></textarea>
+                <button type="submit">保存修改</button>
+                <button type="button" id="cancelEditBtn" class="secondary-btn">取消</button>
+            </form>
+        </div>
+    </div>
+
 <script src="{{ url_for('static', filename='js/user-session.js') }}"></script>
 <script>
     const uploadForm = document.getElementById('uploadForm');
@@ -47,6 +71,17 @@
     const dropZone = document.getElementById('dropZone');
     const fileNameDisplay = document.getElementById('fileName');
     const importResult = document.getElementById('importResult');
+    const problemList = document.getElementById('problemList');
+    const refreshProblemsBtn = document.getElementById('refreshProblemsBtn');
+    const editPanel = document.getElementById('editPanel');
+    const editProblemForm = document.getElementById('editProblemForm');
+    const editProblemId = document.getElementById('editProblemId');
+    const editTitle = document.getElementById('editTitle');
+    const editDifficulty = document.getElementById('editDifficulty');
+    const editDescription = document.getElementById('editDescription');
+    const editTestCases = document.getElementById('editTestCases');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+    let loadedProblems = [];
 
     function escapeHtml(value) {
         return String(value ?? '').replace(/[&<>"']/g, (char) => ({
@@ -72,7 +107,7 @@
         const data = result.data || {};
         importResult.style.display = 'block';
         if (!result.success) {
-            importResult.innerHTML = `<p class="result-error">${escapeHtml(result.error || '导入失败')}</p>`;
+            importResult.innerHTML = `<p class="result-error">${escapeHtml(UserSession.apiErrorMessage(result, '导入失败'))}</p>`;
             return;
         }
 
@@ -88,6 +123,70 @@
                 `第 ${escapeHtml(item.index)} 题 ${escapeHtml(item.id || '')} / 用例 ${escapeHtml(item.test_case_index)}：${escapeHtml(item.reason)}`
             ))}
         `;
+    }
+
+    function renderProblemList(problems) {
+        loadedProblems = problems || [];
+        if (!problems || problems.length === 0) {
+            problemList.innerHTML = '<p style="text-align:center; color:#666;">暂无题目。</p>';
+            return;
+        }
+
+        problemList.innerHTML = problems.map((problem) => `
+            <div class="problem-row">
+                <div>
+                    <div class="problem-title">${escapeHtml(problem.id)} - ${escapeHtml(problem.title)}</div>
+                    <div class="problem-meta">${escapeHtml(problem.difficulty)} · 测试用例 ${escapeHtml(problem.test_case_count)} 个</div>
+                </div>
+                <button type="button" class="secondary-btn" data-edit="${escapeHtml(problem.id)}">编辑</button>
+                <button type="button" class="danger-btn" data-delete="${escapeHtml(problem.id)}">删除</button>
+            </div>
+        `).join('');
+    }
+
+    function openEditor(problemId) {
+        const problem = loadedProblems.find((item) => item.id === problemId);
+        if (!problem) return;
+        editProblemId.value = problem.id;
+        editTitle.value = problem.title || '';
+        editDifficulty.value = problem.difficulty || '简单';
+        editDescription.value = problem.description || '';
+        editTestCases.value = JSON.stringify((problem.test_cases || []).map((item) => ({
+            input_data: item.input_data,
+            expected_output: item.expected_output
+        })), null, 2);
+        editPanel.style.display = 'block';
+        editPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    async function loadProblems() {
+        problemList.innerHTML = '<p style="text-align:center; color:#666;">正在加载...</p>';
+        try {
+            const response = await fetch('/api/admin/problems');
+            const result = await response.json();
+            if (!result.success) {
+                problemList.innerHTML = `<p class="result-error">${escapeHtml(UserSession.apiErrorMessage(result, '加载失败'))}</p>`;
+                return;
+            }
+            renderProblemList(result.data.problems || result.problems || []);
+        } catch (error) {
+            problemList.innerHTML = `<p class="result-error">网络错误：${escapeHtml(error.message)}</p>`;
+        }
+    }
+
+    async function deleteProblem(problemId) {
+        if (!window.confirm(`确认删除题目 ${problemId}？`)) {
+            return;
+        }
+        const response = await UserSession.csrfFetch(`/api/admin/problems/${encodeURIComponent(problemId)}`, {
+            method: 'DELETE'
+        });
+        const result = await response.json();
+        if (!result.success) {
+            problemList.innerHTML = `<p class="result-error">${escapeHtml(UserSession.apiErrorMessage(result, '删除失败'))}</p>`;
+            return;
+        }
+        await loadProblems();
     }
 
     dropZone.addEventListener('click', () => fileInput.click());
@@ -140,8 +239,53 @@
         if (result.success) {
             fileInput.value = '';
             fileNameDisplay.textContent = '未选择文件';
+            await loadProblems();
         }
     });
+
+    refreshProblemsBtn.addEventListener('click', loadProblems);
+    cancelEditBtn.addEventListener('click', () => {
+        editPanel.style.display = 'none';
+        editProblemForm.reset();
+    });
+    editProblemForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        let testCases;
+        try {
+            testCases = JSON.parse(editTestCases.value);
+        } catch (error) {
+            problemList.innerHTML = `<p class="result-error">测试用例 JSON 格式不正确：${escapeHtml(error.message)}</p>`;
+            return;
+        }
+        const response = await UserSession.csrfFetch(`/api/admin/problems/${encodeURIComponent(editProblemId.value)}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                title: editTitle.value,
+                difficulty: editDifficulty.value,
+                description: editDescription.value,
+                test_cases: testCases
+            })
+        });
+        const result = await response.json();
+        if (!result.success) {
+            problemList.innerHTML = `<p class="result-error">${escapeHtml(UserSession.apiErrorMessage(result, '保存失败'))}</p>`;
+            return;
+        }
+        editPanel.style.display = 'none';
+        await loadProblems();
+    });
+    problemList.addEventListener('click', (event) => {
+        const deleteId = event.target.getAttribute('data-delete');
+        const editId = event.target.getAttribute('data-edit');
+        if (deleteId) {
+            deleteProblem(deleteId);
+        }
+        if (editId) {
+            openEditor(editId);
+        }
+    });
+    loadProblems();
 </script>
 </body>
 </html>

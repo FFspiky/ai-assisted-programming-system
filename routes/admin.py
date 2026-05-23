@@ -1,10 +1,11 @@
 # routes/admin.py
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 from models import db, Problem, TestCase
 from functools import wraps
 from flask_login import current_user
 from bs4 import BeautifulSoup
 import os
+from routes.api_response import api_error, api_success
 
 admin_blueprint = Blueprint('admin', __name__)
 
@@ -75,24 +76,103 @@ def _text_or_none(tag):
     return text or None
 
 
+def _problem_payload(problem):
+    test_cases = problem.test_cases.all()
+    return {
+        "id": problem.id,
+        "title": problem.title,
+        "difficulty": problem.difficulty,
+        "description": problem.description,
+        "test_case_count": len(test_cases),
+        "test_cases": [
+            {
+                "id": case.id,
+                "input_data": case.input_data,
+                "expected_output": case.expected_output,
+            }
+            for case in test_cases
+        ],
+    }
+
+
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated or not current_user.is_admin:
-            return jsonify({"success": False, "error": "需要管理员权限"}), 403
+            return api_error("ADMIN_REQUIRED", "需要管理员权限", 403)
         return f(*args, **kwargs)
     return decorated_function
+
+
+@admin_blueprint.route('/problems', methods=['GET'])
+@admin_required
+def list_problems():
+    problems = Problem.query.order_by(Problem.id.asc()).all()
+    data = {"problems": [_problem_payload(problem) for problem in problems]}
+    return api_success(data, problems=data["problems"])
+
+
+@admin_blueprint.route('/problems/<problem_id>', methods=['PUT'])
+@admin_required
+def update_problem(problem_id):
+    problem = db.session.get(Problem, problem_id)
+    if problem is None:
+        return api_error("PROBLEM_NOT_FOUND", "题目不存在", 404)
+
+    data = request.get_json(silent=True) or {}
+    title = (data.get("title") or "").strip()
+    difficulty = (data.get("difficulty") or "简单").strip()
+    description = (data.get("description") or "").strip()
+    test_cases = data.get("test_cases")
+
+    if not title or not description:
+        return api_error("VALIDATION_ERROR", "标题和题目描述不能为空", 400)
+    if not isinstance(test_cases, list):
+        return api_error("VALIDATION_ERROR", "测试用例必须是列表", 400)
+
+    problem.title = title
+    problem.difficulty = difficulty or "简单"
+    description_soup = BeautifulSoup(f"<div>{description}</div>", "lxml")
+    problem.description = sanitize_description(description_soup.div)
+
+    TestCase.query.filter_by(problem_id=problem_id).delete()
+    for index, case in enumerate(test_cases, start=1):
+        input_data = "" if case.get("input_data") is None else str(case.get("input_data"))
+        expected_output = "" if case.get("expected_output") is None else str(case.get("expected_output"))
+        if not expected_output.strip():
+            return api_error("VALIDATION_ERROR", f"第 {index} 个测试用例 output 不能为空", 400)
+        db.session.add(TestCase(
+            input_data=input_data.strip(),
+            expected_output=expected_output.strip(),
+            problem_id=problem_id,
+        ))
+
+    db.session.commit()
+    return api_success({"problem": _problem_payload(problem)}, message="题目已更新", problem=_problem_payload(problem))
+
+
+@admin_blueprint.route('/problems/<problem_id>', methods=['DELETE'])
+@admin_required
+def delete_problem(problem_id):
+    problem = db.session.get(Problem, problem_id)
+    if problem is None:
+        return api_error("PROBLEM_NOT_FOUND", "题目不存在", 404)
+
+    db.session.delete(problem)
+    db.session.commit()
+    return api_success(message="题目已删除")
+
 
 @admin_blueprint.route('/problems/upload', methods=['POST'])
 @admin_required
 def upload_problems():
     if 'file' not in request.files:
-        return jsonify({"success": False, "error": "没有找到上传的文件"}), 400
+        return api_error("UPLOAD_FILE_MISSING", "没有找到上传的文件", 400)
     file = request.files['file']
     if file.filename == '':
-        return jsonify({"success": False, "error": "未选择文件"}), 400
+        return api_error("UPLOAD_FILE_EMPTY", "未选择文件", 400)
     if not file.filename.endswith('.html'):
-        return jsonify({"success": False, "error": "请上传HTML格式的文件"}), 400
+        return api_error("UPLOAD_FILE_TYPE_INVALID", "请上传HTML格式的文件", 400)
 
     try:
         html_content = file.read().decode('utf-8')
@@ -100,7 +180,7 @@ def upload_problems():
         
         problem_items = soup.find_all('div', class_='problem-item')
         if not problem_items:
-            return jsonify({"success": False, "error": "在文件中未找到 class='problem-item' 的题目"}), 400
+            return api_error("PROBLEM_ITEMS_MISSING", "在文件中未找到 class='problem-item' 的题目", 400)
             
         imported = []
         skipped = []
@@ -191,22 +271,20 @@ def upload_problems():
             })
             
         db.session.commit()
-        return jsonify({
-            "success": True,
-            "message": (
+        data = {
+            "imported_count": len(imported),
+            "skipped_count": len(skipped),
+            "parse_error_count": len(parse_errors),
+            "imported": imported,
+            "skipped": skipped,
+            "parse_errors": parse_errors,
+        }
+        message = (
                 f"成功导入/更新了 {len(imported)} 道题目，"
                 f"跳过 {len(skipped)} 道，解析问题 {len(parse_errors)} 条。"
-            ),
-            "data": {
-                "imported_count": len(imported),
-                "skipped_count": len(skipped),
-                "parse_error_count": len(parse_errors),
-                "imported": imported,
-                "skipped": skipped,
-                "parse_errors": parse_errors,
-            },
-        }), 200
+        )
+        return api_success(data, message=message)
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({"success": False, "error": f"解析或保存时出错: {str(e)}"}), 500
+        return api_error("PROBLEM_IMPORT_FAILED", f"解析或保存时出错: {str(e)}", 500)

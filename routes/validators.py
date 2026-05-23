@@ -1,5 +1,3 @@
-from flask import jsonify
-
 from config import (
     MAX_AI_PROMPT_CHARS,
     MAX_AUTOCOMPLETE_PREFIX_CHARS,
@@ -8,6 +6,7 @@ from config import (
     MAX_STDIN_CHARS,
     SUPPORTED_LANGUAGES,
 )
+from routes.api_response import api_error
 
 
 def normalize_language(language):
@@ -22,20 +21,22 @@ def normalize_language(language):
 def validate_language(language):
     normalized = normalize_language(language)
     if normalized not in SUPPORTED_LANGUAGES:
-        return None, jsonify({
-            "success": False,
-            "error": f"不支持的语言: {language}",
-        }), 400
+        response, status = api_error(
+            "UNSUPPORTED_LANGUAGE",
+            f"不支持的语言: {language}",
+        )
+        return None, response, status
     return normalized, None, None
 
 
 def validate_text_size(value, max_chars, field_name):
     text = "" if value is None else str(value)
     if len(text) > max_chars:
-        return None, jsonify({
-            "success": False,
-            "error": f"{field_name}长度不能超过 {max_chars} 个字符",
-        }), 400
+        response, status = api_error(
+            "PAYLOAD_TOO_LARGE",
+            f"{field_name}长度不能超过 {max_chars} 个字符",
+        )
+        return None, response, status
     return text, None, None
 
 

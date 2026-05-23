@@ -1,0 +1,31 @@
+.message {
+    display: none;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    border-radius: 4px;
+    line-height: 1.45;
+}
+
+.message.error {
+    display: block;
+    color: #9f1239;
+    background: #fff1f2;
+    border: 1px solid #fecdd3;
+}
+
+.message.success {
+    display: block;
+    color: #166534;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+}
+
+.secondary-btn {
+    background: #555;
+    color: #fff;
+}
+
+.danger-btn {
+    background: #b00020;
+    color: #fff;
+}

@@ -1,5 +1,5 @@
 # routes/analytics.py
-from flask import Blueprint, jsonify, request, Response
+from flask import Blueprint, request, Response
 from flask_login import login_required, current_user
 from models import db, Submission, Problem, User
 from sqlalchemy import case
@@ -7,6 +7,7 @@ import requests
 import json
 import time
 from datetime import datetime, timezone
+from routes.api_response import api_error, api_success
 
 # 从配置文件导入API信息
 try:
@@ -51,13 +52,10 @@ def learning_overview():
     # 从数据库获取真实学习时长 (小时)
     learning_hours = round(current_user.learning_duration / 3600, 1)
 
-    return jsonify({
-        'success': True, 
-        'data': {
+    return api_success({
             'total_solved': accepted_submissions, # <--- 修正拼写
             'accuracy': accuracy,
             'learning_hours': learning_hours
-        }
     })
 
 # --- 更新学习时长 API (新增) ---
@@ -75,27 +73,26 @@ def update_learning_time():
     if 0 < duration_seconds <= MAX_LEARNING_TIME_REPORT_SECONDS:
         accepted_seconds, _ = _add_today_reported_seconds(current_user.id, duration_seconds)
         if accepted_seconds <= 0:
-            return jsonify({
-                'success': False,
-                'message': '今日学习时长已达到上限',
-                'data': {
+            return api_error(
+                "LEARNING_TIME_DAILY_LIMIT",
+                "今日学习时长已达到上限",
+                429,
+                data={
                     'accepted_seconds': 0,
                     'daily_reported_seconds': _get_today_reported_seconds(current_user.id),
                 },
-            }), 429
+            )
 
         user = db.session.get(User, current_user.id)
         user.learning_duration += int(accepted_seconds)
         db.session.commit()
-        return jsonify({
-            'success': True,
-            'message': '学习时长已更新',
-            'data': {
+        return api_success({
                 'accepted_seconds': accepted_seconds,
                 'daily_reported_seconds': _get_today_reported_seconds(current_user.id),
             },
-        })
-    return jsonify({'success': False, 'message': '无效的时长'}), 400
+            message="学习时长已更新",
+        )
+    return api_error("INVALID_LEARNING_TIME", "无效的时长", 400)
 
 # --- 排行榜 API (新增) ---
 @analytics_blueprint.route('/leaderboard', methods=['GET'])
@@ -125,7 +122,7 @@ def leaderboard():
             'accuracy': accuracy,
         })
 
-    return jsonify({'success': True, 'data': leaderboard_data})
+    return api_success(leaderboard_data)
 
 
 # --- AI学习分析 API (已升级为流式输出) ---
