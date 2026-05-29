@@ -1,8 +1,12 @@
 __pycache__/
 *.pyc
 *.pyo
+.DS_Store
 .pytest_cache/
 .venv/
+node_modules/
+test-results/
+playwright-report/
 
 .env
 app.db

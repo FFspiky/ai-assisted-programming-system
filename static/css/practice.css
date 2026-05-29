@@ -335,7 +335,7 @@ nav a:hover::after {
 .problem-container {
     display: flex;
     gap: 30px;
-    margin: 40px 0;
+    margin: 24px 0;
     min-height: 75vh;
     width: 100%;
 }
@@ -399,6 +399,8 @@ nav a:hover::after {
     flex: 1;
     overflow-y: auto;
     padding-right: 10px;
+    width: 100%;
+    max-width: 100%;
 }
 
 .problem-content h3 {
@@ -453,6 +455,7 @@ nav a:hover::after {
 .editor-actions {
     display: flex;
     gap: 15px;
+    align-items: center;
 }
 
 .btn {
@@ -857,6 +860,52 @@ nav a:hover::after {
     margin-bottom: 15px;
 }
 
+.problem-nav {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.problem-nav .back-to-home-btn {
+    min-height: 40px;
+    margin-bottom: 0;
+}
+
+.problem-status-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+}
+
+.problem-progress,
+.problem-passed-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.problem-progress {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--light-gray);
+}
+
+.problem-passed-badge {
+    gap: 6px;
+    background: rgba(76, 201, 240, 0.15);
+    color: var(--success);
+}
+
+.problem-passed-badge[hidden] {
+    display: none;
+}
+
 [data-theme="light"] .back-to-home-btn {
     background: rgba(0,0,0,0.1);
     color: var(--light);
@@ -947,6 +996,22 @@ nav a:hover::after {
 }
 
 @media (max-width: 900px) {
+    .container {
+        width: 100%;
+        padding: 14px;
+    }
+
+    header,
+    .header-left {
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    header {
+        padding: 12px 0;
+    }
+
     .ai-floating-window {
         position: static;
         width: 100%;
@@ -970,6 +1035,12 @@ nav a:hover::after {
 
     .problem-container {
         flex-direction: column;
+        margin: 16px 0;
+    }
+
+    .problem-section {
+        padding: 16px;
+        border-radius: 10px;
     }
 
     .user-details {
@@ -979,17 +1050,99 @@ nav a:hover::after {
 }
 
 @media (max-width: 768px) {
+    .logo-text {
+        font-size: 1.45rem;
+    }
+
+    .logo-icon {
+        font-size: 2rem;
+    }
+
     .problem-meta {
         flex-wrap: wrap;
     }
 
-    .editor-actions {
-        flex-wrap: wrap;
+    .problem-title {
+        font-size: 1.45rem;
+    }
+
+    .problem-nav {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .problem-nav .back-to-home-btn,
+    .problem-status-group {
         justify-content: center;
+        width: 100%;
+        margin-bottom: 0;
+    }
+
+    .problem-status-group {
+        grid-column: span 1;
+    }
+
+    .problem-content {
+        padding-right: 0;
+        overflow-x: auto;
+    }
+
+    .editor-header {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 12px;
+        padding: 12px;
+    }
+
+    .editor-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        width: 100%;
+    }
+
+    #languageSelector,
+    .editor-actions .btn {
+        justify-content: center;
+        width: 100%;
+        min-height: 42px;
+        margin-right: 0;
+    }
+
+    .code-area,
+    #ghostLayer {
+        font-size: 0.92rem;
+        padding: 14px;
+    }
+
+    .input-area {
+        padding: 12px !important;
+    }
+
+    #customInput {
+        min-height: 72px !important;
+    }
+
+    .output-area {
+        max-height: none;
     }
 
     nav ul {
         display: none; /* 在更小的屏幕上可以考虑隐藏 */
+    }
+}
+
+@media (max-width: 480px) {
+    .problem-nav {
+        grid-template-columns: 1fr;
+    }
+
+    .problem-status-group {
+        grid-column: auto;
+    }
+
+    .editor-actions {
+        grid-template-columns: 1fr;
     }
 }
 

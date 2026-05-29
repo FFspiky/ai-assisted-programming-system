@@ -1,17 +1,21 @@
 from flask import Blueprint, request
 from flask_login import login_required
+
+from routes.api_response import api_error, api_success
 from routes.guards import rate_limit
 from routes.validators import validate_ai_prompt, validate_language
-from routes.api_response import api_error, api_success
 from services.ai_code_checker import check_code
 
 ai_checker_blueprint = Blueprint("ai_checker", __name__)
 
-@ai_checker_blueprint.route("/api/optimize-code", methods=["POST", "OPTIONS"]) # 修改为 /api/optimize-code
+
+@ai_checker_blueprint.route(
+    "/api/optimize-code", methods=["POST", "OPTIONS"]
+)  # 修改为 /api/optimize-code
 @login_required
 @rate_limit(max_calls=10, window_seconds=60)
 def ai_check_code():
-    if request.method == 'OPTIONS':
+    if request.method == "OPTIONS":
         return api_success({"status": "ok"}, status="ok")
 
     data = request.get_json(silent=True) or {}

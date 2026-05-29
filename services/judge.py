@@ -58,5 +58,5 @@ def _single_output_matches(actual_normalized, expected_output):
 
     return all(
         abs(actual - expected) <= JUDGE_FLOAT_TOLERANCE
-        for actual, expected in zip(actual_numbers, expected_numbers)
+        for actual, expected in zip(actual_numbers, expected_numbers, strict=False)
     )

@@ -33,11 +33,7 @@ def _get_redis_client():
 
 
 def _allow_with_memory(key: str, max_calls: int, window_seconds: int, now: float) -> bool:
-    calls = [
-        timestamp
-        for timestamp in _MEMORY_BUCKETS[key]
-        if now - timestamp < window_seconds
-    ]
+    calls = [timestamp for timestamp in _MEMORY_BUCKETS[key] if now - timestamp < window_seconds]
     if len(calls) >= max_calls:
         _MEMORY_BUCKETS[key] = calls
         return False

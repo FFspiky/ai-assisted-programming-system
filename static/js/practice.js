@@ -25,39 +25,56 @@ function getCurrentProblemId() {
     return urlParams.get('problem');
 }
 
-let problemOrderCache = null;
+let problemListCache = null;
 
-async function getProblemOrder() {
-    if (problemOrderCache) {
-        return problemOrderCache;
+async function getProblemList() {
+    if (problemListCache) {
+        return problemListCache;
     }
     const response = await fetch('/api/problems');
     const result = await response.json();
     if (!result.success || !result.problems) {
         return [];
     }
-    problemOrderCache = result.problems.map((p) => p.id);
-    return problemOrderCache;
+    problemListCache = result.problems;
+    return problemListCache;
 }
 
-async function updateNextButtonState() {
-    if (!nextProblemBtn) {
+async function updateProblemNavigationState() {
+    if (!nextProblemBtn || !prevProblemBtn) {
         return;
     }
     try {
         const currentId = getCurrentProblemId();
         if (!currentId) {
             nextProblemBtn.classList.add('is-disabled');
+            prevProblemBtn.classList.add('is-disabled');
             return;
         }
-        const order = await getProblemOrder();
+        const problems = await getProblemList();
+        const order = problems.map((p) => p.id);
         const currentIndex = order.indexOf(currentId);
+        const currentProblem = problems[currentIndex];
+        const hasPrev = currentIndex > 0;
         const hasNext = currentIndex >= 0 && currentIndex + 1 < order.length;
+        prevProblemBtn.classList.toggle('is-disabled', !hasPrev);
+        prevProblemBtn.title = hasPrev ? '' : '已是第一题';
         nextProblemBtn.classList.toggle('is-disabled', !hasNext);
         nextProblemBtn.title = hasNext ? '' : '已是最后一题';
+
+        if (problemProgress) {
+            problemProgress.textContent = currentIndex >= 0
+                ? `题目 ${currentIndex + 1}/${order.length}`
+                : '题目 -/-';
+        }
+        if (problemPassedBadge) {
+            problemPassedBadge.hidden = !(currentProblem && currentProblem.accepted);
+        }
     } catch (error) {
         nextProblemBtn.classList.add('is-disabled');
+        prevProblemBtn.classList.add('is-disabled');
         nextProblemBtn.title = '已是最后一题';
+        prevProblemBtn.title = '已是第一题';
     }
 }
 
@@ -102,7 +119,7 @@ async function loadProblem() {
         problemTitleEl.textContent = '加载失败';
         problemContentEl.innerHTML = `<p>请求题目数据时发生网络错误: ${error.message}</p>`;
     }
-    await updateNextButtonState();
+    await updateProblemNavigationState();
 }
 
 // DOM元素
@@ -113,6 +130,9 @@ const runBtn = document.getElementById('runBtn');
 const optimizeBtn = document.getElementById('optimizeBtn');
 const submitBtn = document.getElementById('submitBtn');
 const nextProblemBtn = document.getElementById('nextProblemBtn');
+const prevProblemBtn = document.getElementById('prevProblemBtn');
+const problemProgress = document.getElementById('problemProgress');
+const problemPassedBadge = document.getElementById('problemPassedBadge');
 const chatContainer = document.getElementById('chatContainer');
 const messageInput = document.getElementById('messageInput');
 const sendMessageBtn = document.getElementById('sendMessage');
@@ -270,6 +290,35 @@ if (codeInput) {
     renderGhostLayer();
 }
 
+async function goToRelativeProblem(offset) {
+    const currentId = getCurrentProblemId();
+    if (!currentId) {
+        return;
+    }
+    const problems = await getProblemList();
+    const order = problems.map((p) => p.id);
+    const currentIndex = order.indexOf(currentId);
+    const targetId = currentIndex >= 0 ? order[currentIndex + offset] : null;
+    if (!targetId) {
+        return;
+    }
+    window.location.href = `/practice.html?problem=${encodeURIComponent(targetId)}`;
+}
+
+if (prevProblemBtn) {
+    prevProblemBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        if (prevProblemBtn.classList.contains('is-disabled')) {
+            return;
+        }
+        try {
+            await goToRelativeProblem(-1);
+        } catch (error) {
+            console.error('获取上一题失败:', error);
+        }
+    });
+}
+
 if (nextProblemBtn) {
     nextProblemBtn.addEventListener('click', async (e) => {
         e.preventDefault();
@@ -277,21 +326,9 @@ if (nextProblemBtn) {
             return;
         }
         try {
-            const currentId = getCurrentProblemId();
-            if (!currentId) {
-                alert('请先选择题目');
-                return;
-            }
-            const order = await getProblemOrder();
-            const currentIndex = order.indexOf(currentId);
-            const nextId = currentIndex >= 0 ? order[currentIndex + 1] : null;
-            if (!nextId) {
-                alert('已经是最后一题');
-                return;
-            }
-            window.location.href = `/practice.html?problem=${encodeURIComponent(nextId)}`;
+            await goToRelativeProblem(1);
         } catch (error) {
-            alert(`获取下一题失败: ${error.message}`);
+            console.error('获取下一题失败:', error);
         }
     });
 }
@@ -542,6 +579,15 @@ async function submitCode() {
 
         if (result.success && result.status === "Accepted") {
             outputContent.innerHTML = `<div class="ai-response" style="border-left-color: var(--success);"><h4 style="color: var(--success); display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle"></i><span>${safeStatus}</span></h4><pre style="white-space: pre-wrap;">${safeDetails || '通过！'}</pre></div>`;
+            if (problemPassedBadge) {
+                problemPassedBadge.hidden = false;
+            }
+            if (problemListCache) {
+                const currentProblem = problemListCache.find((problem) => problem.id === problemId);
+                if (currentProblem) {
+                    currentProblem.accepted = true;
+                }
+            }
         } else {
             outputContent.innerHTML = `<div class="ai-response" style="border-left-color: var(--danger);"><h4 style="color: var(--danger); display: flex; align-items: center; gap: 8px;"><i class="fas fa-times-circle"></i><span>${safeStatus}</span></h4><pre style="white-space: pre-wrap;">${safeDetails}</pre></div>`;
         }

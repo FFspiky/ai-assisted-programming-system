@@ -41,10 +41,12 @@ def _normalize_structured_response(data: dict) -> dict | None:
         return None
 
     if not normalized_versions:
-        normalized_versions.append({
-            "description": "AI已提供反馈，但未返回可应用的优化代码版本。",
-            "code": "",
-        })
+        normalized_versions.append(
+            {
+                "description": "AI已提供反馈，但未返回可应用的优化代码版本。",
+                "code": "",
+            }
+        )
 
     return {
         "success": True,
@@ -63,7 +65,7 @@ def _parse_legacy_markdown(ai_response_content: str) -> dict:
         if not code:
             continue
 
-        preceding_text = ai_response_content[:match.start()].strip().splitlines()
+        preceding_text = ai_response_content[: match.start()].strip().splitlines()
         description = f"优化版本 {index}"
         for line in reversed(preceding_text[-5:]):
             clean_line = re.sub(r"^#+\s*", "", line).strip()
@@ -71,16 +73,20 @@ def _parse_legacy_markdown(ai_response_content: str) -> dict:
                 description = clean_line
                 break
 
-        optimized_versions.append({
-            "description": description,
-            "code": code,
-        })
+        optimized_versions.append(
+            {
+                "description": description,
+                "code": code,
+            }
+        )
 
     if not optimized_versions:
-        optimized_versions.append({
-            "description": "AI已提供反馈，但未能解析到具体优化代码版本。",
-            "code": "",
-        })
+        optimized_versions.append(
+            {
+                "description": "AI已提供反馈，但未能解析到具体优化代码版本。",
+                "code": "",
+            }
+        )
 
     return {
         "success": True,
@@ -124,7 +130,10 @@ JSON 结构必须是：
     payload = {
         "model": MODEL_NAME,
         "messages": [
-            {"role": "system", "content": "你是一名擅长教学和编程指导的助理，必须按用户要求输出 JSON。"},
+            {
+                "role": "system",
+                "content": "你是一名擅长教学和编程指导的助理，必须按用户要求输出 JSON。",
+            },
             {"role": "user", "content": full_prompt},
         ],
         "temperature": 0.3,

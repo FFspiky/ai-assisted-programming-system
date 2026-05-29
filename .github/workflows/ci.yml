@@ -27,7 +27,14 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+          npm ci
+
+      - name: Lint Python
+        run: ruff check .
+
+      - name: Check Python formatting
+        run: black --check .
 
       - name: Compile Python
         run: python -m compileall -q app.py models.py config.py routes services tests migrations
@@ -46,3 +53,35 @@ jobs:
           for f in static/js/*.js; do
             node --check "$f"
           done
+
+      - name: Install Playwright browser
+        run: npx playwright install chromium
+
+      - name: Run Playwright smoke tests
+        run: |
+          DATABASE_URL="sqlite:///$(pwd)/smoke.db" FLASK_SECRET_KEY=ci-secret flask --app app db upgrade
+          DATABASE_URL="sqlite:///$(pwd)/smoke.db" FLASK_SECRET_KEY=ci-secret flask --app app run --host 127.0.0.1 --port 5005 &
+          server_pid="$!"
+          trap 'kill "$server_pid"' EXIT
+          python - <<'PY'
+          import time
+          import urllib.request
+
+          deadline = time.time() + 20
+          while time.time() < deadline:
+              try:
+                  with urllib.request.urlopen("http://127.0.0.1:5005/index.html", timeout=1) as response:
+                      if response.status == 200:
+                          break
+              except Exception:
+                  time.sleep(0.5)
+          else:
+              raise SystemExit("Smoke test server did not start")
+          PY
+          SMOKE_BASE_URL="http://127.0.0.1:5005" npm run smoke
+
+      - name: Audit Python dependencies
+        run: pip-audit -r requirements.txt --cache-dir /tmp/pip-audit-cache
+
+      - name: Audit Node dependencies
+        run: npm audit --audit-level=high

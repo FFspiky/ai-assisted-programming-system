@@ -15,7 +15,7 @@ PROBLEMS = {
             <ul>
                 <li><code>n &lt;= 10^9</code></li>
             </ul>
-        """
+        """,
     },
     "power-of-three": {
         "title": "3的幂",
@@ -65,7 +65,7 @@ PROBLEMS = {
             <p>&nbsp;</p>
 
             <p><strong>进阶：</strong>你能不使用循环或者递归来完成本题吗？</p>
-        """
+        """,
     },
     "pizza-with-3n-slices": {
         "title": "3n块披萨",
@@ -114,7 +114,7 @@ PROBLEMS = {
                 <li><code>slices.length % 3 == 0</code></li>
                 <li><code>1 &lt;= slices[i] &lt;= 1000</code></li>
             </ul>
-        """
+        """,
     },
     "power-of-four": {
         "title": "4的幂",
@@ -157,7 +157,7 @@ PROBLEMS = {
             <p>&nbsp;</p>
 
             <p><strong>进阶：</strong>你能不使用循环或者递归来完成本题吗？</p>
-        """
+        """,
     },
     "maximum-69-number": {
         "title": "6和9组成的最大数字",
@@ -202,7 +202,7 @@ PROBLEMS = {
                 <li><code>1 &lt;= num &lt;= 10^4</code></li>
                 <li><code>num</code>&nbsp;每一位上的数字都是 6 或者&nbsp;9 。</li>
             </ul>
-        """
+        """,
     },
     "maximum-number-of-balloons": {
         "title": "气球的最大数量",
@@ -250,7 +250,7 @@ PROBLEMS = {
             <p>&nbsp;</p>
 
             <p><strong>注意：</strong>本题与&nbsp;<a href="https://leetcode.cn/problems/rearrange-characters-to-make-target-string/">2287. 重排字符形成目标字符串</a>&nbsp;相同。</p>
-        """
+        """,
     },
     "que-shi-de-shu-zi-lcof": {
         "title": "0～n-1中缺失的数字",
@@ -275,7 +275,7 @@ PROBLEMS = {
             <p><strong>限制：</strong></p>
 
             <p><code>1 &lt;= 数组长度 &lt;= 10000</code></p>
-        """
+        """,
     },
     "01-matrix": {
         "title": "01矩阵",
@@ -320,7 +320,7 @@ PROBLEMS = {
             <p>&nbsp;</p>
 
             <p><meta charset="UTF-8" />注意：本题与主站 542&nbsp;题相同：<a href="https://leetcode-cn.com/problems/01-matrix/">https://leetcode-cn.com/problems/01-matrix/</a></p>
-        """
+        """,
     },
     "1-bit-and-2-bit-characters": {
         "title": "1比特与2比特字符",
@@ -362,7 +362,7 @@ PROBLEMS = {
                 <li><code>1 &lt;= bits.length &lt;= 1000</code></li>
                 <li><code>bits[i]</code> 为 <code>0</code> 或 <code>1</code></li>
             </ul>
-        """
+        """,
     },
     "1nzheng-shu-zhong-1chu-xian-de-ci-shu-lcof": {
         "title": "1～n整数中1出现的次数",
@@ -395,7 +395,7 @@ PROBLEMS = {
             </ul>
 
             <p>注意：本题与主站 233 题相同：<a href="https://leetcode-cn.com/problems/number-of-digit-one/">https://leetcode-cn.com/problems/number-of-digit-one/</a></p>
-        """
+        """,
     },
     "power-of-two": {
         "title": "2的幂",
@@ -440,6 +440,6 @@ PROBLEMS = {
             <p>&nbsp;</p>
 
             <p><strong>进阶：</strong>你能够不使用循环/递归解决此问题吗？</p>
-        """
-    }
+        """,
+    },
 }

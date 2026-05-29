@@ -1,8 +1,9 @@
-from flask import Blueprint, request, Response
+from flask import Blueprint, Response, request
 from flask_login import login_required
+
+from routes.api_response import api_success
 from routes.guards import rate_limit
 from routes.validators import trim_autocomplete_context, validate_language
-from routes.api_response import api_success
 from services.ai_autocomplete import stream_inline_completion
 
 autocomplete_blueprint = Blueprint("autocomplete", __name__)

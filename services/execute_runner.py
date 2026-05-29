@@ -1,9 +1,9 @@
-import subprocess
-import sys
-import time
-import tempfile
 import os
 import shutil
+import subprocess
+import sys
+import tempfile
+import time
 
 from config import (
     CODE_RUN_CPU_SECONDS,
@@ -44,6 +44,7 @@ def _limit_child_process():
     except Exception:
         pass
 
+
 # 1. 修改函数签名，增加 input_text 参数
 def run_code(code: str, language: str = "Python", input_text: str = None) -> dict:
     tmp_dir = tempfile.mkdtemp(prefix="code-run-")
@@ -63,14 +64,16 @@ def run_code(code: str, language: str = "Python", input_text: str = None) -> dic
                 capture_output=True,
                 text=True,
                 timeout=CODE_RUN_TIMEOUT_SECONDS,
-                input=input_text, # 2. 将 input_text 传递给进程
+                input=input_text,  # 2. 将 input_text 传递给进程
                 cwd=tmp_dir,
                 env=run_env,
                 preexec_fn=_limit_child_process if os.name == "posix" else None,
             )
             run_time = round((time.time() - run_start) * 1000, 2)
         elif language.lower() == "cpp":
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.cpp', dir=tmp_dir, delete=False) as f:
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=".cpp", dir=tmp_dir, delete=False
+            ) as f:
                 f.write(code)
                 file_path = f.name
             output_file = os.path.splitext(file_path)[0]
@@ -104,7 +107,7 @@ def run_code(code: str, language: str = "Python", input_text: str = None) -> dic
                 capture_output=True,
                 text=True,
                 timeout=CODE_RUN_TIMEOUT_SECONDS,
-                input=input_text, # 2. 将 input_text 传递给进程
+                input=input_text,  # 2. 将 input_text 传递给进程
                 cwd=tmp_dir,
                 env=run_env,
                 preexec_fn=_limit_child_process if os.name == "posix" else None,
@@ -113,7 +116,7 @@ def run_code(code: str, language: str = "Python", input_text: str = None) -> dic
         else:
             return {
                 "success": False,
-                "error": f"不支持的语言: {language}（本机演示版本仅支持 Python / C++）"
+                "error": f"不支持的语言: {language}（本机演示版本仅支持 Python / C++）",
             }
 
         elapsed_time = round((time.time() - start_time) * 1000, 2)
@@ -130,37 +133,35 @@ def run_code(code: str, language: str = "Python", input_text: str = None) -> dic
             "run_time": run_time,
             "output_truncated": output_truncated,
             "error_truncated": error_truncated,
-            "memory": "N/A"
+            "memory": "N/A",
         }
 
     except subprocess.TimeoutExpired:
         return {
             "success": False,
             "status": "Time Limit Exceeded",
-            "error": f"Execution timed out after {CODE_RUN_TIMEOUT_SECONDS} seconds"
+            "error": f"Execution timed out after {CODE_RUN_TIMEOUT_SECONDS} seconds",
         }
     except FileNotFoundError:
         return {
             "success": False,
             "status": "Environment Error",
-            "error": f"未找到执行 {language} 代码所需的命令，请确保已安装相应的编译器或解释器。"
+            "error": f"未找到执行 {language} 代码所需的命令，请确保已安装相应的编译器或解释器。",
         }
     except Exception as e:
-        return {
-            "success": False,
-            "status": "Runtime Error",
-            "error": str(e)
-        }
+        return {"success": False, "status": "Runtime Error", "error": str(e)}
     finally:
         shutil.rmtree(tmp_dir, ignore_errors=True)
+
 
 # 保留命令行功能
 if __name__ == "__main__":
     import argparse
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--code", required=True)
     parser.add_argument("--language", default="Python")
     args = parser.parse_args()
-    
+
     result = run_code(args.code, args.language)
     print(result)

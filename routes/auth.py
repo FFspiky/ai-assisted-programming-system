@@ -1,21 +1,24 @@
-from flask import Blueprint, request, session
-from models import db, User
-from flask_login import login_user, logout_user, login_required, current_user
 import re
 import secrets
-from services.rate_limiter import allow_request, reset_limit
-from routes.api_response import api_error, api_success
 
-auth_blueprint = Blueprint('auth', __name__)
+from flask import Blueprint, request, session
+from flask_login import current_user, login_required, login_user, logout_user
+
+from models import User, db
+from routes.api_response import api_error, api_success
+from services.rate_limiter import allow_request, reset_limit
+
+auth_blueprint = Blueprint("auth", __name__)
 LOGIN_RATE_LIMIT_MAX_ATTEMPTS = 5
 LOGIN_RATE_LIMIT_WINDOW_SECONDS = 15 * 60
 
-@auth_blueprint.route('/register', methods=['POST'])
+
+@auth_blueprint.route("/register", methods=["POST"])
 def register():
     data = request.get_json(silent=True) or {}
-    username = (data.get('username') or '').strip()
-    email = (data.get('email') or '').strip()
-    password = data.get('password') or ''
+    username = (data.get("username") or "").strip()
+    email = (data.get("email") or "").strip()
+    password = data.get("password") or ""
 
     if not all([username, email, password]):
         return api_error("VALIDATION_ERROR", "所有字段都不能为空", 400)
@@ -39,11 +42,12 @@ def register():
 
     return api_success(message="注册成功！", http_status=201)
 
-@auth_blueprint.route('/login', methods=['POST'])
+
+@auth_blueprint.route("/login", methods=["POST"])
 def login():
     data = request.get_json(silent=True) or {}
-    username = (data.get('username') or '').strip()
-    password = data.get('password') or ''
+    username = (data.get("username") or "").strip()
+    password = data.get("password") or ""
     client_key = f"login:{request.remote_addr or 'unknown'}:{username}"
 
     if not allow_request(
@@ -59,7 +63,7 @@ def login():
         return api_error("INVALID_CREDENTIALS", "用户名或密码错误", 401)
 
     reset_limit(client_key)
-    login_user(user, remember=False) # 默认不持久化登录，关闭浏览器后需重新登录
+    login_user(user, remember=False)  # 默认不持久化登录，关闭浏览器后需重新登录
     session["csrf_token"] = secrets.token_urlsafe(32)
     data = {
         "user": {"username": user.username, "points": user.points},
@@ -67,24 +71,27 @@ def login():
     }
     return api_success(data, message="登录成功", user=data["user"], csrf_token=data["csrf_token"])
 
-@auth_blueprint.route('/logout', methods=['POST'])
+
+@auth_blueprint.route("/logout", methods=["POST"])
 def logout():
     session.pop("csrf_token", None)
     logout_user()
     return api_success(message="已成功登出")
 
-@auth_blueprint.route('/current_user', methods=['GET'])
+
+@auth_blueprint.route("/current_user", methods=["GET"])
 @login_required
 def get_current_user():
     # current_user 由 Flask-Login 提供
     user_data = {
-            "username": current_user.username,
-            "email": current_user.email,
-            "points": current_user.points
+        "username": current_user.username,
+        "email": current_user.email,
+        "points": current_user.points,
     }
     return api_success({"user": user_data}, user=user_data)
 
-@auth_blueprint.route('/unauthorized')
+
+@auth_blueprint.route("/unauthorized")
 def unauthorized():
     # 当Flask-Login需要登录但用户未登录时，会调用此函数
     return api_error("AUTH_REQUIRED", "需要登录", 401)

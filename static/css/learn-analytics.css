@@ -525,6 +525,35 @@ nav a.active::after {
 .leaderboard-table .rank { font-size: 1.2rem; font-weight: bold; color: var(--primary); }
 .leaderboard-table .username { font-weight: 500; }
 
+.analysis-cache-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.cache-note {
+    color: var(--gray);
+    font-size: 0.9rem;
+}
+
+.refresh-analysis-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid rgba(78, 110, 242, 0.35);
+    border-radius: 8px;
+    background: rgba(78, 110, 242, 0.14);
+    color: var(--light);
+    padding: 10px 14px;
+    cursor: pointer;
+}
+
+.refresh-analysis-btn:hover {
+    background: rgba(78, 110, 242, 0.24);
+}
+
 /* --- AI分析输出美化样式 --- */
 #ai-stream-content {
     line-height: 1.8; /* 增加行高，提升可读性 */
@@ -576,4 +605,102 @@ nav a.active::after {
 
 #ai-stream-content p {
     margin-bottom: 1rem;
+}
+
+@media (max-width: 900px) {
+    .container {
+        padding: 0 14px;
+    }
+
+    header {
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    nav ul {
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    nav a {
+        padding: 7px 10px;
+        font-size: 14px;
+    }
+
+    .user-details {
+        display: none;
+    }
+
+    .analysis-hero {
+        padding: 36px 0 24px;
+        text-align: left;
+    }
+
+    .hero-title {
+        font-size: 2rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1rem;
+        margin-bottom: 24px;
+    }
+
+    .cards-grid,
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .card,
+    .stat-card {
+        padding: 18px;
+        border-radius: 10px;
+    }
+
+    .leaderboard-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .question-nav,
+    .analysis-cache-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .nav-btn,
+    .nav-btn-primary,
+    .nav-btn-success,
+    .refresh-analysis-btn {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .path-content {
+        max-height: none;
+        padding: 14px;
+    }
+}
+
+@media (max-width: 560px) {
+    nav ul {
+        display: none;
+    }
+
+    .section-title {
+        display: block;
+        left: auto;
+        transform: none;
+        text-align: left;
+        font-size: 1.55rem;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+    }
+
+    .option-btn {
+        padding: 13px 14px;
+    }
 }

@@ -49,7 +49,9 @@ def validate_code_payload(data):
     if response:
         return None, None, None, (response, status)
 
-    input_text, response, status = validate_text_size(data.get("input_text"), MAX_STDIN_CHARS, "标准输入")
+    input_text, response, status = validate_text_size(
+        data.get("input_text"), MAX_STDIN_CHARS, "标准输入"
+    )
     if response:
         return None, None, None, (response, status)
 

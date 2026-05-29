@@ -5,7 +5,6 @@ import requests
 
 from config import API_KEY, API_URL
 
-
 logger = logging.getLogger(__name__)
 
 

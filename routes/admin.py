@@ -1,13 +1,14 @@
 # routes/admin.py
-from flask import Blueprint, request
-from models import db, Problem, TestCase
 from functools import wraps
-from flask_login import current_user
+
 from bs4 import BeautifulSoup
-import os
+from flask import Blueprint, request
+from flask_login import current_user
+
+from models import Problem, TestCase, db
 from routes.api_response import api_error, api_success
 
-admin_blueprint = Blueprint('admin', __name__)
+admin_blueprint = Blueprint("admin", __name__)
 
 ALLOWED_DESCRIPTION_TAGS = {
     "a",
@@ -101,10 +102,11 @@ def admin_required(f):
         if not current_user.is_authenticated or not current_user.is_admin:
             return api_error("ADMIN_REQUIRED", "需要管理员权限", 403)
         return f(*args, **kwargs)
+
     return decorated_function
 
 
-@admin_blueprint.route('/problems', methods=['GET'])
+@admin_blueprint.route("/problems", methods=["GET"])
 @admin_required
 def list_problems():
     problems = Problem.query.order_by(Problem.id.asc()).all()
@@ -112,7 +114,7 @@ def list_problems():
     return api_success(data, problems=data["problems"])
 
 
-@admin_blueprint.route('/problems/<problem_id>', methods=['PUT'])
+@admin_blueprint.route("/problems/<problem_id>", methods=["PUT"])
 @admin_required
 def update_problem(problem_id):
     problem = db.session.get(Problem, problem_id)
@@ -138,20 +140,28 @@ def update_problem(problem_id):
     TestCase.query.filter_by(problem_id=problem_id).delete()
     for index, case in enumerate(test_cases, start=1):
         input_data = "" if case.get("input_data") is None else str(case.get("input_data"))
-        expected_output = "" if case.get("expected_output") is None else str(case.get("expected_output"))
+        expected_output = (
+            "" if case.get("expected_output") is None else str(case.get("expected_output"))
+        )
         if not expected_output.strip():
             return api_error("VALIDATION_ERROR", f"第 {index} 个测试用例 output 不能为空", 400)
-        db.session.add(TestCase(
-            input_data=input_data.strip(),
-            expected_output=expected_output.strip(),
-            problem_id=problem_id,
-        ))
+        db.session.add(
+            TestCase(
+                input_data=input_data.strip(),
+                expected_output=expected_output.strip(),
+                problem_id=problem_id,
+            )
+        )
 
     db.session.commit()
-    return api_success({"problem": _problem_payload(problem)}, message="题目已更新", problem=_problem_payload(problem))
+    return api_success(
+        {"problem": _problem_payload(problem)},
+        message="题目已更新",
+        problem=_problem_payload(problem),
+    )
 
 
-@admin_blueprint.route('/problems/<problem_id>', methods=['DELETE'])
+@admin_blueprint.route("/problems/<problem_id>", methods=["DELETE"])
 @admin_required
 def delete_problem(problem_id):
     problem = db.session.get(Problem, problem_id)
@@ -163,42 +173,44 @@ def delete_problem(problem_id):
     return api_success(message="题目已删除")
 
 
-@admin_blueprint.route('/problems/upload', methods=['POST'])
+@admin_blueprint.route("/problems/upload", methods=["POST"])
 @admin_required
 def upload_problems():
-    if 'file' not in request.files:
+    if "file" not in request.files:
         return api_error("UPLOAD_FILE_MISSING", "没有找到上传的文件", 400)
-    file = request.files['file']
-    if file.filename == '':
+    file = request.files["file"]
+    if file.filename == "":
         return api_error("UPLOAD_FILE_EMPTY", "未选择文件", 400)
-    if not file.filename.endswith('.html'):
+    if not file.filename.endswith(".html"):
         return api_error("UPLOAD_FILE_TYPE_INVALID", "请上传HTML格式的文件", 400)
 
     try:
-        html_content = file.read().decode('utf-8')
-        soup = BeautifulSoup(html_content, 'lxml')
-        
-        problem_items = soup.find_all('div', class_='problem-item')
+        html_content = file.read().decode("utf-8")
+        soup = BeautifulSoup(html_content, "lxml")
+
+        problem_items = soup.find_all("div", class_="problem-item")
         if not problem_items:
-            return api_error("PROBLEM_ITEMS_MISSING", "在文件中未找到 class='problem-item' 的题目", 400)
-            
+            return api_error(
+                "PROBLEM_ITEMS_MISSING", "在文件中未找到 class='problem-item' 的题目", 400
+            )
+
         imported = []
         skipped = []
         parse_errors = []
 
         for index, item in enumerate(problem_items, start=1):
-            prob_id_tag = item.find('div', class_='prob-id')
-            title_tag = item.find('h2')
+            prob_id_tag = item.find("div", class_="prob-id")
+            title_tag = item.find("h2")
             prob_id = _text_or_none(prob_id_tag)
             if not prob_id and title_tag:
                 prob_id = (title_tag.get("data-id") or "").strip() or None
 
             title = _text_or_none(title_tag)
-            difficulty_tag = item.find('div', class_='difficulty')
-            difficulty = _text_or_none(difficulty_tag) or '简单'
-            
-            description_tag = item.find('div', class_='description')
-            description = sanitize_description(description_tag) if description_tag else ''
+            difficulty_tag = item.find("div", class_="difficulty")
+            difficulty = _text_or_none(difficulty_tag) or "简单"
+
+            description_tag = item.find("div", class_="description")
+            description = sanitize_description(description_tag) if description_tag else ""
 
             missing_fields = []
             if not prob_id:
@@ -209,19 +221,21 @@ def upload_problems():
                 missing_fields.append("题目描述")
 
             if missing_fields:
-                skipped.append({
-                    "index": index,
-                    "id": prob_id,
-                    "title": title,
-                    "reason": f"缺少核心字段: {', '.join(missing_fields)}",
-                })
-                continue 
+                skipped.append(
+                    {
+                        "index": index,
+                        "id": prob_id,
+                        "title": title,
+                        "reason": f"缺少核心字段: {', '.join(missing_fields)}",
+                    }
+                )
+                continue
 
             problem = db.session.get(Problem, prob_id)
             action = "updated" if problem else "created"
             if not problem:
                 problem = Problem(id=prob_id)
-            
+
             problem.title = title
             problem.difficulty = difficulty
             problem.description = description
@@ -229,29 +243,33 @@ def upload_problems():
 
             TestCase.query.filter_by(problem_id=prob_id).delete()
             valid_test_case_count = 0
-            test_cases = item.find_all('div', class_='test-case')
+            test_cases = item.find_all("div", class_="test-case")
             for case_index, case in enumerate(test_cases, start=1):
-                input_tag = case.find('pre', class_='input')
-                output_tag = case.find('pre', class_='output')
-                
+                input_tag = case.find("pre", class_="input")
+                output_tag = case.find("pre", class_="output")
+
                 if not input_tag or not output_tag:
-                    parse_errors.append({
-                        "index": index,
-                        "id": prob_id,
-                        "test_case_index": case_index,
-                        "reason": "测试用例缺少 input 或 output",
-                    })
+                    parse_errors.append(
+                        {
+                            "index": index,
+                            "id": prob_id,
+                            "test_case_index": case_index,
+                            "reason": "测试用例缺少 input 或 output",
+                        }
+                    )
                     continue
 
                 input_data = input_tag.get_text().strip()
                 output_data = output_tag.get_text().strip()
                 if not output_data:
-                    parse_errors.append({
-                        "index": index,
-                        "id": prob_id,
-                        "test_case_index": case_index,
-                        "reason": "测试用例 output 为空",
-                    })
+                    parse_errors.append(
+                        {
+                            "index": index,
+                            "id": prob_id,
+                            "test_case_index": case_index,
+                            "reason": "测试用例 output 为空",
+                        }
+                    )
                     continue
 
                 new_case = TestCase(
@@ -261,15 +279,17 @@ def upload_problems():
                 )
                 db.session.add(new_case)
                 valid_test_case_count += 1
-            
-            imported.append({
-                "index": index,
-                "id": prob_id,
-                "title": title,
-                "action": action,
-                "test_case_count": valid_test_case_count,
-            })
-            
+
+            imported.append(
+                {
+                    "index": index,
+                    "id": prob_id,
+                    "title": title,
+                    "action": action,
+                    "test_case_count": valid_test_case_count,
+                }
+            )
+
         db.session.commit()
         data = {
             "imported_count": len(imported),
@@ -280,8 +300,8 @@ def upload_problems():
             "parse_errors": parse_errors,
         }
         message = (
-                f"成功导入/更新了 {len(imported)} 道题目，"
-                f"跳过 {len(skipped)} 道，解析问题 {len(parse_errors)} 条。"
+            f"成功导入/更新了 {len(imported)} 道题目，"
+            f"跳过 {len(skipped)} 道，解析问题 {len(parse_errors)} 条。"
         )
         return api_success(data, message=message)
 

@@ -61,13 +61,19 @@
 
         <div class="problem-container">
             <div class="problem-section">
-                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-                    <a href="./index.html" class="back-to-home-btn">
-                        <i class="fas fa-arrow-left"></i> 返回首页
-                    </a>
+                <div class="problem-nav">
                     <a href="./problem_selector.html" class="back-to-home-btn">
                         <i class="fas fa-list"></i> 选择题目
                     </a>
+                    <a href="#" class="back-to-home-btn" id="prevProblemBtn" title="">
+                        <i class="fas fa-arrow-left"></i> 上一题
+                    </a>
+                    <div class="problem-status-group">
+                        <span class="problem-progress" id="problemProgress">题目 -/-</span>
+                        <span class="problem-passed-badge" id="problemPassedBadge" hidden>
+                            <i class="fas fa-check-circle"></i> 已通过
+                        </span>
+                    </div>
                     <a href="#" class="back-to-home-btn" id="nextProblemBtn" title="">
                         <i class="fas fa-arrow-right"></i> 下一题
                     </a>
@@ -77,7 +83,7 @@
                     <h2 class="problem-title">题目区域</h2>
                 </div>
 
-                <div class="problem-content" style="width:650.88px; height: auto;">
+                <div class="problem-content">
                 </div>
 
                 <div class="editor-container">

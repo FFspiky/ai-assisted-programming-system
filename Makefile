@@ -1,4 +1,4 @@
-.PHONY: test check compile js-check
+.PHONY: test check compile js-check lint format-check audit smoke
 
 PYTHON ?= python3
 
@@ -12,5 +12,17 @@ js-check:
 	@for f in static/js/*.js; do \
 		node --check "$$f"; \
 	done
+
+lint:
+	$(PYTHON) -m ruff check .
+
+format-check:
+	$(PYTHON) -m black --check .
+
+audit:
+	$(PYTHON) -m pip_audit -r requirements.txt --cache-dir /tmp/pip-audit-cache
+
+smoke:
+	npm run smoke
 
 check: compile test js-check

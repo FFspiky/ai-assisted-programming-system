@@ -23,6 +23,9 @@
 
     let currentQuestion = 0;
     const userAnswers = Array(questions.length).fill(null);
+    let currentOverviewSignature = '';
+    let currentAnalysisUserKey = 'guest';
+    const AI_ANALYSIS_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 function escapeHtml(text) {
     const map = {
@@ -219,8 +222,9 @@ UserSession.init({
     onRecordsClick: function () {
         window.location.href = '/practice.html';
     },
-    onAuthenticated: function () {
-        fetchLearningOverview();
+    onAuthenticated: async function (user) {
+        currentAnalysisUserKey = user && user.username ? user.username : 'user';
+        await fetchLearningOverview();
         fetchAiAnalysisStream();
     },
     onGuest: showGuestAnalysisState
@@ -246,10 +250,64 @@ try {
         document.getElementById('totalSolved').textContent = result.data.total_solved;
         document.getElementById('learningHours').textContent = result.data.learning_hours + 'h';
         document.getElementById('accuracyRate').textContent = result.data.accuracy + '%';
+        currentOverviewSignature = [
+            result.data.total_solved,
+            result.data.learning_hours,
+            result.data.accuracy
+        ].join(':');
     }
 } catch (error) {
     console.error('获取学习概览失败:', error);
 }
+    }
+
+    function getAnalysisCacheKey() {
+return `aiLearningAnalysis:${currentAnalysisUserKey}:${currentOverviewSignature || 'unknown'}`;
+    }
+
+function readCachedAiAnalysis() {
+try {
+    const cacheKey = getAnalysisCacheKey();
+    const raw = localStorage.getItem(cacheKey);
+    if (!raw) return null;
+    const cached = JSON.parse(raw);
+    if (!cached.content || Date.now() - cached.savedAt > AI_ANALYSIS_CACHE_TTL_MS) {
+        localStorage.removeItem(cacheKey);
+        return null;
+    }
+    return cached;
+} catch (error) {
+    return null;
+}
+    }
+
+    function writeCachedAiAnalysis(content) {
+if (!content) return;
+try {
+    localStorage.setItem(getAnalysisCacheKey(), JSON.stringify({
+        content,
+        savedAt: Date.now()
+    }));
+} catch (error) {
+    console.warn('保存 AI 分析缓存失败:', error);
+}
+    }
+
+    function renderAiAnalysis(content, fromCache = false) {
+const container = document.getElementById('aiAnalysisContainer');
+container.innerHTML = `
+    <div class="card-body path-content" id="ai-stream-content"></div>
+    <div class="analysis-cache-actions">
+        ${fromCache ? '<span class="cache-note">已展示最近一次分析结果</span>' : ''}
+        <button type="button" class="refresh-analysis-btn" id="refreshAiAnalysisBtn">
+            <i class="fas fa-rotate-right"></i> 重新生成
+        </button>
+    </div>`;
+document.getElementById('ai-stream-content').innerHTML = renderMarkdownSafe(content);
+document.getElementById('refreshAiAnalysisBtn').addEventListener('click', () => {
+    localStorage.removeItem(getAnalysisCacheKey());
+    fetchAiAnalysisStream({ forceRefresh: true });
+});
     }
 
     async function fetchLeaderboard() {
@@ -281,8 +339,15 @@ try {
 }
     }
 
-    async function fetchAiAnalysisStream() {
+    async function fetchAiAnalysisStream(options = {}) {
 const container = document.getElementById('aiAnalysisContainer');
+if (!options.forceRefresh) {
+    const cached = readCachedAiAnalysis();
+    if (cached) {
+        renderAiAnalysis(cached.content, true);
+        return;
+    }
+}
 container.innerHTML = `<div class="card-body path-content" id="ai-stream-content"></div>`;
 const contentDiv = document.getElementById('ai-stream-content');
 
@@ -320,6 +385,8 @@ try {
             }
         }
     }
+    writeCachedAiAnalysis(fullContent);
+    renderAiAnalysis(fullContent);
 } catch (error) {
     contentDiv.innerHTML = `<p class="error-message">请求AI分析时发生错误: ${escapeHtml(error.message)}</p>`;
 }

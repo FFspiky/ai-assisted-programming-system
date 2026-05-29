@@ -27,8 +27,11 @@ def stream_code_from_prompt(prompt: str, language: str) -> str:
     payload = {
         "model": MODEL_NAME,
         "messages": [
-            {"role": "system", "content": f"你是一名擅长教学和编程指导的助理，善于用清晰中文解释复杂问题"},
-            {"role": "user", "content": full_prompt}
+            {
+                "role": "system",
+                "content": "你是一名擅长教学和编程指导的助理，善于用清晰中文解释复杂问题",
+            },
+            {"role": "user", "content": full_prompt},
         ],
         "temperature": 0.4,
     }

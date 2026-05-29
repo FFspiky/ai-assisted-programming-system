@@ -1,14 +1,16 @@
 # routes/solution_checker.py
 from flask import Blueprint, request
-from flask_login import login_required, current_user
-from models import db, Submission, Problem, TestCase, User
+from flask_login import current_user, login_required
+
+from models import Problem, Submission, User, db
+from routes.api_response import api_error, api_success
 from routes.guards import rate_limit
 from routes.validators import validate_code_payload
-from routes.api_response import api_error, api_success
-from services.execute_runner import run_code # 假设您的执行代码服务在这里
+from services.execute_runner import run_code  # 假设您的执行代码服务在这里
 from services.judge import outputs_match
 
 solution_checker_blueprint = Blueprint("solution_checker", __name__)
+
 
 @solution_checker_blueprint.route("/check-solution", methods=["POST"])
 @login_required
@@ -55,24 +57,32 @@ def check_solution():
 
         if not run_result.get("success"):
             final_status = run_result.get("status") or "Runtime Error"
-            case_result.update({
-                "status": final_status,
-                "passed": False,
-                "error": run_result.get("error", ""),
-            })
+            case_result.update(
+                {
+                    "status": final_status,
+                    "passed": False,
+                    "error": run_result.get("error", ""),
+                }
+            )
             test_results.append(case_result)
-            feedback_details.append(f"测试用例 {i} 执行失败 ({final_status}): {run_result.get('error', '')}")
-            break # 出现错误，直接中断
+            feedback_details.append(
+                f"测试用例 {i} 执行失败 ({final_status}): {run_result.get('error', '')}"
+            )
+            break  # 出现错误，直接中断
 
         if not outputs_match(actual_output, expected_output):
             final_status = "Wrong Answer"
-            case_result.update({
-                "status": final_status,
-                "passed": False,
-            })
+            case_result.update(
+                {
+                    "status": final_status,
+                    "passed": False,
+                }
+            )
             test_results.append(case_result)
-            feedback_details.append(f"测试用例 {i} 未通过: \n输入:\n{case.input_data}\n预期输出:\n{expected_output.strip()}\n你的输出:\n{actual_output.strip()}")
-            break # 答案错误，直接中断
+            feedback_details.append(
+                f"测试用例 {i} 未通过: \n输入:\n{case.input_data}\n预期输出:\n{expected_output.strip()}\n你的输出:\n{actual_output.strip()}"
+            )
+            break  # 答案错误，直接中断
 
         test_results.append(case_result)
         feedback_details.append(f"测试用例 {i} 通过!")
@@ -80,9 +90,7 @@ def check_solution():
     already_accepted = None
     if final_status == "Accepted":
         already_accepted = Submission.query.filter_by(
-            user_id=current_user.id,
-            problem_id=problem_id,
-            status="Accepted"
+            user_id=current_user.id, problem_id=problem_id, status="Accepted"
         ).first()
 
     # 保存提交记录
@@ -92,14 +100,14 @@ def check_solution():
         status=final_status,
         feedback="\n".join(feedback_details),
         user_id=current_user.id,
-        problem_id=problem_id
+        problem_id=problem_id,
     )
     db.session.add(new_submission)
 
     if final_status == "Accepted" and already_accepted is None:
         user = db.session.get(User, current_user.id)
-        user.points += 10 # 首次答对加分
-    
+        user.points += 10  # 首次答对加分
+
     db.session.commit()
 
     details = "\n".join(feedback_details)

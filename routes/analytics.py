@@ -1,12 +1,14 @@
 # routes/analytics.py
-from flask import Blueprint, request, Response
-from flask_login import login_required, current_user
-from models import db, Submission, Problem, User
-from sqlalchemy import case
-import requests
 import json
 import time
 from datetime import datetime, timezone
+
+import requests
+from flask import Blueprint, Response, request
+from flask_login import current_user, login_required
+from sqlalchemy import case
+
+from models import Problem, Submission, User, db
 from routes.api_response import api_error, api_success
 
 # 从配置文件导入API信息
@@ -17,7 +19,7 @@ except ImportError:
     API_URL = ""
     MODEL_NAME = ""
 
-analytics_blueprint = Blueprint('analytics', __name__)
+analytics_blueprint = Blueprint("analytics", __name__)
 LEARNING_TIME_DAILY_BUCKETS = {}
 MAX_LEARNING_TIME_REPORT_SECONDS = 5 * 60
 MAX_LEARNING_TIME_PER_DAY_SECONDS = 8 * 60 * 60
@@ -40,30 +42,36 @@ def _add_today_reported_seconds(user_id, duration_seconds):
     LEARNING_TIME_DAILY_BUCKETS[key] = reported + accepted
     return accepted, allowed
 
+
 # --- 学习概览 API (已更新) ---
-@analytics_blueprint.route('/learning_overview', methods=['GET'])
+@analytics_blueprint.route("/learning_overview", methods=["GET"])
 @login_required
 def learning_overview():
     user_id = current_user.id
     total_submissions = Submission.query.filter_by(user_id=user_id).count()
-    accepted_submissions = Submission.query.filter_by(user_id=user_id, status='Accepted').count()
-    accuracy = round((accepted_submissions / total_submissions) * 100) if total_submissions > 0 else 0
-    
+    accepted_submissions = Submission.query.filter_by(user_id=user_id, status="Accepted").count()
+    accuracy = (
+        round((accepted_submissions / total_submissions) * 100) if total_submissions > 0 else 0
+    )
+
     # 从数据库获取真实学习时长 (小时)
     learning_hours = round(current_user.learning_duration / 3600, 1)
 
-    return api_success({
-            'total_solved': accepted_submissions, # <--- 修正拼写
-            'accuracy': accuracy,
-            'learning_hours': learning_hours
-    })
+    return api_success(
+        {
+            "total_solved": accepted_submissions,  # <--- 修正拼写
+            "accuracy": accuracy,
+            "learning_hours": learning_hours,
+        }
+    )
+
 
 # --- 更新学习时长 API (新增) ---
-@analytics_blueprint.route('/update_learning_time', methods=['POST'])
+@analytics_blueprint.route("/update_learning_time", methods=["POST"])
 @login_required
 def update_learning_time():
     data = request.get_json(silent=True) or {}
-    duration_seconds = data.get('duration', 0)
+    duration_seconds = data.get("duration", 0)
 
     try:
         duration_seconds = int(duration_seconds)
@@ -78,70 +86,85 @@ def update_learning_time():
                 "今日学习时长已达到上限",
                 429,
                 data={
-                    'accepted_seconds': 0,
-                    'daily_reported_seconds': _get_today_reported_seconds(current_user.id),
+                    "accepted_seconds": 0,
+                    "daily_reported_seconds": _get_today_reported_seconds(current_user.id),
                 },
             )
 
         user = db.session.get(User, current_user.id)
         user.learning_duration += int(accepted_seconds)
         db.session.commit()
-        return api_success({
-                'accepted_seconds': accepted_seconds,
-                'daily_reported_seconds': _get_today_reported_seconds(current_user.id),
+        return api_success(
+            {
+                "accepted_seconds": accepted_seconds,
+                "daily_reported_seconds": _get_today_reported_seconds(current_user.id),
             },
             message="学习时长已更新",
         )
     return api_error("INVALID_LEARNING_TIME", "无效的时长", 400)
 
+
 # --- 排行榜 API (新增) ---
-@analytics_blueprint.route('/leaderboard', methods=['GET'])
+@analytics_blueprint.route("/leaderboard", methods=["GET"])
 def leaderboard():
     # 查询所有用户，并计算解题数、提交数和通过数，让排行榜指标含义更清晰。
-    users_with_stats = db.session.query(
-        User,
-        db.func.count(db.distinct(
-            case((Submission.status == 'Accepted', Submission.problem_id))
-        )).label('solved_count'),
-        db.func.count(Submission.id).label('submission_count'),
-        db.func.count(case((Submission.status == 'Accepted', 1))).label('accepted_count'),
-    ).outerjoin(Submission, User.id == Submission.user_id)\
-     .group_by(User.id)\
-     .order_by(db.desc('solved_count'), db.desc(User.points), db.desc(User.learning_duration))\
-     .limit(10).all()
+    users_with_stats = (
+        db.session.query(
+            User,
+            db.func.count(
+                db.distinct(case((Submission.status == "Accepted", Submission.problem_id)))
+            ).label("solved_count"),
+            db.func.count(Submission.id).label("submission_count"),
+            db.func.count(case((Submission.status == "Accepted", 1))).label("accepted_count"),
+        )
+        .outerjoin(Submission, User.id == Submission.user_id)
+        .group_by(User.id)
+        .order_by(db.desc("solved_count"), db.desc(User.points), db.desc(User.learning_duration))
+        .limit(10)
+        .all()
+    )
 
     leaderboard_data = []
-    for rank, (user, solved_count, submission_count, accepted_count) in enumerate(users_with_stats, 1):
+    for rank, (user, solved_count, submission_count, accepted_count) in enumerate(
+        users_with_stats, 1
+    ):
         accuracy = round((accepted_count / submission_count) * 100) if submission_count else 0
-        leaderboard_data.append({
-            'rank': rank,
-            'username': user.username,
-            'solved_count': solved_count,
-            'points': user.points or 0,
-            'learning_hours': round((user.learning_duration or 0) / 3600, 1),
-            'accuracy': accuracy,
-        })
+        leaderboard_data.append(
+            {
+                "rank": rank,
+                "username": user.username,
+                "solved_count": solved_count,
+                "points": user.points or 0,
+                "learning_hours": round((user.learning_duration or 0) / 3600, 1),
+                "accuracy": accuracy,
+            }
+        )
 
     return api_success(leaderboard_data)
 
 
 # --- AI学习分析 API (已升级为流式输出) ---
-@analytics_blueprint.route('/ai_learning_analysis_stream', methods=['GET'])
+@analytics_blueprint.route("/ai_learning_analysis_stream", methods=["GET"])
 @login_required
 def ai_learning_analysis_stream():
     user_id = current_user.id
-    
+
     # 升级：获取最近20次提交记录
-    recent_submissions = db.session.query(Submission, Problem.title, Problem.difficulty)\
-        .join(Problem, Submission.problem_id == Problem.id)\
-        .filter(Submission.user_id == user_id)\
-        .order_by(Submission.timestamp.desc())\
-        .limit(20).all()
+    recent_submissions = (
+        db.session.query(Submission, Problem.title, Problem.difficulty)
+        .join(Problem, Submission.problem_id == Problem.id)
+        .filter(Submission.user_id == user_id)
+        .order_by(Submission.timestamp.desc())
+        .limit(20)
+        .all()
+    )
 
     if not recent_submissions:
+
         def empty_stream():
             yield f"data: {json.dumps({'content': '<h3>开始您的编程之旅吧！</h3><p>我们还没有发现您的刷题记录。请先去“刷题”页面完成一些题目，AI 就能为您生成一份个性化的学习分析报告了。'})}\n\n"
-        return Response(empty_stream(), mimetype='text/event-stream')
+
+        return Response(empty_stream(), mimetype="text/event-stream")
 
     # --- 精心设计的Prompt ---
     submission_details = ""
@@ -169,14 +192,11 @@ def ai_learning_analysis_stream():
     请现在开始生成你的分析报告：
     """
 
-    headers = {
-        "Authorization": f"Bearer {API_KEY}",
-        "Content-Type": "application/json"
-    }
+    headers = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}
     payload = {
         "model": MODEL_NAME,
         "messages": [{"role": "user", "content": prompt}],
-        "stream": True  # 开启流式输出
+        "stream": True,  # 开启流式输出
     }
 
     def generate():
@@ -185,26 +205,28 @@ def ai_learning_analysis_stream():
             return
         try:
             response = requests.post(API_URL, headers=headers, json=payload, stream=True)
-            response.raise_for_status() # 如果请求失败则抛出异常
-            
+            response.raise_for_status()  # 如果请求失败则抛出异常
+
             for chunk in response.iter_lines():
                 if chunk:
-                    chunk_str = chunk.decode('utf-8')
-                    if chunk_str.startswith('data: '):
+                    chunk_str = chunk.decode("utf-8")
+                    if chunk_str.startswith("data: "):
                         data_str = chunk_str[6:]
-                        if data_str.strip() == '[DONE]':
+                        if data_str.strip() == "[DONE]":
                             break
                         try:
                             data = json.loads(data_str)
-                            content = data.get('choices', [{}])[0].get('delta', {}).get('content', '')
+                            content = (
+                                data.get("choices", [{}])[0].get("delta", {}).get("content", "")
+                            )
                             if content:
                                 # 将内容封装成JSON格式发送
                                 yield f"data: {json.dumps({'content': content})}\n\n"
-                                time.sleep(0.02) # 控制一下输出速度，体验更好
+                                time.sleep(0.02)  # 控制一下输出速度，体验更好
                         except json.JSONDecodeError:
                             continue
         except requests.exceptions.RequestException as e:
             error_message = f"请求AI服务失败: {e}"
             yield f"data: {json.dumps({'error': error_message})}\n\n"
 
-    return Response(generate(), mimetype='text/event-stream')
+    return Response(generate(), mimetype="text/event-stream")

@@ -9,12 +9,12 @@ os.environ["DATABASE_URL"] = "sqlite:///" + db_file.name
 os.environ["FLASK_SECRET_KEY"] = "test-secret"
 
 from app import app
-from models import Problem, TestCase, User, db
-from routes.guards import _RATE_BUCKETS
+from models import Problem, Submission, TestCase, User, db
 from routes.analytics import LEARNING_TIME_DAILY_BUCKETS
 from services.ai_code_checker import parse_ai_code_response
 from services.execute_runner import run_code
 from services.judge import outputs_match
+from services.rate_limiter import _MEMORY_BUCKETS
 
 
 def api_error_message(response):
@@ -42,7 +42,7 @@ class CoreSecurityTest(unittest.TestCase):
             pass
 
     def setUp(self):
-        _RATE_BUCKETS.clear()
+        _MEMORY_BUCKETS.clear()
         LEARNING_TIME_DAILY_BUCKETS.clear()
         app.config["TESTING"] = True
         self.client = app.test_client()
@@ -220,8 +220,12 @@ class CoreSecurityTest(unittest.TestCase):
 
     def test_solution_checker_accepts_whitespace_tolerant_output(self):
         with app.app_context():
-            db.session.add(Problem(id="p-space", title="Space", description="Space", difficulty="简单"))
-            db.session.add(TestCase(input_data="", expected_output="hello\nworld", problem_id="p-space"))
+            db.session.add(
+                Problem(id="p-space", title="Space", description="Space", difficulty="简单")
+            )
+            db.session.add(
+                TestCase(input_data="", expected_output="hello\nworld", problem_id="p-space")
+            )
             db.session.commit()
 
         self.client.post(
@@ -296,9 +300,45 @@ class CoreSecurityTest(unittest.TestCase):
         self.assertIn("run_time", payload["test_results"][0])
         self.assertIn("output_truncated", payload["test_results"][0])
 
+    def test_problem_list_marks_accepted_problem_for_authenticated_user(self):
+        with app.app_context():
+            user = User(username="accepteduser", email="accepted@example.com")
+            user.set_password("strongpass")
+            db.session.add(user)
+            db.session.add(
+                Problem(id="p-accepted", title="Done", description="Done", difficulty="简单")
+            )
+            db.session.add(
+                Problem(id="p-open", title="Open", description="Open", difficulty="简单")
+            )
+            db.session.commit()
+            db.session.add(
+                Submission(
+                    code_submitted="print('ok')",
+                    language="python",
+                    status="Accepted",
+                    user_id=user.id,
+                    problem_id="p-accepted",
+                )
+            )
+            db.session.commit()
+
+        self.client.post(
+            "/api/login",
+            json={"username": "accepteduser", "password": "strongpass"},
+        )
+        response = self.client.get("/api/problems")
+
+        self.assertEqual(response.status_code, 200)
+        problems = {item["id"]: item for item in response.get_json()["data"]["problems"]}
+        self.assertTrue(problems["p-accepted"]["accepted"])
+        self.assertFalse(problems["p-open"]["accepted"])
+
     def test_solution_checker_reports_compile_error(self):
         with app.app_context():
-            db.session.add(Problem(id="p-compile", title="Compile", description="Compile", difficulty="简单"))
+            db.session.add(
+                Problem(id="p-compile", title="Compile", description="Compile", difficulty="简单")
+            )
             db.session.add(TestCase(input_data="", expected_output="ok", problem_id="p-compile"))
             db.session.commit()
 
@@ -433,9 +473,7 @@ class CoreSecurityTest(unittest.TestCase):
         self.assertEqual(parsed["optimizedVersions"][0]["code"], "print('ok')")
 
     def test_ai_code_response_falls_back_to_markdown_code_blocks(self):
-        parsed = parse_ai_code_response(
-            "#### 版本1：直接输出\n```python\nprint('ok')\n```"
-        )
+        parsed = parse_ai_code_response("#### 版本1：直接输出\n```python\nprint('ok')\n```")
 
         self.assertTrue(parsed["success"])
         self.assertEqual(parsed["optimizedVersions"][0]["code"], "print('ok')")
@@ -606,7 +644,9 @@ class CoreSecurityTest(unittest.TestCase):
     def test_admin_can_update_and_delete_problem(self):
         self.login_admin()
         with app.app_context():
-            db.session.add(Problem(id="admin-edit", title="Old", description="<p>Old</p>", difficulty="简单"))
+            db.session.add(
+                Problem(id="admin-edit", title="Old", description="<p>Old</p>", difficulty="简单")
+            )
             db.session.add(TestCase(input_data="1", expected_output="1", problem_id="admin-edit"))
             db.session.commit()
 
