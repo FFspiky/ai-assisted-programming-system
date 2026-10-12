@@ -1,7 +1,9 @@
 import io
+import json
 import os
 import tempfile
 import unittest
+from unittest.mock import patch
 
 db_file = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
 db_file.close()
@@ -157,13 +159,15 @@ class CoreSecurityTest(unittest.TestCase):
         self.assertTrue(result["success"])
         self.assertEqual(result["output"].strip(), "hello")
         self.assertEqual(result["compile_time"], 0)
-        self.assertGreaterEqual(result["run_time"], 0)
+        self.assertGreaterEqual(result["time"], 0)
+        self.assertEqual(result["execution_backend"], "docker")
         self.assertFalse(result["output_truncated"])
 
     def test_python_runner_marks_truncated_output(self):
         result = run_code("print('x' * 25000)", "Python")
 
-        self.assertTrue(result["success"])
+        self.assertFalse(result["success"])
+        self.assertEqual(result["status"], "Output Limit Exceeded")
         self.assertTrue(result["output_truncated"])
         self.assertIn("输出过长，已截断", result["output"])
 
@@ -211,7 +215,7 @@ class CoreSecurityTest(unittest.TestCase):
         self.assertTrue(outputs_match("hello  \nworld\t\n", "hello\nworld"))
 
     def test_judge_accepts_float_tolerance(self):
-        self.assertTrue(outputs_match("3.1415927 2.0000001", "3.1415926 2.0000000"))
+        self.assertTrue(outputs_match("3.1415927 2.0000001", "3.1415926 2.0000000", mode="float"))
 
     def test_judge_accepts_multiple_valid_outputs(self):
         expected = "YES\n---OR---\nYes\n---OR---\nyes"
@@ -365,7 +369,8 @@ class CoreSecurityTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_json()["status"], "Compile Error")
         self.assertFalse(response.get_json()["test_results"][0]["passed"])
-        self.assertGreaterEqual(response.get_json()["test_results"][0]["compile_time"], 0)
+        self.assertIsNone(response.get_json()["test_results"][0]["compile_time"])
+        self.assertGreaterEqual(response.get_json()["test_results"][0]["time"], 0)
 
     def test_learning_overview_counts_submissions(self):
         with app.app_context():
@@ -661,7 +666,8 @@ class CoreSecurityTest(unittest.TestCase):
                 "title": "New",
                 "difficulty": "中等",
                 "description": '<p onclick="bad()">Safe</p><img src=x onerror=bad()>',
-                "test_cases": [{"input_data": "", "expected_output": "ok"}],
+                "judge_mode": "integer",
+                "test_cases": [{"input_data": "", "expected_output": "1", "is_public": False}],
             },
             headers=self.csrf_headers(),
         )
@@ -672,6 +678,8 @@ class CoreSecurityTest(unittest.TestCase):
             self.assertNotIn("onclick", problem.description)
             self.assertNotIn("<img", problem.description)
             self.assertEqual(problem.test_cases.count(), 1)
+            self.assertEqual(problem.judge_mode, "integer")
+            self.assertFalse(problem.test_cases.first().is_public)
 
         delete_response = self.client.delete(
             "/api/admin/problems/admin-edit",
@@ -680,6 +688,276 @@ class CoreSecurityTest(unittest.TestCase):
         self.assertEqual(delete_response.status_code, 200)
         with app.app_context():
             self.assertIsNone(db.session.get(Problem, "admin-edit"))
+
+    def test_judge_preserves_large_integers_and_explicit_float_mode(self):
+        self.assertFalse(outputs_match("9007199254740993", "9007199254740992"))
+        self.assertFalse(outputs_match("9007199254740993", "9007199254740992", mode="integer"))
+        self.assertFalse(outputs_match("1.0000001", "1.0000000"))
+        self.assertFalse(outputs_match("NaN", "NaN", mode="float"))
+
+    def test_invalid_json_and_language_are_client_errors(self):
+        self.assertEqual(self.client.post("/api/register", json=["bad"]).status_code, 400)
+        self.login_admin()
+        self.assertEqual(
+            self.client.post(
+                "/api/run-code",
+                json={"code": "print(1)", "language": 123},
+                headers=self.csrf_headers(),
+            ).status_code,
+            400,
+        )
+
+    def test_submission_diagnosis_is_grounded_private_and_restorable(self):
+        from services.ai_client import AIClientError
+        from services.demo_problems import DEMOS, seed_demo_problems
+        from services.tutor_service import _validate_diagnosis
+
+        self.login_admin()
+        with app.app_context():
+            seed_demo_problems()
+        result = self.client.post(
+            "/api/check-solution",
+            json={"problem_id": "DEMO-01", "language": "python", "code": DEMOS[0]["code"]},
+            headers=self.csrf_headers(),
+        ).get_json()["data"]
+        sid = result["submission_id"]
+        self.assertEqual(result["status"], "Wrong Answer")
+        self.assertEqual(result["evidence"]["not_run"], 2)
+        self.assertEqual(result["evidence"]["cases"][0]["actual_output"].strip(), "3")
+        valid = {
+            "summary": "循环漏算末项",
+            "findings": [
+                {
+                    "title": "右边界可能少算一项",
+                    "explanation": "输入3实际输出3，预期6。",
+                    "lines": [3],
+                    "evidence_ids": ["case-1"],
+                    "next_check": "检查range的右端点是否包含。",
+                }
+            ],
+        }
+        with patch(
+            "services.tutor_service.chat_completion", return_value=json.dumps(valid)
+        ) as mock:
+            response = self.client.post(
+                f"/api/submissions/{sid}/diagnosis", json={}, headers=self.csrf_headers()
+            )
+            self.assertEqual(response.status_code, 200)
+            sent = mock.call_args.args[0]["messages"][1]["content"]
+            self.assertNotIn("5050", sent)
+        saved = self.client.get(f"/api/submissions/{sid}").get_json()["data"]
+        self.assertEqual(saved["diagnosis"]["findings"][0]["lines"], [3])
+        with self.assertRaises(AIClientError):
+            _validate_diagnosis(
+                {**valid, "findings": [{**valid["findings"][0], "evidence_ids": ["invented"]}]},
+                {"case-1"},
+                5,
+            )
+        with self.client.session_transaction() as session:
+            session.clear()
+        self.client.post(
+            "/api/register",
+            json={"username": "second", "email": "second@example.com", "password": "strongpass"},
+        )
+        self.client.post("/api/login", json={"username": "second", "password": "strongpass"})
+        self.assertEqual(self.client.get(f"/api/submissions/{sid}").status_code, 404)
+        self.assertEqual(
+            self.client.post(
+                f"/api/submissions/{sid}/diagnosis", json={}, headers=self.csrf_headers()
+            ).status_code,
+            404,
+        )
+
+    def test_hidden_cases_never_enter_public_snapshot(self):
+        from services.tutor_service import public_snapshot
+
+        visible = public_snapshot(
+            {
+                "cases": [
+                    {
+                        "id": "case-1",
+                        "index": 1,
+                        "is_public": False,
+                        "status": "Wrong Answer",
+                        "passed": False,
+                        "input": "secret-in",
+                        "expected_output": "secret-out",
+                        "actual_output": "secret-data",
+                        "error": "secret-error",
+                    }
+                ]
+            }
+        )
+        self.assertNotIn("secret-", json.dumps(visible))
+
+    def test_sandbox_cannot_read_host_or_connect_network(self):
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", delete=True) as marker:
+            marker.write("host-only-marker")
+            marker.flush()
+            code = (
+                "import os,socket\nprint(os.path.exists("
+                + repr(marker.name)
+                + "))\ns=socket.socket();s.settimeout(1)\ntry:\n s.connect(('1.1.1.1',443));print('connected')\nexcept OSError:\n print('network blocked')"
+            )
+            result = run_code(code, "python")
+        self.assertTrue(result["success"], result)
+        self.assertEqual(result["output"].strip(), "False\nnetwork blocked")
+
+    def test_sandbox_timeout_cleans_task(self):
+        import subprocess
+
+        with patch("services.execute_runner.CODE_RUN_TIMEOUT_SECONDS", 2):
+            result = run_code("import time; time.sleep(30)", "python")
+        self.assertEqual(result["status"], "Time Limit Exceeded")
+        leftover = subprocess.run(
+            ["docker", "ps", "-aq", "--filter", "name=codelab-run-"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        self.assertEqual(leftover.stdout.strip(), "")
+
+    def test_profile_stats_and_updates_stay_with_current_user(self):
+        from datetime import datetime
+
+        self.assertEqual(self.client.get("/api/profile").status_code, 401)
+        self.assertEqual(self.client.get("/profile.html").status_code, 302)
+        self.login_admin()
+        with app.app_context():
+            me = User.query.filter_by(username="admin").one()
+            other = User(username="another", email="another@example.com")
+            other.set_password("otherpass")
+            db.session.add_all([other, Problem(id="stats-p", title="Sum", description="sum")])
+            db.session.flush()
+            me.learning_duration = 3660
+            for owner, status, timestamp in [
+                (me.id, "Wrong Answer", datetime(2026, 10, 11, 17)),
+                (me.id, "Accepted", datetime(2026, 10, 11, 18)),
+                (me.id, "Accepted", datetime(2026, 10, 11, 19)),
+                (other.id, "Accepted", datetime(2026, 10, 11, 20)),
+            ]:
+                db.session.add(
+                    Submission(
+                        user_id=owner,
+                        problem_id="stats-p",
+                        code_submitted="print(1)",
+                        language="python",
+                        status=status,
+                        timestamp=timestamp,
+                    )
+                )
+            db.session.commit()
+        profile = self.client.get("/api/profile").get_json()["data"]
+        stats = profile["stats"]
+        self.assertEqual(
+            (stats["attempted_problems"], stats["solved_problems"], stats["total_submissions"]),
+            (1, 1, 3),
+        )
+        self.assertEqual(stats["practice_seconds"], 3660)
+        self.assertEqual(stats["acceptance_rate"], 66.7)
+        self.assertEqual(len(stats["recent_submissions"]), 3)
+        self.assertEqual(self.client.patch("/api/profile", json={"bio": "hello"}).status_code, 403)
+        headers = self.csrf_headers()
+        self.assertEqual(
+            self.client.patch(
+                "/api/profile", headers=headers, json={"username": "another"}
+            ).status_code,
+            409,
+        )
+        self.assertEqual(
+            self.client.patch(
+                "/api/profile", headers=headers, json={"email": "new@example.com"}
+            ).status_code,
+            400,
+        )
+        saved = self.client.patch(
+            "/api/profile",
+            headers=headers,
+            json={
+                "username": "renamed",
+                "display_name": "测试用户",
+                "bio": "<img onerror=bad()>",
+                "location": "上海",
+                "id": 9999,
+            },
+        ).get_json()
+        self.assertTrue(saved["success"])
+        self.assertEqual(saved["data"]["user"]["id"], profile["user"]["id"])
+        again = self.client.get("/api/profile").get_json()["data"]
+        self.assertEqual(again["user"]["username"], "renamed")
+        self.assertEqual(again["stats"]["total_submissions"], 3)
+        self.assertNotIn("password_hash", str(again))
+
+    def test_password_change_checks_old_password_and_revokes_sessions(self):
+        self.login_admin()
+        other_browser = app.test_client()
+        other_browser.post("/api/login", json={"username": "admin", "password": "strongpass"})
+        headers = self.csrf_headers()
+        wrong = self.client.post(
+            "/api/profile/password",
+            headers=headers,
+            json={"current_password": "wrong", "new_password": "changedpass"},
+        )
+        self.assertEqual(wrong.status_code, 400)
+        self.assertEqual(other_browser.get("/api/current_user").status_code, 200)
+        changed = self.client.post(
+            "/api/profile/password",
+            headers=headers,
+            json={"current_password": "strongpass", "new_password": "changedpass"},
+        )
+        self.assertEqual(changed.status_code, 200)
+        self.assertEqual(self.client.get("/api/profile").status_code, 401)
+        self.assertEqual(other_browser.get("/api/profile").status_code, 401)
+        self.assertEqual(
+            self.client.post(
+                "/api/login", json={"username": "admin", "password": "strongpass"}
+            ).status_code,
+            401,
+        )
+        self.assertEqual(
+            self.client.post(
+                "/api/login", json={"username": "admin", "password": "changedpass"}
+            ).status_code,
+            200,
+        )
+
+    def test_avatar_validates_decodes_and_persists_pixels(self):
+        from PIL import Image
+
+        self.login_admin()
+        headers = self.csrf_headers()
+        bad = self.client.post(
+            "/api/profile/avatar",
+            headers=headers,
+            data={"avatar": (io.BytesIO(b'<svg onload="bad()"></svg>'), "fake.png")},
+        )
+        self.assertEqual(bad.status_code, 400)
+        large = self.client.post(
+            "/api/profile/avatar",
+            headers=headers,
+            data={"avatar": (io.BytesIO(b"x" * (2 * 1024 * 1024 + 1)), "large.png")},
+        )
+        self.assertEqual(large.status_code, 400)
+        source = io.BytesIO()
+        Image.new("RGB", (50, 100), "blue").save(source, format="PNG")
+        source.seek(0)
+        saved = self.client.post(
+            "/api/profile/avatar", headers=headers, data={"avatar": (source, "avatar.png")}
+        )
+        self.assertEqual(saved.status_code, 200)
+        self.assertTrue(
+            saved.get_json()["data"]["user"]["avatar_url"].startswith("/api/profile/avatar?v=")
+        )
+        image = self.client.get("/api/profile/avatar")
+        self.assertEqual(image.content_type, "image/png")
+        self.assertEqual(Image.open(io.BytesIO(image.data)).size, (256, 256))
+        self.assertEqual(app.test_client().get("/api/profile/avatar").status_code, 401)
+        self.assertEqual(
+            self.client.delete("/api/profile/avatar", headers=headers).status_code, 200
+        )
+        self.assertEqual(self.client.get("/api/profile/avatar").status_code, 404)
 
 
 if __name__ == "__main__":

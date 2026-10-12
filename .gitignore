@@ -12,3 +12,9 @@ playwright-report/
 app.db
 
 .idea/
+
+# Local data backups and evidence-demo recordings
+tmp/
+tmp/backups/
+tmp/evidence-demo/
+tmp/profile-check/

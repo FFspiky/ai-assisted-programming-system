@@ -1,0 +1,110 @@
+来源：https://www.cmit.cn/wap/tongzhigonggao/show-144-45827-1.html
+核对日期：2026-09-26
+
+关于申报2026年第十四届全国大学生数字媒体科技作品及创意竞赛院校联系人的通知 - 通知公告 - 数媒竞赛网
+新闻内容页
+关于申报2026年第十四届全国大学生数字媒体科技作品及创意竞赛院校联系人的通知
+各相关高校：
+2025年（第十三届）全国大学生数字媒体科技作品及创意竞赛（以下简称“数媒竞赛”）已在哈尔滨圆满落幕。本届竞赛吸引国内外50万名师生报名参赛，参赛院校数量、师生规模及作品质量均创历史新高；其中，全国总决赛及系列配套活动的举办，有效践行“以赛促建、以赛促学、以赛促教、以赛促改”理念，对高校智能媒体类人才培养起到积极推动作用。为进一步推动高校智能媒体类人才教育教学改革，提高人才培养质量，加强各院校赛事组织的统筹与管理，促进数媒竞赛良好有序运作，现邀全国高校申报2026年（第十四届）全国大学生数字媒体科技作品及创意竞赛院校联络联系人，望各高校积极参与。
+01 校赛联系人职责
+为便于参赛院校组织赛事工作，每个参赛院校指定一名老师作为数媒竞赛校赛联系人（每年均需重新申请），主要负责本校与各赛区组委会的工作协同、赛事通知传达、参赛动员报名及本校赛事信息统计等工作。校赛联系人可在赛事系统中查看所在学校报名情况、校赛团队晋级操作等。各参赛院校的校赛联系人优先由省赛组委会向全国组委会进行推荐，也可由参赛高校推荐或相关老师自荐。联系人需获得该校竞赛主管部门授权负责本校竞赛联系工作。同一院校如有多人申请成为校赛联系人，由赛区组委会择优录用并向全国组委会报备。
+02 申请方式
+（一）材料上报截止时间：2026年10月23日24:00
+（二）校赛联系人申请网址：
+https://www.cmit.cn/index.php?m=content&c=index&a=lists&catid=325
+申请人需填写相关信息，并上传盖章后的申请表格（学校行政用章、教务处公章或学校指定校级竞赛管理部门公章之一，盖二级学院公章无效）。校赛联系人申请由各赛区秘书处进行审核，通过后可对该校作品进行推荐。扫二维码申请校赛联系人。
+（三）申请通过的校赛联系人将在提交联系邮箱中收到组委会回复邮件，包含该校账号及密码。
+03 校赛组织事宜联络
+联系人：蔡老师，
+电话：
+18811716193
+联系人：
+蒲老师，
+电话：
+18920720550
+全国大学生数字媒体科技作品及创意竞赛组委会
+2026年9月
+来源：
+数媒竞赛
+发布时间：2026年09月25日
+上一篇：
+关于举办2026年第十四届全国大学生数字媒体科技作品及创意竞赛的通知
+下一篇：
+最后一页
+首页
+新闻
+作品
+我的
+确定要退出账号吗？
+取消
+确定
+请选择操作
+作品列表
+证书查询下载
+作品提交流程
+账号管理
+退出账号
+
+链接：
+[
+  {
+    "text": "https://www.cmit.cn/index.php?m=content&c=index&a=lists&catid=325",
+    "url": "https://www.cmit.cn/index.php?m=content&c=index&a=lists&catid=325"
+  },
+  {
+    "text": "数媒竞赛",
+    "url": "https://www.cmit.cn"
+  },
+  {
+    "text": "关于举办2026年第十四届全国大学生数字媒体科技作品及创意竞赛的通知",
+    "url": "https://www.cmit.cn/wap/tongzhigonggao/show-144-45826-1.html"
+  },
+  {
+    "text": "最后一页",
+    "url": "javascript:alert('最后一页');"
+  },
+  {
+    "text": "首页",
+    "url": "https://www.cmit.cn/wap/index.html"
+  },
+  {
+    "text": "新闻",
+    "url": "https://www.cmit.cn/wap/xinwenzhongxin/list-8-1.html"
+  },
+  {
+    "text": "",
+    "url": "https://www.cmit.cn/index.php?m=member&c=index&a=login"
+  },
+  {
+    "text": "",
+    "url": "https://www.cmit.cn/index.php?m=member&c=index&a=login"
+  },
+  {
+    "text": "作品",
+    "url": "https://www.cmit.cn/wap/zuopinzhanshi/list-150-1.html"
+  },
+  {
+    "text": "我的",
+    "url": "https://www.cmit.cn/index.php?m=member&c=index&a=login"
+  },
+  {
+    "text": "作品列表",
+    "url": "https://www.cmit.cn/index.php?m=content&c=index&a=lists&catid=250"
+  },
+  {
+    "text": "证书查询下载",
+    "url": "https://www.cmit.cn/index.php?m=content&c=index&a=lists&catid=351&userid="
+  },
+  {
+    "text": "作品提交流程",
+    "url": "https://www.cmit.cn/wap/liucheng/show-277-45691-1.html"
+  },
+  {
+    "text": "账号管理",
+    "url": "https://www.cmit.cn/index.php?m=member&c=index&a=gai_intro"
+  },
+  {
+    "text": "退出账号",
+    "url": "javascript:void(0);"
+  }
+]

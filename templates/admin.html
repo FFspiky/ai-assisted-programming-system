@@ -56,6 +56,12 @@
                 <input type="text" id="editProblemId" disabled>
                 <input type="text" id="editTitle" placeholder="标题" required>
                 <input type="text" id="editDifficulty" placeholder="难度" required>
+                <label for="editJudgeMode">判题方式</label>
+                <select id="editJudgeMode">
+                    <option value="text">文本精确比较（忽略行尾空白）</option>
+                    <option value="integer">整数精确比较</option>
+                    <option value="float">浮点容差比较</option>
+                </select>
                 <textarea id="editDescription" placeholder="题目描述 HTML" required></textarea>
                 <textarea id="editTestCases" placeholder='测试用例 JSON，例如 [{"input_data":"","expected_output":"ok"}]' required></textarea>
                 <button type="submit">保存修改</button>
@@ -150,10 +156,12 @@
         editProblemId.value = problem.id;
         editTitle.value = problem.title || '';
         editDifficulty.value = problem.difficulty || '简单';
+        document.getElementById('editJudgeMode').value = problem.judge_mode || 'text';
         editDescription.value = problem.description || '';
         editTestCases.value = JSON.stringify((problem.test_cases || []).map((item) => ({
             input_data: item.input_data,
-            expected_output: item.expected_output
+            expected_output: item.expected_output,
+            is_public: item.is_public !== false
         })), null, 2);
         editPanel.style.display = 'block';
         editPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -263,6 +271,7 @@
             body: JSON.stringify({
                 title: editTitle.value,
                 difficulty: editDifficulty.value,
+                judge_mode: document.getElementById('editJudgeMode').value,
                 description: editDescription.value,
                 test_cases: testCases
             })

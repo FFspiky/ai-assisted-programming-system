@@ -1,5 +1,11 @@
+let practiceUser = null;
 document.addEventListener('DOMContentLoaded', function () {
-    UserSession.init({ logoutRedirect: '/index.html' });
+    UserSession.init({ logoutRedirect: '/index.html' }).then(user => {
+        practiceUser = user;
+        visibleStudySeconds = 0;
+        lastStudyTick = document.visibilityState === 'visible' ? Date.now() : null;
+        window.dispatchEvent(new CustomEvent('practice:user', {detail: user}));
+    });
     loadProblem();
 
     // --- 主题切换功能 ---
@@ -103,21 +109,22 @@ async function loadProblem() {
             }
 
             problemTitleEl.innerHTML = `
-                <span>${problem.title || '无标题'}</span>
+                <span>${escapeHtml(problem.title || '无标题')}</span>
                 <div class="problem-meta">
-                    <span class="problem-difficulty ${difficultyClass}">${problem.difficulty || '未知'}</span>
+                    <span class="problem-difficulty ${difficultyClass}">${escapeHtml(problem.difficulty || '未知')}</span>
                 </div>
             `;
             problemContentEl.innerHTML = problem.description || '<p>该题目没有描述信息。</p>';
+            window.dispatchEvent(new CustomEvent('practice:problem', {detail: problem}));
         } else {
             problemTitleEl.textContent = '加载失败';
-            problemContentEl.innerHTML = `<p>无法加载题目详情，错误：${apiErrorMessage(result, '未知错误')}</p>`;
+            problemContentEl.innerHTML = `<p>无法加载题目详情，错误：${escapeHtml(apiErrorMessage(result, '未知错误'))}</p>`;
         }
 
     } catch (error) {
         console.error('加载题目失败:', error);
         problemTitleEl.textContent = '加载失败';
-        problemContentEl.innerHTML = `<p>请求题目数据时发生网络错误: ${error.message}</p>`;
+        problemContentEl.innerHTML = `<p>请求题目数据时发生网络错误: ${escapeHtml(error.message)}</p>`;
     }
     await updateProblemNavigationState();
 }
@@ -140,6 +147,7 @@ const ghostLayer = document.getElementById('ghostLayer');
 const inlineHint = document.getElementById('inlineHint');
 
 let inlineSuggestion = '';
+let inlineSuggestionContext = null;
 let inlineAbortController = null;
 let inlineRequestId = 0;
 let inlineDebounceTimer = null;
@@ -175,11 +183,12 @@ function renderGhostLayer() {
 
 function clearInlineSuggestion() {
     inlineSuggestion = '';
+    inlineSuggestionContext = null;
     renderGhostLayer();
 }
 
 function scheduleInlineCompletion(force = false) {
-    if (!codeInput) {
+    if (!codeInput || !document.getElementById('completionEnabled')?.checked) {
         return;
     }
     if (inlineDebounceTimer) {
@@ -197,6 +206,7 @@ function scheduleInlineCompletion(force = false) {
 }
 
 async function requestInlineCompletion(requestId) {
+    if (!document.getElementById('completionEnabled')?.checked) return;
     const { prefix, suffix, start, end } = getCursorContext();
     if (start !== end || prefix.length < 5) {
         clearInlineSuggestion();
@@ -206,7 +216,13 @@ async function requestInlineCompletion(requestId) {
         inlineAbortController.abort();
     }
     inlineAbortController = new AbortController();
+    const requestController = inlineAbortController;
     const language = document.getElementById('languageSelector').value || 'python';
+    const code = codeInput.value;
+    const isCurrent = () => requestId === inlineRequestId && codeInput.value === code
+        && codeInput.selectionStart === start && codeInput.selectionEnd === end
+        && document.getElementById('languageSelector').value === language
+        && document.getElementById('completionEnabled')?.checked;
 
     try {
         const response = await UserSession.csrfFetch('/api/ai-inline-complete-stream', {
@@ -218,8 +234,9 @@ async function requestInlineCompletion(requestId) {
                 suffix,
                 max_tokens: 128
             }),
-            signal: inlineAbortController.signal
+            signal: requestController.signal
         });
+        if (!isCurrent()) { requestController.abort(); return; }
         if (!response.ok || !response.body) {
             clearInlineSuggestion();
             return;
@@ -233,14 +250,16 @@ async function requestInlineCompletion(requestId) {
                 break;
             }
             buffer += decoder.decode(value, { stream: true });
-            if (requestId !== inlineRequestId) {
+            if (!isCurrent()) {
+                requestController.abort();
                 return;
             }
             inlineSuggestion = buffer;
+            inlineSuggestionContext = {code, start, language};
             renderGhostLayer();
         }
     } catch (error) {
-        clearInlineSuggestion();
+        if (requestId === inlineRequestId) clearInlineSuggestion();
     }
 }
 
@@ -251,14 +270,23 @@ function acceptInlineSuggestion() {
     const text = codeInput.value || '';
     const start = codeInput.selectionStart || 0;
     const end = codeInput.selectionEnd || start;
+    if (!inlineSuggestionContext || inlineSuggestionContext.code !== text
+        || inlineSuggestionContext.start !== start || start !== end
+        || inlineSuggestionContext.language !== document.getElementById('languageSelector').value) {
+        clearInlineSuggestion();
+        return;
+    }
     codeInput.value = text.slice(0, start) + inlineSuggestion + text.slice(end);
     const newPos = start + inlineSuggestion.length;
     codeInput.setSelectionRange(newPos, newPos);
     clearInlineSuggestion();
+    codeInput.dispatchEvent(new Event('input'));
 }
 
 if (codeInput) {
     codeInput.addEventListener('input', () => {
+        inlineRequestId += 1;
+        inlineAbortController?.abort();
         clearInlineSuggestion();
         scheduleInlineCompletion();
     });
@@ -278,8 +306,17 @@ if (codeInput) {
             scheduleInlineCompletion(true);
         }
     });
-    codeInput.addEventListener('click', renderGhostLayer);
-    codeInput.addEventListener('keyup', renderGhostLayer);
+    const handleCursorMove = () => {
+        if (inlineSuggestionContext && (codeInput.selectionStart !== inlineSuggestionContext.start
+            || codeInput.selectionEnd !== inlineSuggestionContext.start)) {
+            inlineRequestId += 1;
+            inlineAbortController?.abort();
+            clearInlineSuggestion();
+        }
+        renderGhostLayer();
+    };
+    codeInput.addEventListener('click', handleCursorMove);
+    codeInput.addEventListener('keyup', handleCursorMove);
     codeInput.addEventListener('scroll', () => {
         if (!ghostLayer) {
             return;
@@ -336,6 +373,7 @@ const aiFloatingWindow = document.getElementById('aiFloatingWindow');
 const aiToggleBtn = document.getElementById('aiToggleBtn');
 
 let globalOptimizedVersions = [];
+let optimizationBase = null;
 
 function escapeHtml(text) {
     var map = {
@@ -368,6 +406,11 @@ function collectVisibleStudySeconds() {
 }
 
 function reportStudyTime(keepalive = false) {
+    if (!practiceUser) {
+        visibleStudySeconds = 0;
+        lastStudyTick = document.visibilityState === 'visible' ? Date.now() : null;
+        return;
+    }
     collectVisibleStudySeconds();
     const duration = visibleStudySeconds;
     if (duration < 10) {
@@ -379,8 +422,9 @@ function reportStudyTime(keepalive = false) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ duration }),
         keepalive
-    }).catch(() => {
-        visibleStudySeconds += duration;
+    }).catch(error => {
+        if (error.code === 'AUTH_REQUIRED') practiceUser = null;
+        else visibleStudySeconds += duration;
     });
 }
 
@@ -397,26 +441,17 @@ setInterval(() => reportStudyTime(false), 60000);
 window.addEventListener('beforeunload', () => reportStudyTime(true));
 
 function formatAiResponse(text) {
-    if (!text) return '';
-    text = text.replace(/---/g, '<hr>');
-    text = text.replace(/^######\s*(.*)$/gm, '<h6>$1</h6>');
-    text = text.replace(/^#####\s*(.*)$/gm, '<h5>$1</h5>');
-    text = text.replace(/^####\s*(.*)$/gm, '<h4>$1</h4>');
-    text = text.replace(/^###\s*(.*)$/gm, '<h3>$1</h3>');
-    text = text.replace(/^##\s*(.*)$/gm, '<h2>$1</h2>');
-    text = text.replace(/^#\s*(.*)$/gm, '<h1>$1</h1>');
-    text = text.replace(/^([一二三四五六七八九十]+、[^\n]+)/gm, '<span class="section-title">$1</span>');
-    text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
-    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
-    text = text.replace(/^\s*([*-])\s+(.*)$/gm, '<li>$2</li>');
-    text = text.replace(/(<li>.*?<\/li>(\n<li>.*?<\/li>)*)/g, '<ul>$1</ul>');
-    text = text.replace(/\n\s*\n/g, '</p><p>').replace(/\n/g, '<br>');
-    return `<div class="ai-formatted-content">${text}</div>`;
+    return SafeContent.markdown(text);
 }
 
 function applyOptimizedCode(versionIndex) {
+    if (!optimizationBase || codeInput.value !== optimizationBase.code || document.getElementById('languageSelector').value !== optimizationBase.language) {
+        aiSuggestion.textContent = '代码或语言已改变，请重新生成建议，避免覆盖当前修改。';
+        return;
+    }
     if (versionIndex >= 0 && versionIndex < globalOptimizedVersions.length) {
         codeInput.value = globalOptimizedVersions[versionIndex].code;
+        codeInput.dispatchEvent(new Event('input'));
         renderGhostLayer();
         aiSuggestion.innerHTML = `<div style="color:var(--success); text-align:center; padding:20px;"><i class="fas fa-check-circle"></i> 代码已应用！请检查代码编辑器。</div>`;
     } else {
@@ -461,6 +496,7 @@ async function runCode() {
             outputContent.innerHTML = `<div style="margin-bottom:8px; color:var(--warning)"><i class="fas fa-times-circle"></i> 执行失败 (${result.time}ms)</div><div style="color:var(--warning); margin-bottom:8px;">${escapeHtml(language)}环境错误:</div>${errorTruncatedNotice}<pre style="background:rgba(247,37,133,0.1); padding:12px; border-radius:6px;">${safeError}</pre>${safeStderr ? `<pre style="background:rgba(247,37,133,0.1); padding:12px; border-radius:6px; margin-top:8px;">${safeStderr}</pre>` : ''}`;
         }
     } catch (error) {
+        if (UserSession.handleAuthError(error, outputContent, '请先登录后再运行代码。')) return;
         console.error('代码执行错误:', error);
         outputContent.innerHTML = `<div style="margin-bottom:8px; color:var(--warning)"><i class="fas fa-exclamation-triangle"></i> 请求失败</div><pre style="background:rgba(247,37,133,0.1); padding:12px; border-radius:6px;">${escapeHtml(error.message)}</pre>${!navigator.onLine ? '<p style="color:var(--warning)">检测到网络离线</p>' : ''}<p style="color:var(--light-gray); margin-top:10px;">提示: 请确保已安装${escapeHtml(language)}运行环境并配置正确</p>`;
     } finally {
@@ -472,7 +508,9 @@ async function runCode() {
 
 // 优化代码
 async function optimizeCode() {
+    document.getElementById('optimizationResult').hidden = false;
     const code = document.getElementById('codeInput').value;
+    const requestedLanguage = document.getElementById('languageSelector').value;
     const aiSuggestion = document.getElementById('aiSuggestion');
 
     if (!code.trim()) {
@@ -498,7 +536,7 @@ async function optimizeCode() {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ code })
+            body: JSON.stringify({ code, language: requestedLanguage })
         });
 
         if (!response.ok) {
@@ -509,6 +547,7 @@ async function optimizeCode() {
 
         if (result.success) {
             // 将获取到的优化版本存储到全局变量
+            optimizationBase = {code, language: requestedLanguage};
             globalOptimizedVersions = result.optimizedVersions; // <--- 关键：保存到全局变量
 
             let versionsHtml = '';
@@ -516,7 +555,7 @@ async function optimizeCode() {
                 versionsHtml = globalOptimizedVersions.map((version, index) => `
                     <div class="optimized-version-card" style="margin-bottom:15px; border:1px solid var(--light-gray); padding:10px; border-radius:8px; background-color: var(--darker);">
                         <div style="font-weight:600; margin-bottom:5px; color:var(--accent);">
-                            ${version.description || `优化版本 ${index + 1}`}
+                            ${escapeHtml(version.description || `优化版本 ${index + 1}`)}
                         </div>
                         <div class="code-block" style="margin-bottom:10px; font-size:0.9rem; max-height: 200px; overflow-y: auto; background-color: var(--dark); padding: 8px; border-radius: 4px;">
                             <pre style="margin:0; white-space: pre-wrap; word-break: break-all;">${escapeHtml(version.code)}</pre>
@@ -536,15 +575,16 @@ async function optimizeCode() {
                 </div>
                 <div style="margin: 10px 0; font-weight:500"></div>
                 <div style="margin-bottom:10px; padding:8px; background:rgba(76,201,240,0.1); border-radius:6px;">
-                    ${formatAiResponse(result.feedback) || '代码已优化，性能更优'} </div>
+                    ${formatAiResponse(result.feedback) || '建议已生成，尚未运行验证'} </div>
                 <div style="margin: 10px 0; font-weight:500">优化版本选择：</div>
                 ${versionsHtml}
             `;
         } else {
-            aiSuggestion.innerHTML = `<div style="color:var(--warning)"><i class="fas fa-exclamation-triangle"></i> AI优化失败: ${apiErrorMessage(result)}</div>`;
+            aiSuggestion.innerHTML = `<div style="color:var(--warning)"><i class="fas fa-exclamation-triangle"></i> AI优化失败: ${escapeHtml(apiErrorMessage(result))}</div>`;
         }
     } catch (error) {
-        aiSuggestion.innerHTML = `<div style="color:var(--warning)"><i class="fas fa-exclamation-triangle"></i> 请求失败: ${error.message}</div>`;
+        if (UserSession.handleAuthError(error, aiSuggestion, '请先登录后再使用 AI 优化。')) return;
+        aiSuggestion.innerHTML = `<div style="color:var(--warning)"><i class="fas fa-exclamation-triangle"></i> 请求失败: ${escapeHtml(error.message)}</div>`;
         console.error('优化代码请求错误:', error);
     } finally {
         optimizeBtn.disabled = false;
@@ -574,6 +614,9 @@ async function submitCode() {
             body: JSON.stringify({ code, language, problem_id: problemId })
         });
         const result = await response.json();
+        if (result.success && result.submission_id) {
+            window.dispatchEvent(new CustomEvent('practice:submission', {detail: result.data}));
+        }
         const safeDetails = escapeHtml(result.details || apiErrorMessage(result, '没有返回详细信息。'));
         const safeStatus = escapeHtml(result.status || '提交失败');
 
@@ -591,12 +634,14 @@ async function submitCode() {
         } else {
             outputContent.innerHTML = `<div class="ai-response" style="border-left-color: var(--danger);"><h4 style="color: var(--danger); display: flex; align-items: center; gap: 8px;"><i class="fas fa-times-circle"></i><span>${safeStatus}</span></h4><pre style="white-space: pre-wrap;">${safeDetails}</pre></div>`;
         }
+        if (result.success && result.submission_id) outputContent.replaceChildren();
     } catch (error) {
+        if (UserSession.handleAuthError(error, outputContent, '请先登录后再提交代码。')) return;
         outputContent.innerHTML = `<div style="margin-bottom:8px; color:var(--warning)"><i class="fas fa-exclamation-triangle"></i> 请求失败</div><pre style="background:rgba(247,37,133,0.1); padding:12px; border-radius:6px;">${escapeHtml(error.message)}</pre>`;
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> 提交解答';
-        outputContent.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        outputContent.parentElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 }
 
@@ -635,7 +680,7 @@ async function sendMessage() {
         const response = await UserSession.csrfFetch('/api/ai-chat-stream', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message, language: 'Python' })
+            body: JSON.stringify({ message, language: document.getElementById('languageSelector').value })
         });
 
         if (!response.ok) {
@@ -654,6 +699,7 @@ async function sendMessage() {
             aiContentDiv.innerHTML = formatAiResponse(fullText);
         }
     } catch (error) {
+        if (UserSession.handleAuthError(error, aiContentDiv, '请先登录后再使用编程助手。')) return;
         aiContentDiv.innerText = `请求失败: ${error.message}`;
         console.error('聊天错误:', error);
     }

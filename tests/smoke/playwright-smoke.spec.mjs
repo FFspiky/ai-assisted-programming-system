@@ -85,7 +85,7 @@ for (const pageCase of mobilePages) {
     );
 
     expect(response?.status(), `${pageCase.path} should return 200`).toBe(200);
-    await expect(page.getByText(pageCase.text, { exact: false }).first()).toBeVisible();
+    await expect(page.getByText(pageCase.text, { exact: false }).filter({visible:true}).first()).toBeVisible();
     expect(hasHorizontalOverflow, `${pageCase.path} should not overflow horizontally`).toBe(false);
     expect(errors, `${pageCase.path} should not raise runtime errors on mobile`).toEqual([]);
   });

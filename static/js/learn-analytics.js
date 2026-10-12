@@ -38,24 +38,8 @@ function escapeHtml(text) {
     return String(text || '').replace(/[&<>"']/g, function (m) { return map[m]; });
 }
 
-function sanitizeRenderedHtml(html) {
-    const template = document.createElement('template');
-    template.innerHTML = html;
-    template.content.querySelectorAll('script, iframe, object, embed, style').forEach(node => node.remove());
-    template.content.querySelectorAll('*').forEach(node => {
-        [...node.attributes].forEach(attr => {
-            const attrName = attr.name.toLowerCase();
-            const attrValue = attr.value.trim().toLowerCase();
-            if (attrName.startsWith('on') || attrValue.startsWith('javascript:')) {
-                node.removeAttribute(attr.name);
-            }
-        });
-    });
-    return template.innerHTML;
-}
-
 function renderMarkdownSafe(markdown) {
-    return sanitizeRenderedHtml(marked.parse(markdown || ''));
+    return SafeContent.markdown(markdown);
 }
 
     function initAssessment() {

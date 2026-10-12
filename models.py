@@ -18,6 +18,12 @@ class User(db.Model, UserMixin):
     is_admin = db.Column(db.Boolean, default=False)
     # 新增：学习总时长，单位为秒
     learning_duration = db.Column(db.Integer, default=0)
+    display_name = db.Column(db.String(80), nullable=False, default="", server_default="")
+    bio = db.Column(db.String(160), nullable=False, default="", server_default="")
+    location = db.Column(db.String(80), nullable=False, default="", server_default="")
+    avatar_image = db.Column(db.LargeBinary, nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=True)
+    auth_version = db.Column(db.Integer, nullable=False, default=0, server_default="0")
 
     submissions = db.relationship("Submission", backref="author", lazy=True)
 
@@ -34,6 +40,7 @@ class Problem(db.Model):
     title = db.Column(db.String(150), nullable=False)
     description = db.Column(db.Text, nullable=False)
     difficulty = db.Column(db.String(20), default="简单")
+    judge_mode = db.Column(db.String(20), nullable=False, default="text", server_default="text")
     test_cases = db.relationship(
         "TestCase", backref="problem", lazy="dynamic", cascade="all, delete-orphan"
     )
@@ -42,6 +49,7 @@ class Problem(db.Model):
 # 测试用例模型 (保持不变)
 class TestCase(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    is_public = db.Column(db.Boolean, nullable=False, default=True, server_default="1")
     input_data = db.Column(db.Text, nullable=False)
     expected_output = db.Column(db.Text, nullable=False)
     problem_id = db.Column(db.String(50), db.ForeignKey("problem.id"), nullable=False)
@@ -54,6 +62,8 @@ class Submission(db.Model):
     language = db.Column(db.String(50), nullable=False)
     status = db.Column(db.String(50), nullable=False, index=True)
     feedback = db.Column(db.Text, nullable=True)
+    evidence_snapshot = db.Column(db.JSON, nullable=True)
+    diagnosis = db.Column(db.JSON, nullable=True)
     timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
     problem_id = db.Column(db.String(50), db.ForeignKey("problem.id"), nullable=False, index=True)

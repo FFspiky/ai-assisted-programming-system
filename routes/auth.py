@@ -6,6 +6,7 @@ from flask_login import current_user, login_required, login_user, logout_user
 
 from models import User, db
 from routes.api_response import api_error, api_success
+from services.profile_service import user_payload
 from services.rate_limiter import allow_request, reset_limit
 
 auth_blueprint = Blueprint("auth", __name__)
@@ -64,9 +65,10 @@ def login():
 
     reset_limit(client_key)
     login_user(user, remember=False)  # 默认不持久化登录，关闭浏览器后需重新登录
+    session["auth_version"] = user.auth_version
     session["csrf_token"] = secrets.token_urlsafe(32)
     data = {
-        "user": {"username": user.username, "points": user.points},
+        "user": user_payload(user),
         "csrf_token": session["csrf_token"],
     }
     return api_success(data, message="登录成功", user=data["user"], csrf_token=data["csrf_token"])
@@ -83,11 +85,7 @@ def logout():
 @login_required
 def get_current_user():
     # current_user 由 Flask-Login 提供
-    user_data = {
-        "username": current_user.username,
-        "email": current_user.email,
-        "points": current_user.points,
-    }
+    user_data = user_payload(current_user)
     return api_success({"user": user_data}, user=user_data)
 
 

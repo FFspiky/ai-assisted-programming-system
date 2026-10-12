@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人主页 - 智练 CodeLab</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/practice.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+</head>
+<body class="profile-page">
+<div class="container">
+    <header>
+        <a class="logo" href="/index.html" aria-label="智练 CodeLab 首页">
+            <div class="logo-icon"><i class="fas fa-users" aria-hidden="true"></i></div>
+            <div class="logo-text">智练 CodeLab</div>
+        </a>
+        <nav aria-label="主导航"><ul>
+            <li><a href="/index.html">首页</a></li>
+            <li><a href="/problem_selector.html">刷题</a></li>
+            <li><a href="/learn-analytics.html">学习分析</a></li>
+        </ul></nav>
+        <div class="user-info"></div>
+    </header>
+    <main class="profile-layout" id="profilePage" aria-busy="true">
+        <aside class="profile-sidebar">
+            <button id="changeAvatarBtn" class="profile-photo" aria-label="修改头像" title="修改头像">
+                <img id="profileAvatar" alt="个人头像"><span><i class="fas fa-camera" aria-hidden="true"></i> 修改头像</span>
+            </button>
+            <input type="file" id="avatarFile" accept="image/png,image/jpeg,image/webp" hidden>
+            <h1 id="profileName">个人主页</h1>
+            <p id="profileHandle" class="muted"></p>
+            <p id="profileBio" class="profile-bio"></p>
+            <button class="profile-button full-width" id="editProfileBtn">编辑个人资料</button>
+            <ul class="profile-meta" id="profileMeta"></ul>
+            <div id="avatarMessage" class="form-message" role="status" aria-live="polite" hidden></div>
+        </aside>
+        <div class="profile-main">
+            <div class="profile-tabs" role="tablist" aria-label="个人主页栏目">
+                <button id="tabOverview" role="tab" aria-selected="true" aria-controls="overviewPanel" data-tab="overviewPanel"><i class="far fa-chart-bar" aria-hidden="true"></i> 练习概览</button>
+                <button id="tabSettings" role="tab" aria-selected="false" aria-controls="settingsPanel" data-tab="settingsPanel" tabindex="-1"><i class="far fa-user" aria-hidden="true"></i> 个人资料</button>
+                <button id="tabSecurity" role="tab" aria-selected="false" aria-controls="securityPanel" data-tab="securityPanel" tabindex="-1"><i class="fas fa-lock" aria-hidden="true"></i> 账号安全</button>
+            </div>
+            <p id="profileStatus" class="muted" role="status">正在加载…</p>
+            <section id="overviewPanel" role="tabpanel" aria-labelledby="tabOverview">
+                <div id="statsGrid" class="profile-stats"></div>
+                <section class="profile-card">
+                    <div class="section-heading"><h2>练习记录</h2><span class="muted">近一年 · 提交次数</span></div>
+                    <div class="activity-scroll"><div id="activityMonths" class="activity-months" aria-hidden="true"></div><div id="activityGrid" class="activity-grid" role="list" aria-label="每日提交记录"></div></div>
+                    <div class="activity-footer"><span id="activityCaption" class="muted"></span><span class="activity-legend">少 <i data-level="0"></i><i data-level="1"></i><i data-level="2"></i><i data-level="3"></i><i data-level="4"></i> 多</span></div>
+                </section>
+                <div class="profile-breakdowns">
+                    <section class="profile-card"><h2>使用语言</h2><div id="languageStats"></div></section>
+                    <section class="profile-card"><h2>通过题目</h2><div id="difficultyStats"></div></section>
+                </div>
+                <section class="profile-card">
+                    <div class="section-heading"><h2>最近提交</h2><a href="/problem_selector.html" class="text-link">继续练习 <span aria-hidden="true">→</span></a></div>
+                    <div id="recentSubmissions" class="table-scroll"></div>
+                </section>
+            </section>
+            <section id="settingsPanel" role="tabpanel" aria-labelledby="tabSettings" hidden>
+                <div class="profile-card settings-card">
+                    <h2>个人资料</h2>
+                    <form id="profileForm">
+                        <div class="form-columns">
+                            <div class="form-field"><label for="displayName">昵称</label><input id="displayName" name="display_name" maxlength="80" autocomplete="nickname" placeholder="希望如何称呼你"></div>
+                            <div class="form-field"><label for="profileUsername">用户名</label><input id="profileUsername" name="username" minlength="3" maxlength="80" autocomplete="username" required><small>用于登录，3–80 个字符</small></div>
+                        </div>
+                        <div class="form-field"><label for="profileEmail">邮箱</label><input id="profileEmail" name="email" type="email" maxlength="120" autocomplete="email" required></div>
+                        <div class="form-field" id="emailPasswordField" hidden><label for="emailPassword">当前密码</label><input id="emailPassword" type="password" maxlength="1024" autocomplete="current-password"><small>修改邮箱需要验证当前密码</small></div>
+                        <div class="form-field"><label for="profileBioInput">个人简介</label><textarea id="profileBioInput" name="bio" maxlength="160" rows="3" placeholder="介绍一下自己"></textarea><small>最多 160 个字符</small></div>
+                        <div class="form-field"><label for="profileLocation">所在地</label><input id="profileLocation" name="location" maxlength="80" autocomplete="address-level2" placeholder="城市或地区（选填）"></div>
+                        <div id="profileFormMessage" class="form-message" role="status" aria-live="polite" hidden></div>
+                        <div class="form-actions"><button class="profile-button primary" type="submit">保存资料</button><button class="profile-button" type="button" id="resetProfileForm">取消修改</button></div>
+                    </form>
+                </div>
+                <div class="profile-card settings-card">
+                    <h2>头像</h2><p class="muted">支持 PNG、JPG、WebP，大小不超过 2 MB。上传后会裁成正方形。</p>
+                    <div class="form-actions"><button class="profile-button" id="uploadAvatarBtn">上传头像</button><button class="profile-button" id="resetAvatarBtn">恢复默认头像</button></div>
+                </div>
+            </section>
+            <section id="securityPanel" role="tabpanel" aria-labelledby="tabSecurity" hidden>
+                <div class="profile-card settings-card">
+                    <h2>修改密码</h2><p class="muted">修改后需要重新登录。</p>
+                    <form id="passwordForm">
+                        <div class="form-field"><label for="currentPassword">当前密码</label><input id="currentPassword" type="password" autocomplete="current-password" maxlength="1024" required></div>
+                        <div class="form-field"><label for="newPassword">新密码</label><input id="newPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required><small>8–128 个字符</small></div>
+                        <div class="form-field"><label for="confirmPassword">确认新密码</label><input id="confirmPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required></div>
+                        <div id="passwordMessage" class="form-message" role="status" aria-live="polite" hidden></div>
+                        <button class="profile-button primary" type="submit">修改密码</button>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+<script src="{{ url_for('static', filename='js/user-session.js') }}"></script>
+<script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+</body>
+</html>

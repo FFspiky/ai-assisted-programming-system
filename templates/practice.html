@@ -10,6 +10,7 @@
         href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Source+Code+Pro:wght@400;600&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/practice.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/evidence.css') }}">
 </head>
 
 <body>
@@ -114,6 +115,10 @@
                             </div>
                         </div>
                     </div>
+                    <div class="editor-tools">
+                        <label><input type="checkbox" id="completionEnabled"> 自动补全</label>
+                        <span id="draftStatus" role="status">草稿自动保存</span>
+                    </div>
                     <div class="code-editor-wrapper">
                         <div id="ghostLayer"></div>
                         <textarea class="code-area" id="codeInput" placeholder="在此输入您的代码..."></textarea>
@@ -137,7 +142,23 @@
                             <p>代码输出将显示在此处...</p>
                         </div>
 
-                        <div class="ai-response">
+                        <section id="submissionResults" class="submission-results" hidden>
+                            <p id="evidenceSummary" class="result-summary"></p>
+                            <p id="evidenceStale" class="stale-note" hidden>代码已修改，以下是上次提交的结果。</p>
+                            <div id="evidenceCases" class="case-list"></div>
+                            <details id="submissionCodePanel" hidden>
+                                <summary>本次提交的代码</summary>
+                                <div id="submissionCode" class="snapshot-code"></div>
+                            </details>
+                            <div class="diagnosis-actions">
+                                <button type="button" id="diagnoseBtn" class="btn btn-ai" disabled>分析错误</button>
+                                <button type="button" id="cancelDiagnosisBtn" class="evidence-button" hidden>取消</button>
+                            </div>
+                            <p id="diagnosisStatus" role="status" aria-live="polite"></p>
+                            <div id="diagnosisContent"></div>
+                        </section>
+
+                        <div class="ai-response" id="optimizationResult" hidden>
                             <h4><i class="fas fa-lightbulb"></i> AI建议</h4>
                             <p id="aiSuggestion">AI建议将显示在此处...</p>
                         </div>
@@ -185,7 +206,9 @@
     </div>
 
     <script src="{{ url_for('static', filename='js/user-session.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/safe-content.js') }}"></script>
     <script src="{{ url_for('static', filename='js/practice.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/evidence.js') }}"></script>
 </body>
 
 </html>

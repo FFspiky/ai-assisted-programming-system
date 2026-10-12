@@ -59,7 +59,10 @@ def learning_overview():
 
     return api_success(
         {
-            "total_solved": accepted_submissions,  # <--- 修正拼写
+            "total_solved": db.session.query(Submission.problem_id)
+            .filter_by(user_id=user_id, status="Accepted")
+            .distinct()
+            .count(),
             "accuracy": accuracy,
             "learning_hours": learning_hours,
         }

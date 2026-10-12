@@ -83,6 +83,7 @@ def _problem_payload(problem):
         "id": problem.id,
         "title": problem.title,
         "difficulty": problem.difficulty,
+        "judge_mode": problem.judge_mode,
         "description": problem.description,
         "test_case_count": len(test_cases),
         "test_cases": [
@@ -90,6 +91,7 @@ def _problem_payload(problem):
                 "id": case.id,
                 "input_data": case.input_data,
                 "expected_output": case.expected_output,
+                "is_public": case.is_public,
             }
             for case in test_cases
         ],
@@ -132,6 +134,13 @@ def update_problem(problem_id):
     if not isinstance(test_cases, list):
         return api_error("VALIDATION_ERROR", "测试用例必须是列表", 400)
 
+    judge_mode = data.get("judge_mode", problem.judge_mode)
+    if judge_mode not in ("text", "integer", "float"):
+        return api_error("VALIDATION_ERROR", "判题模式必须为 text、integer 或 float", 400)
+    for case in test_cases:
+        if not isinstance(case, dict) or type(case.get("is_public", True)) is not bool:
+            return api_error("VALIDATION_ERROR", "测试用例必须是对象，is_public 必须为布尔值", 400)
+    problem.judge_mode = judge_mode
     problem.title = title
     problem.difficulty = difficulty or "简单"
     description_soup = BeautifulSoup(f"<div>{description}</div>", "lxml")
@@ -150,6 +159,7 @@ def update_problem(problem_id):
                 input_data=input_data.strip(),
                 expected_output=expected_output.strip(),
                 problem_id=problem_id,
+                is_public=case.get("is_public", True),
             )
         )
 

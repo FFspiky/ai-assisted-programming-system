@@ -48,16 +48,17 @@
 
         <section class="analysis-hero">
             <h1 class="hero-title">学习分析与成长路径</h1>
-            <p class="hero-subtitle">基于AI的深度学情分析，实时追踪您的学习轨迹，发现薄弱环节，推荐个性化提升方案</p>
+            <p class="hero-subtitle">查看练习记录与 AI 学习建议。问卷学习路径待完善，当前不用于个性化能力评估。</p>
         </section>
 
         <div class="card">
             <div class="card-header">
                 <div class="card-icon"><i class="fas fa-clipboard-list"></i></div>
-                <h3 class="card-title">编程能力评估问卷 <span id="questionCount">1/20</span></h3>
+                <h3 class="card-title">编程学习问卷 · 待完善 <span id="questionCount">1/20</span></h3>
             </div>
             <div class="card-body">
-                <form id="assessmentForm" style="position: relative;">
+                <p>本轮优先开放执行证据诊断；问卷结果尚未接入学习路径，暂不提供生成。</p>
+                <form id="assessmentForm" style="position: relative;" inert>
                     <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
                     <div id="questionContainer" class="question-container"></div>
                     <div class="question-nav">
@@ -120,7 +121,7 @@
         </div>
 
         </div>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="{{ url_for('static', filename='js/safe-content.js') }}"></script>
     <script src="{{ url_for('static', filename='js/user-session.js') }}"></script>
     <script src="{{ url_for('static', filename='js/learn-analytics.js') }}"></script>
 </body>

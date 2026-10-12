@@ -10,7 +10,9 @@ from routes.api_response import api_error
 
 
 def normalize_language(language):
-    normalized = (language or "python").strip().lower()
+    if not isinstance(language, str):
+        return ""
+    normalized = language.strip().lower()
     if normalized in {"c++", "cpp"}:
         return "cpp"
     if normalized in {"py", "python3"}:
@@ -30,7 +32,10 @@ def validate_language(language):
 
 
 def validate_text_size(value, max_chars, field_name):
-    text = "" if value is None else str(value)
+    if value is not None and not isinstance(value, str):
+        response, status = api_error("INVALID_FIELD", f"{field_name}必须是字符串")
+        return None, response, status
+    text = value or ""
     if len(text) > max_chars:
         response, status = api_error(
             "PAYLOAD_TOO_LARGE",
@@ -41,6 +46,8 @@ def validate_text_size(value, max_chars, field_name):
 
 
 def validate_code_payload(data):
+    if not isinstance(data, dict):
+        return None, None, None, api_error("INVALID_JSON", "请求必须是 JSON 对象")
     language, response, status = validate_language(data.get("language", "python"))
     if response:
         return None, None, None, (response, status)

@@ -72,7 +72,10 @@ def handle_unauthorized():
 @login_manager.user_loader
 def load_user(user_id):
     # 这个函数现在可以安全地查询数据库了
-    return db.session.get(User, int(user_id))
+    user = db.session.get(User, int(user_id))
+    if user and session.get("auth_version", 0) == user.auth_version:
+        return user
+    return None
 
 
 @app.cli.command("create-admin")
@@ -91,6 +94,13 @@ def create_admin(username, email, password):
     click.echo(f"管理员账号已创建: {username}")
 
 
+@app.cli.command("seed-demo")
+def seed_demo():
+    from services.demo_problems import seed_demo_problems
+
+    click.echo("新增演示题：" + ", ".join(seed_demo_problems()))
+
+
 @app.before_request
 def disable_remember_auto_login():
     # 如果用户是通过 remember cookie 自动恢复的非 fresh 会话，强制退出，
@@ -100,6 +110,30 @@ def disable_remember_auto_login():
 
         if not session.get("_fresh", False):
             logout_user()
+
+
+@app.before_request
+def validate_json_request():
+    if request.path == "/api/profile/avatar":
+        request.max_content_length = 3 * 1024 * 1024
+    if request.path.startswith("/api/") and request.is_json:
+        data = request.get_json(silent=True)
+        if not isinstance(data, dict):
+            return api_error("INVALID_JSON", "请求必须是 JSON 对象", 400)
+        for name in (
+            "language",
+            "code",
+            "message",
+            "username",
+            "email",
+            "password",
+            "prefix",
+            "suffix",
+            "problem_id",
+        ):
+            if name in data and not isinstance(data[name], str):
+                return api_error("INVALID_FIELD", f"{name}必须是字符串", 400)
+    return None
 
 
 @app.before_request
@@ -140,7 +174,9 @@ from routes.execute import execute_blueprint
 from routes.helper import generate_blueprint
 from routes.pages import pages_blueprint
 from routes.problems import problems_blueprint
+from routes.profile import profile_blueprint
 from routes.solution_checker import solution_checker_blueprint
+from routes.tutoring import tutoring_blueprint
 
 app.register_blueprint(auth_blueprint, url_prefix="/api")
 app.register_blueprint(problems_blueprint, url_prefix="/api")
@@ -153,6 +189,8 @@ app.register_blueprint(ai_checker_blueprint)
 app.register_blueprint(generate_blueprint)
 app.register_blueprint(assessment_blueprint)
 app.register_blueprint(autocomplete_blueprint)
+app.register_blueprint(tutoring_blueprint, url_prefix="/api")
+app.register_blueprint(profile_blueprint, url_prefix="/api")
 
 
 # 页面路由

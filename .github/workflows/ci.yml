@@ -39,6 +39,9 @@ jobs:
       - name: Compile Python
         run: python -m compileall -q app.py models.py config.py routes services tests migrations
 
+      - name: Build isolated code runner
+        run: docker build -t codelab-runner:local sandbox
+
       - name: Run tests
         run: python -m unittest discover -s tests
 

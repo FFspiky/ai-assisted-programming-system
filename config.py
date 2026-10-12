@@ -22,6 +22,7 @@ MODEL_NAME = os.getenv("SILICONFLOW_MODEL_NAME", "deepseek-ai/DeepSeek-R1-Distil
 AUTOCOMPLETE_MODEL_NAME = os.getenv(
     "SILICONFLOW_AUTOCOMPLETE_MODEL_NAME", "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B"
 )
+AI_THINKING_MODE = os.getenv("AI_THINKING_MODE", "disabled")
 
 # 管理员账号
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "")
@@ -60,3 +61,5 @@ try:
     JUDGE_FLOAT_TOLERANCE = float(os.getenv("JUDGE_FLOAT_TOLERANCE", "1e-6"))
 except (TypeError, ValueError):
     JUDGE_FLOAT_TOLERANCE = 1e-6
+
+CODE_SANDBOX_IMAGE = os.getenv("CODE_SANDBOX_IMAGE", "codelab-runner:local")

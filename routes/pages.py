@@ -1,5 +1,6 @@
 # routes/pages.py
-from flask import Blueprint, render_template
+from flask import Blueprint, redirect, render_template, url_for
+from flask_login import current_user
 
 # 创建蓝图
 pages_blueprint = Blueprint("pages", __name__)
@@ -19,3 +20,10 @@ def analytics():
 @pages_blueprint.route("/problem_selector.html")
 def selector():
     return render_template("problem_selector.html")
+
+
+@pages_blueprint.route("/profile.html")
+def profile():
+    if not current_user.is_authenticated:
+        return redirect(url_for("login_page", next="/profile.html"))
+    return render_template("profile.html")

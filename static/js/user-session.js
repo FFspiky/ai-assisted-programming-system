@@ -23,6 +23,35 @@
     let csrfToken = null;
     let csrfTokenPromise = null;
 
+    function loginUrl() {
+        return '/login.html?next=' + encodeURIComponent(location.pathname + location.search);
+    }
+
+    function authRequired() {
+        csrfToken = null;
+        const error = new Error('请先登录后再操作。');
+        error.code = 'AUTH_REQUIRED';
+        return error;
+    }
+
+    function promptLogin(container, message = '登录后即可继续操作。') {
+        window.dispatchEvent(new Event('auth:required'));
+        container.replaceChildren();
+        const text = document.createElement('span');
+        text.textContent = message + ' ';
+        const link = document.createElement('a');
+        link.href = loginUrl();
+        link.textContent = '去登录';
+        link.style.color = 'var(--accent, #4895ef)';
+        container.append(text, link);
+    }
+
+    function handleAuthError(error, container, message) {
+        if (error.code !== 'AUTH_REQUIRED') return false;
+        promptLogin(container, message);
+        return true;
+    }
+
     async function getCsrfToken() {
         if (csrfToken) {
             return csrfToken;
@@ -30,8 +59,9 @@
         if (!csrfTokenPromise) {
             csrfTokenPromise = fetch('/api/csrf-token')
                 .then(async (response) => {
+                    if (response.status === 401) throw authRequired();
                     if (!response.ok) {
-                        throw new Error('CSRF token 获取失败');
+                        throw new Error('暂时无法验证登录状态，请刷新后重试。');
                     }
                     const result = await response.json();
                     csrfToken = result.csrf_token;
@@ -52,7 +82,16 @@
             headers.set('X-CSRF-Token', token);
             options = { ...options, headers };
         }
-        return fetch(url, options);
+        const response = await fetch(url, options);
+        if (response.status === 401) throw authRequired();
+        if (response.status === 403) {
+            const result = await response.clone().json().catch(() => ({}));
+            if (result.error?.code === 'CSRF_INVALID') {
+                csrfToken = null;
+                throw new Error('登录状态已更新，请刷新后重试。');
+            }
+        }
+        return response;
     }
 
     async function logout(redirectTo) {
@@ -69,14 +108,14 @@
                     <a href="/register.html">注册</a>
                 </div>
             </div>
-            <div class="user-avatar">
+            <a class="user-avatar" href="${escapeHtml(loginUrl())}" aria-label="登录后进入个人主页">
                 <img src="${defaultAvatar}" alt="默认头像">
-            </div>
+            </a>
         `;
     }
 
-    function renderUser(container, user, options) {
-        const points = user && typeof user.points !== 'undefined' ? user.points : 0;
+    function renderUser(container, user, options = {}) {
+        const points = String(user?.points ?? 0);
         const records = options.showRecords
             ? '<span class="show-records" style="cursor:pointer;">刷题记录</span>'
             : '';
@@ -89,9 +128,9 @@
                     <a href="#" class="logout-link" style="color: #f72585; cursor: pointer; margin-left: 15px; text-decoration: none;">登出</a>
                 </div>
             </div>
-            <div class="user-avatar">
-                <img src="${escapeHtml(options.avatarUrl || defaultAvatar)}" alt="用户头像">
-            </div>
+            <a class="user-avatar" href="/profile.html" aria-label="个人主页" title="个人主页">
+                <img src="${escapeHtml(user.avatar_url || options.avatarUrl || defaultAvatar)}" alt="用户头像" style="object-fit:cover;">
+            </a>
         `;
 
         container.querySelector('.logout-link')?.addEventListener('click', async (event) => {
@@ -106,6 +145,17 @@
                 window.location.href = '/practice.html';
             }
         });
+    }
+
+    function migrateDrafts(user) {
+        try {
+            const prefix = `codelab:draft:v1:${user.username}:`;
+            Object.keys(localStorage).filter(key => key.startsWith(prefix)).forEach(key => {
+                const stable = `codelab:draft:v2:${user.id}:` + key.slice(prefix.length);
+                if (!localStorage.getItem(stable)) localStorage.setItem(stable, localStorage.getItem(key));
+                localStorage.removeItem(key);
+            });
+        } catch (_) { /* Storage may be disabled by the browser. */ }
     }
 
     async function init(options = {}) {
@@ -129,6 +179,7 @@
                 return null;
             }
 
+            migrateDrafts(result.user);
             containers.forEach((container) => renderUser(container, result.user, options));
             getCsrfToken().catch((error) => console.error('CSRF token 初始化失败', error));
             if (typeof options.onAuthenticated === 'function') options.onAuthenticated(result.user);
@@ -147,8 +198,11 @@
         csrfFetch,
         escapeHtml,
         getCsrfToken,
+        handleAuthError,
         init,
+        loginUrl,
         logout,
+        promptLogin,
         renderGuest,
         renderUser
     };

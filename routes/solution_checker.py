@@ -1,4 +1,3 @@
-# routes/solution_checker.py
 from flask import Blueprint, request
 from flask_login import current_user, login_required
 
@@ -6,8 +5,9 @@ from models import Problem, Submission, User, db
 from routes.api_response import api_error, api_success
 from routes.guards import rate_limit
 from routes.validators import validate_code_payload
-from services.execute_runner import run_code  # 假设您的执行代码服务在这里
+from services.execute_runner import run_code
 from services.judge import outputs_match
+from services.tutor_service import serialize_submission
 
 solution_checker_blueprint = Blueprint("solution_checker", __name__)
 
@@ -20,101 +20,84 @@ def check_solution():
     code, language, _, error_response = validate_code_payload(data)
     if error_response:
         return error_response
-    problem_id = data.get("problem_id", "")
-
-    problem = db.session.get(Problem, problem_id)
+    if not code.strip():
+        return api_error("EMPTY_CODE", "请输入代码", 400)
+    problem = db.session.get(Problem, data.get("problem_id", ""))
     if not problem:
         return api_error("PROBLEM_NOT_FOUND", "题目不存在", 404)
-
-    test_cases = problem.test_cases.all()
-    if not test_cases:
+    cases = problem.test_cases.order_by("id").all()
+    if not cases:
         return api_error("TEST_CASES_MISSING", "该题目还没有测试用例", 400)
-
-    final_status = "Accepted"
-    feedback_details = []
-    test_results = []
-
-    for i, case in enumerate(test_cases, start=1):
-        # 修正此处的函数调用，使用关键字参数传递输入
-        run_result = run_code(code, language, input_text=case.input_data)
-
-        actual_output = run_result.get("output", "")
-        expected_output = case.expected_output
-        case_result = {
-            "index": i,
+    results, details, final_status = [], [], "Accepted"
+    for index, case in enumerate(cases, 1):
+        run = run_code(code, language, input_text=case.input_data)
+        if not run.get("success"):
+            status = run.get("status", "Runtime Error")
+        elif outputs_match(run.get("output", ""), case.expected_output, problem.judge_mode):
+            status = "Accepted"
+        else:
+            status = "Wrong Answer"
+        result = {
+            "id": f"case-{index}",
+            "index": index,
+            "is_public": case.is_public,
             "input": case.input_data,
-            "expected_output": expected_output,
-            "actual_output": actual_output,
-            "status": "Accepted",
-            "passed": True,
-            "time": run_result.get("time"),
-            "compile_time": run_result.get("compile_time"),
-            "run_time": run_result.get("run_time"),
-            "output_truncated": run_result.get("output_truncated", False),
-            "error_truncated": run_result.get("error_truncated", False),
-            "error": "",
+            "expected_output": case.expected_output,
+            "actual_output": run.get("output", ""),
+            "error": run.get("error", ""),
+            "status": status,
+            "passed": status == "Accepted",
+            "time": run.get("time"),
+            "compile_time": run.get("compile_time"),
+            "run_time": run.get("run_time"),
+            "output_truncated": run.get("output_truncated", False),
+            "error_truncated": run.get("error_truncated", False),
         }
-
-        if not run_result.get("success"):
-            final_status = run_result.get("status") or "Runtime Error"
-            case_result.update(
-                {
-                    "status": final_status,
-                    "passed": False,
-                    "error": run_result.get("error", ""),
-                }
-            )
-            test_results.append(case_result)
-            feedback_details.append(
-                f"测试用例 {i} 执行失败 ({final_status}): {run_result.get('error', '')}"
-            )
-            break  # 出现错误，直接中断
-
-        if not outputs_match(actual_output, expected_output):
-            final_status = "Wrong Answer"
-            case_result.update(
-                {
-                    "status": final_status,
-                    "passed": False,
-                }
-            )
-            test_results.append(case_result)
-            feedback_details.append(
-                f"测试用例 {i} 未通过: \n输入:\n{case.input_data}\n预期输出:\n{expected_output.strip()}\n你的输出:\n{actual_output.strip()}"
-            )
-            break  # 答案错误，直接中断
-
-        test_results.append(case_result)
-        feedback_details.append(f"测试用例 {i} 通过!")
-
-    already_accepted = None
-    if final_status == "Accepted":
-        already_accepted = Submission.query.filter_by(
-            user_id=current_user.id, problem_id=problem_id, status="Accepted"
-        ).first()
-
-    # 保存提交记录
-    new_submission = Submission(
+        results.append(result)
+        message = f"测试用例 {index}：{status}"
+        if case.is_public and status != "Accepted":
+            message += f"\n输入：{case.input_data}\n预期：{case.expected_output}\n实际：{result['actual_output']}\n{result['error']}"
+        elif not case.is_public:
+            message += "（隐藏验证用例）"
+        details.append(message)
+        if status != "Accepted":
+            final_status = status
+            break
+    snapshot = {
+        "version": 1,
+        "problem": {
+            "id": problem.id,
+            "title": problem.title,
+            "description": problem.description,
+            "judge_mode": problem.judge_mode,
+        },
+        "cases": results,
+        "total": len(cases),
+        "executed": len(results),
+        "not_run": len(cases) - len(results),
+        "backend": "docker",
+    }
+    already_accepted = Submission.query.filter_by(
+        user_id=current_user.id, problem_id=problem.id, status="Accepted"
+    ).first()
+    submission = Submission(
         code_submitted=code,
         language=language,
         status=final_status,
-        feedback="\n".join(feedback_details),
+        feedback="\n".join(details),
         user_id=current_user.id,
-        problem_id=problem_id,
+        problem_id=problem.id,
+        evidence_snapshot=snapshot,
     )
-    db.session.add(new_submission)
-
+    db.session.add(submission)
     if final_status == "Accepted" and already_accepted is None:
         user = db.session.get(User, current_user.id)
-        user.points += 10  # 首次答对加分
-
+        user.points += 10
     db.session.commit()
-
-    details = "\n".join(feedback_details)
-    data = {
-        "status": final_status,
-        "details": details,
-        "new_points": current_user.points,
-        "test_results": test_results,
-    }
-    return api_success(data, **data)
+    result = serialize_submission(submission)
+    result.update(
+        details=submission.feedback,
+        new_points=current_user.points,
+        test_results=result["evidence"]["cases"],
+    )
+    return api_success(result, **result)
