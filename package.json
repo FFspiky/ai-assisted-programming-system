@@ -5,6 +5,6 @@
     "smoke": "playwright test tests/smoke/playwright-smoke.spec.mjs"
   },
   "devDependencies": {
-    "@playwright/test": "1.60.0"
+    "@playwright/test": "1.64.0"
   }
 }
