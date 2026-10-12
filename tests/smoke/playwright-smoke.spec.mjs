@@ -5,7 +5,7 @@ const baseURL = process.env.SMOKE_BASE_URL || 'http://127.0.0.1:5005';
 const pages = [
   {
     path: '/index.html',
-    text: '说的都队',
+    text: '智练 CodeLab',
     controls: ['登录', '注册']
   },
   {
@@ -57,7 +57,7 @@ for (const pageCase of pages) {
 const mobilePages = [
   {
     path: '/index.html',
-    text: '说的都队'
+    text: '智练 CodeLab'
   },
   {
     path: '/practice.html?problem=P001',

@@ -1,4 +1,5 @@
 {
+  "name": "zhilian-codelab",
   "private": true,
   "scripts": {
     "smoke": "playwright test tests/smoke/playwright-smoke.spec.mjs"
