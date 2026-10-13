@@ -130,6 +130,7 @@ def submission_help_history(submission_id):
 def request_submission_help(submission_id):
     from models import LearningHelp
     from services.learning_help import (
+        PROMPT_VERSION,
         begin_help,
         fail_help,
         finish_help,
@@ -157,6 +158,7 @@ def request_submission_help(submission_id):
             source="panel",
             state="ready",
             requested_level=level,
+            prompt_version=PROMPT_VERSION,
         )
         .order_by(LearningHelp.id.desc())
         .first()

@@ -147,6 +147,7 @@ class LearningHelpTest(unittest.TestCase):
         for level, change in [
             (1, {"lines": [3]}),
             (1, {"explanation": "修改第3行"}),
+            (1, {"explanation": "检查 `range(1,n)`"}),
             (2, {"code": "answer"}),
             (3, {"code": "x\n" * 9}),
             (2, {"evidence_ids": ["hidden"]}),
@@ -162,6 +163,8 @@ class LearningHelpTest(unittest.TestCase):
             "code": "",
         }
         self.assertEqual(validate_help(insufficient, 1, context), insufficient)
+        with self.assertRaises(AIClientError):
+            validate_help({**insufficient, "explanation": "```python\nprint(6)\n```"}, 1, context)
 
     def test_learning_mode_guards_chat_optimization_and_completion(self):
         self.prepare()
