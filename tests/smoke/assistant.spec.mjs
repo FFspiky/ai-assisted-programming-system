@@ -166,3 +166,51 @@ test('拖动桌宠不误开聊天，移动和缩放不会越出屏幕', async ({
     await expect(page.locator('#aiFloatingWindow')).toBeHidden();
     await expect(page.locator('#aiToggleBtn')).toBeFocused();
 });
+
+test('八个方向缩放保持对边固定，最大化与拖动还原保留尺寸', async ({page}) => {
+    await page.setViewportSize({width: 1440, height: 1000});
+    await page.goto(baseURL + '/practice.html?problem=DEMO-01');
+    await page.locator('#aiToggleBtn').click();
+    const window = page.locator('#aiFloatingWindow');
+    const header = await page.locator('#aiDragHandle').boundingBox();
+    await page.mouse.move(header.x + 90, header.y + 25);
+    await page.mouse.down();
+    await page.mouse.move(header.x - 300, header.y - 150, {steps: 10});
+    await page.mouse.up();
+    for (const direction of ['n', 's', 'e', 'w', 'ne', 'nw', 'sw', 'se']) {
+        const before = await window.boundingBox();
+        const handle = await page.locator(`[data-direction="${direction}"]`).boundingBox();
+        const dx = direction.includes('w') ? -20 : direction.includes('e') ? 20 : 0;
+        const dy = direction.includes('n') ? -12 : direction.includes('s') ? 12 : 0;
+        await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2);
+        await page.mouse.down();
+        await page.mouse.move(handle.x + handle.width / 2 + dx, handle.y + handle.height / 2 + dy, {steps: 5});
+        await page.mouse.up();
+        const after = await window.boundingBox();
+        expect(after.width).toBeCloseTo(before.width + Math.abs(dx), 0);
+        expect(after.height).toBeCloseTo(before.height + Math.abs(dy), 0);
+        expect(direction.includes('w') ? after.x + after.width : after.x)
+            .toBeCloseTo(direction.includes('w') ? before.x + before.width : before.x, 0);
+        expect(direction.includes('n') ? after.y + after.height : after.y)
+            .toBeCloseTo(direction.includes('n') ? before.y + before.height : before.y, 0);
+    }
+    const normal = await window.boundingBox();
+    await page.locator('#maximizeChatWindow').click();
+    await expect(window).toHaveClass(/is-maximized/);
+    expect((await window.boundingBox()).width).toBe(1416);
+    await page.locator('#maximizeChatWindow').click();
+    expect(await window.boundingBox()).toEqual(normal);
+    await page.locator('#aiChatTitle').dblclick();
+    await expect(window).toHaveClass(/is-maximized/);
+    await page.reload();
+    await page.locator('#aiToggleBtn').click();
+    await expect(window).toHaveClass(/is-maximized/);
+    const maximizedHeader = await page.locator('#aiDragHandle').boundingBox();
+    await page.mouse.move(maximizedHeader.x + 150, maximizedHeader.y + 25);
+    await page.mouse.down();
+    await page.mouse.move(450, 180, {steps: 10});
+    await page.mouse.up();
+    await expect(window).not.toHaveClass(/is-maximized/);
+    expect((await window.boundingBox()).width).toBe(normal.width);
+    await assertWindowFits(page);
+});

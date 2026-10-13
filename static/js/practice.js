@@ -828,10 +828,12 @@ document.getElementById('stopChat').addEventListener('click', () => chatAbortCon
 
 const chatWindowStorageKey = 'dafeiyu-chat-window-v1';
 let savedChatGeometry = null;
+let chatMaximized = false;
 try {
     const stored = JSON.parse(localStorage.getItem(chatWindowStorageKey));
     if (stored && ['left', 'top', 'width', 'height'].every(key => Number.isFinite(stored[key]))) {
         savedChatGeometry = stored;
+        chatMaximized = stored.maximized === true;
     }
 } catch (_) { /* Window placement is optional when browser storage is unavailable. */ }
 
@@ -849,6 +851,11 @@ function defaultChatGeometry() {
         top: viewport.top + viewport.height - height - 12, width, height};
 }
 
+function currentChatGeometry() {
+    const {left, top, width, height} = aiFloatingWindow.getBoundingClientRect();
+    return {left, top, width, height};
+}
+
 function applyChatGeometry(geometry) {
     const viewport = chatViewport();
     const maxWidth = Math.max(1, viewport.width - 24);
@@ -862,10 +869,46 @@ function applyChatGeometry(geometry) {
     return {left, top, width, height};
 }
 
+function resizeChatGeometry(rect, direction, dx, dy) {
+    const viewport = chatViewport();
+    const minWidth = Math.min(300, viewport.width - 24), minHeight = Math.min(300, viewport.height - 24);
+    let left = rect.left, top = rect.top, right = left + rect.width, bottom = top + rect.height;
+    if (direction.includes('w')) left = Math.max(viewport.left + 12, Math.min(left + dx, right - minWidth));
+    if (direction.includes('e')) right = Math.min(viewport.left + viewport.width - 12, Math.max(right + dx, left + minWidth));
+    if (direction.includes('n')) top = Math.max(viewport.top + 12, Math.min(top + dy, bottom - minHeight));
+    if (direction.includes('s')) bottom = Math.min(viewport.top + viewport.height - 12, Math.max(bottom + dy, top + minHeight));
+    return {left, top, width: right - left, height: bottom - top};
+}
+
 function saveChatGeometry() {
-    const rect = aiFloatingWindow.getBoundingClientRect();
-    savedChatGeometry = {left: rect.left, top: rect.top, width: rect.width, height: rect.height};
-    try { localStorage.setItem(chatWindowStorageKey, JSON.stringify(savedChatGeometry)); } catch (_) {}
+    if (!chatMaximized) savedChatGeometry = currentChatGeometry();
+    try { localStorage.setItem(chatWindowStorageKey, JSON.stringify({
+        ...(savedChatGeometry || defaultChatGeometry()), maximized: chatMaximized
+    })); } catch (_) {}
+}
+
+function renderChatWindowMode() {
+    aiFloatingWindow.classList.toggle('is-maximized', chatMaximized);
+    const button = document.getElementById('maximizeChatWindow');
+    button.setAttribute('aria-pressed', String(chatMaximized));
+    button.setAttribute('aria-label', chatMaximized ? '还原对话框' : '最大化对话框');
+    button.title = chatMaximized ? '还原' : '最大化';
+    button.innerHTML = chatMaximized
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M8 8V4h12v12h-4"/><rect x="4" y="8" width="12" height="12" rx="1"/></svg>'
+        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="1"/></svg>';
+    if (chatMaximized) {
+        const viewport = chatViewport();
+        applyChatGeometry({left: viewport.left + 12, top: viewport.top + 12,
+            width: viewport.width - 24, height: viewport.height - 24});
+    }
+}
+
+function toggleChatMaximized() {
+    if (!chatMaximized) savedChatGeometry = currentChatGeometry();
+    chatMaximized = !chatMaximized;
+    renderChatWindowMode();
+    if (!chatMaximized) applyChatGeometry(savedChatGeometry || defaultChatGeometry());
+    saveChatGeometry();
 }
 
 function setChatWindowOpen(open) {
@@ -874,13 +917,17 @@ function setChatWindowOpen(open) {
     aiToggleBtn.setAttribute('aria-label', `${open ? '收起' : '打开'}达菲郁编程助手`);
     if (open) {
         applyChatGeometry(savedChatGeometry || defaultChatGeometry());
+        renderChatWindowMode();
         messageInput.focus({preventScroll: true});
     } else aiToggleBtn.focus({preventScroll: true});
 }
 
 function toggleAiWindow() { setChatWindowOpen(aiFloatingWindow.classList.contains('hidden')); }
 document.getElementById('closeChatWindow').addEventListener('click', () => setChatWindowOpen(false));
+document.getElementById('maximizeChatWindow').addEventListener('click', toggleChatMaximized);
 document.getElementById('resetChatWindow').addEventListener('click', () => {
+    chatMaximized = false;
+    renderChatWindowMode();
     applyChatGeometry(defaultChatGeometry());
     saveChatGeometry();
 });
@@ -890,35 +937,50 @@ aiFloatingWindow.addEventListener('keydown', event => {
 
 (function setupChatWindowInteraction() {
     const header = document.getElementById('aiDragHandle');
-    const resizeHandle = document.getElementById('chatResizeHandle');
+    const resizeHandles = [...aiFloatingWindow.querySelectorAll('.chat-resize-handle')];
     let interaction = null;
-    function start(event, mode, handle) {
+    header.addEventListener('dblclick', event => {
+        if (!event.target.closest('.chat-window-actions')) toggleChatMaximized();
+    });
+    function start(event, direction, handle) {
         if (event.button !== 0 || event.target.closest('.chat-window-actions')) return;
-        const rect = aiFloatingWindow.getBoundingClientRect();
-        interaction = {mode, pointerId: event.pointerId, x: event.clientX, y: event.clientY,
-            left: rect.left, top: rect.top, width: rect.width, height: rect.height};
+        const rect = currentChatGeometry();
+        interaction = {direction, pointerId: event.pointerId, x: event.clientX, y: event.clientY,
+            ...rect, wasMaximized: chatMaximized, moved: false};
         handle.setPointerCapture(event.pointerId);
         event.preventDefault();
     }
     function move(event) {
         if (!interaction || event.pointerId !== interaction.pointerId) return;
-        const dx = event.clientX - interaction.x, dy = event.clientY - interaction.y;
-        const geometry = {...interaction};
-        if (interaction.mode === 'move') { geometry.left += dx; geometry.top += dy; }
-        else {
-            const viewport = chatViewport();
-            geometry.width = Math.min(geometry.width + dx, viewport.left + viewport.width - geometry.left - 12);
-            geometry.height = Math.min(geometry.height + dy, viewport.top + viewport.height - geometry.top - 12);
+        let dx = event.clientX - interaction.x, dy = event.clientY - interaction.y;
+        if (!interaction.moved && Math.hypot(dx, dy) < 3) return;
+        interaction.moved = true;
+        aiFloatingWindow.classList.add('is-manipulating');
+        if (interaction.wasMaximized) {
+            // Restore under the grab point, as a desktop window does when pulled down.
+            const ratio = Math.max(0, Math.min(1, (interaction.x - interaction.left) / interaction.width));
+            const normal = savedChatGeometry || defaultChatGeometry();
+            chatMaximized = false;
+            renderChatWindowMode();
+            const restored = applyChatGeometry({...normal,
+                left: event.clientX - normal.width * ratio, top: event.clientY - Math.min(30, interaction.y - interaction.top)});
+            Object.assign(interaction, restored, {x: event.clientX, y: event.clientY, wasMaximized: false});
+            dx = 0; dy = 0;
         }
+        const geometry = interaction.direction === 'move'
+            ? {...interaction, left: interaction.left + dx, top: interaction.top + dy}
+            : resizeChatGeometry(interaction, interaction.direction, dx, dy);
         applyChatGeometry(geometry);
     }
     function end(event) {
         if (!interaction || event.pointerId !== interaction.pointerId) return;
         interaction = null;
+        aiFloatingWindow.classList.remove('is-manipulating');
         saveChatGeometry();
     }
-    for (const [handle, mode] of [[header, 'move'], [resizeHandle, 'resize']]) {
-        handle.addEventListener('pointerdown', event => start(event, mode, handle));
+    for (const handle of [header, ...resizeHandles]) {
+        const direction = handle === header ? 'move' : handle.dataset.direction;
+        handle.addEventListener('pointerdown', event => start(event, direction, handle));
         handle.addEventListener('pointermove', move);
         handle.addEventListener('pointerup', end);
         handle.addEventListener('pointercancel', end);
@@ -926,26 +988,21 @@ aiFloatingWindow.addEventListener('keydown', event => {
         handle.addEventListener('keydown', event => {
             if (event.target !== handle || !['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) return;
             event.preventDefault();
-            const rect = aiFloatingWindow.getBoundingClientRect();
+            if (chatMaximized) toggleChatMaximized();
+            const rect = currentChatGeometry();
             const step = event.shiftKey ? 40 : 12;
             const dx = event.key === 'ArrowLeft' ? -step : event.key === 'ArrowRight' ? step : 0;
             const dy = event.key === 'ArrowUp' ? -step : event.key === 'ArrowDown' ? step : 0;
-            const geometry = {left: rect.left, top: rect.top, width: rect.width, height: rect.height};
-            if (mode === 'move') { geometry.left += dx; geometry.top += dy; }
-            else {
-                const viewport = chatViewport();
-                geometry.width = Math.min(geometry.width + dx, viewport.left + viewport.width - geometry.left - 12);
-                geometry.height = Math.min(geometry.height + dy, viewport.top + viewport.height - geometry.top - 12);
-            }
-            applyChatGeometry(geometry);
+            applyChatGeometry(direction === 'move'
+                ? {...rect, left: rect.left + dx, top: rect.top + dy}
+                : resizeChatGeometry(rect, direction, dx, dy));
             saveChatGeometry();
         });
     }
     const constrain = () => {
-        if (!aiFloatingWindow.classList.contains('hidden')) {
-            const rect = aiFloatingWindow.getBoundingClientRect();
-            applyChatGeometry({left: rect.left, top: rect.top, width: rect.width, height: rect.height});
-        }
+        if (aiFloatingWindow.classList.contains('hidden')) return;
+        if (chatMaximized) renderChatWindowMode();
+        else applyChatGeometry(currentChatGeometry());
     };
     window.addEventListener('resize', constrain);
     window.visualViewport?.addEventListener('resize', constrain);

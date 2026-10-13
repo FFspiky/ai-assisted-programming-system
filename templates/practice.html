@@ -159,7 +159,7 @@
 
         <div class="ai-floating-window hidden" id="aiFloatingWindow" role="dialog" aria-labelledby="aiChatTitle" data-avatar="{{ url_for('static', filename='images/dafeiyu/portrait.png') }}">
             <div class="ai-assistant-section">
-                <div class="ai-header" id="aiDragHandle" tabindex="0" title="按住标题栏拖动；聚焦后用方向键移动">
+                <div class="ai-header" id="aiDragHandle" tabindex="0" title="按住标题栏拖动；双击最大化或还原">
                     <div class="ai-avatar">
                         <img src="{{ url_for('static', filename='images/dafeiyu/portrait.png') }}" alt="达菲郁的鲸鱼娘头像" draggable="false">
                     </div>
@@ -168,6 +168,7 @@
                         <div class="ai-status">编程学习伙伴</div>
                     </div>
                     <div class="chat-window-actions">
+                        <button type="button" id="maximizeChatWindow" class="chat-icon-btn" aria-label="最大化对话框" title="最大化" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="1"/></svg></button>
                         <button type="button" id="resetChatWindow" class="chat-icon-btn" aria-label="恢复默认位置和大小" title="恢复默认位置和大小"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5M3 3l6 6m12-6-6 6M3 21l6-6m12 6-6-6"/></svg></button>
                         <button type="button" id="closeChatWindow" class="chat-icon-btn" aria-label="收起达菲郁" title="收起"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14"/></svg></button>
                     </div>
@@ -187,7 +188,9 @@
                     </button>
                 </div>
             </div>
-            <button type="button" id="chatResizeHandle" class="chat-resize-handle" aria-label="调整对话框大小" title="拖动调整大小；方向键调整"></button>
+            {% for direction, label in [('n', '上边'), ('s', '下边'), ('e', '右边'), ('w', '左边'), ('ne', '右上角'), ('nw', '左上角'), ('sw', '左下角'), ('se', '右下角')] %}
+            <button type="button" {% if direction == 'se' %}id="chatResizeHandle"{% endif %} class="chat-resize-handle" data-direction="{{ direction }}" aria-label="从{{ label }}调整对话框大小" title="拖动{{ label }}缩放；方向键调整"></button>
+            {% endfor %}
         </div>
 
         <button class="ai-toggle-btn" id="aiToggleBtn" aria-label="打开达菲郁编程助手" aria-expanded="false" aria-controls="aiFloatingWindow" title="达菲郁 · 点击聊天，按住拖动">
