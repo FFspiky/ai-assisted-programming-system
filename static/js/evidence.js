@@ -56,6 +56,11 @@
         byId('cancelDiagnosisBtn').hidden = true;
         updateButtons();
     }
+    function clearFocus() {
+        cases.querySelectorAll('.is-selected').forEach(item => item.classList.remove('is-selected'));
+        byId('submissionCode').querySelectorAll('.is-selected').forEach(item => item.classList.remove('is-selected'));
+        byId('submissionCodePanel').open = false;
+    }
     function focusEvidence(ids, lines) {
         cases.querySelectorAll('.case-card').forEach(card => card.classList.toggle('is-selected', ids.includes(card.dataset.caseId)));
         byId('submissionCodePanel').open = true;
@@ -116,6 +121,7 @@
         }
     }
     function showSubmission(data) {
+        clearFocus();
         cancelPending();
         submission = data?.submission_id ? data : null;
         byId('submissionResults').hidden = !submission;
@@ -199,6 +205,7 @@
     async function requestHelp(level) {
         if (!submission || !LearningHelpUI.get().ready) return;
         cancelPending();
+        clearFocus();
         historySequence += 1;
         const ticket = sequence, id = submission.submission_id;
         const help = LearningHelpUI.get();
@@ -232,6 +239,7 @@
     }
     helpButtons.forEach(button => button.addEventListener('click', () => requestHelp(Number(button.dataset.helpLevel))));
     window.addEventListener('practice:help-settings', () => {
+        clearFocus();
         cancelPending();
         historySequence += 1;
         diagnosisContent.replaceChildren();

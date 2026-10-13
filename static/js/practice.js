@@ -5,6 +5,7 @@ let chatProblemId = null;
 let attachedPractice = null;
 let chatAbortController = null;
 let optimizeController = null;
+let aiContextRevision = 0;
 document.addEventListener('DOMContentLoaded', function () {
     UserSession.init({ logoutRedirect: '/index.html' }).then(user => {
         practiceUser = user;
@@ -515,6 +516,7 @@ async function runCode() {
 // 优化代码
 async function optimizeCode() {
     const help = LearningHelpUI.get();
+    const contextRevision = aiContextRevision;
     document.getElementById('optimizationResult').hidden = false;
     const code = document.getElementById('codeInput').value;
     const requestedLanguage = document.getElementById('languageSelector').value;
@@ -552,11 +554,11 @@ async function optimizeCode() {
         });
 
         const result = await response.json();
-        if (help.epoch !== LearningHelpUI.get().epoch) return;
+        if ((help.epoch !== LearningHelpUI.get().epoch || contextRevision !== aiContextRevision)) return;
         if (!response.ok) throw new Error(apiErrorMessage(result));
         if (result.success && result.learning_help) {
             globalOptimizedVersions = [];
-            optimizationBase = null;
+            optimizationBase = {code, language: requestedLanguage};
             aiSuggestion.replaceChildren();
             const label = document.createElement('p');
             label.textContent = LearningHelpUI.labels[result.learning_help.level];
@@ -564,6 +566,7 @@ async function optimizeCode() {
             aiSuggestion.append(label);
             LearningHelpUI.render(result.learning_help, aiSuggestion);
             LearningHelpUI.acknowledge(result.learning_help.id);
+            showOptimizationStale();
         } else if (result.success) {
             LearningHelpUI.acknowledge(result.help_id);
             // 将获取到的优化版本存储到全局变量
@@ -603,7 +606,7 @@ async function optimizeCode() {
             aiSuggestion.innerHTML = `<div style="color:var(--warning)"><i class="fas fa-exclamation-triangle"></i> AI优化失败: ${escapeHtml(apiErrorMessage(result))}</div>`;
         }
     } catch (error) {
-        if (help.epoch !== LearningHelpUI.get().epoch) return;
+        if ((help.epoch !== LearningHelpUI.get().epoch || contextRevision !== aiContextRevision)) return;
         if (UserSession.handleAuthError(error, aiSuggestion, '请先登录后再使用 AI 优化。')) return;
         aiSuggestion.innerHTML = `<div style="color:var(--warning)"><i class="fas fa-exclamation-triangle"></i> 请求失败: ${escapeHtml(error.message)}</div>`;
         console.error('优化代码请求错误:', error);
@@ -717,6 +720,7 @@ document.getElementById('attachPracticeContext').addEventListener('click', () =>
 async function sendMessage() {
     if (chatBusy) return;
     const help = LearningHelpUI.get();
+    const contextRevision = aiContextRevision;
     const message = messageInput.value.trim();
     if (!message) return;
     const problemId = getCurrentProblemId();
@@ -768,7 +772,7 @@ async function sendMessage() {
         if (!userToggledReasoning) reasoningPanel.open = false;
     };
     const consumeEvent = (event) => {
-        if (help.epoch !== LearningHelpUI.get().epoch) return;
+        if ((help.epoch !== LearningHelpUI.get().epoch || contextRevision !== aiContextRevision)) return;
         if (event.type === 'reasoning' && help.mode === 'learning') return;
         const followBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight < 80;
         if (event.type === 'reasoning') {
@@ -832,7 +836,7 @@ async function sendMessage() {
         }
         buffer += decoder.decode();
         consumeBuffer();
-        if (help.epoch !== LearningHelpUI.get().epoch) return;
+        if ((help.epoch !== LearningHelpUI.get().epoch || contextRevision !== aiContextRevision)) return;
         if (!finished) throw new Error('连接已中断，请重试。已生成的内容已保留。');
         if (!failed && fullText.trim()) {
             const historyText = attachment ? JSON.stringify({question:message, attached_practice:attachment}) : message;
@@ -843,7 +847,7 @@ async function sendMessage() {
             updateChatContext();
         }
     } catch (error) {
-        if (help.epoch !== LearningHelpUI.get().epoch) return;
+        if ((help.epoch !== LearningHelpUI.get().epoch || contextRevision !== aiContextRevision)) return;
         if (UserSession.handleAuthError(error, status, '请先登录后再使用编程助手。')) return;
         status.textContent = error.name === 'AbortError' ? '已停止，已生成的内容已保留。' : `请求失败：${error.message}`;
         if (reasoning && !reasoningFinished) summary.textContent = '思考已中止';
@@ -858,7 +862,22 @@ async function sendMessage() {
     }
 }
 
+function showOptimizationStale() {
+    let note = document.getElementById('optimizationStale');
+    if (!optimizationBase) return;
+    if (!note) {
+        note = document.createElement('p');
+        note.id = 'optimizationStale';
+        note.className = 'stale-note';
+        note.textContent = '代码已修改，以下建议对应请求时的代码。需要新建议时请重新请求。';
+        aiSuggestion.prepend(note);
+    }
+    note.hidden = codeInput.value === optimizationBase.code && document.getElementById('languageSelector').value === optimizationBase.language;
+}
+codeInput.addEventListener('input', showOptimizationStale);
+
 function resetHelpOutputs() {
+    aiContextRevision += 1;
     cancelInlineCompletion();
     inlineCompletionCache.clear();
     chatAbortController?.abort();
@@ -872,6 +891,17 @@ function resetHelpOutputs() {
 }
 window.addEventListener('practice:help-settings', resetHelpOutputs);
 window.addEventListener('practice:help-level', resetHelpOutputs);
+document.getElementById('languageSelector').addEventListener('change', () => {
+    resetHelpOutputs();
+    attachedPractice = null;
+    updateChatContext();
+});
+window.addEventListener('practice:submission', () => {
+    // New judging evidence supersedes old context, without attaching the new submission to chat.
+    resetHelpOutputs();
+    attachedPractice = null;
+    updateChatContext();
+});
 
 document.getElementById('stopChat').addEventListener('click', () => chatAbortController?.abort());
 
