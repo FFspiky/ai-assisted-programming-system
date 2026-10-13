@@ -638,19 +638,27 @@ async function submitCode() {
 function addChatMessage(content, sender, id = null, isHtml = false) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${sender}-message`;
+    const avatar = document.createElement('div');
+    avatar.className = 'message-avatar';
+    const image = document.createElement('img');
+    image.src = sender === 'ai' ? aiFloatingWindow.dataset.avatar
+        : (practiceUser?.avatar_url || UserSession.defaultAvatar);
+    image.alt = sender === 'ai' ? '达菲郁头像' : '你的头像';
+    image.draggable = false;
+    image.addEventListener('error', () => { image.src = UserSession.defaultAvatar; }, {once: true});
+    avatar.appendChild(image);
+    const bubble = document.createElement('div');
+    bubble.className = 'message-bubble';
     const header = document.createElement('div');
     header.className = 'message-header';
-    header.innerHTML = sender === 'ai' ? '<i class="fas fa-robot"></i> 达菲郁' : '<i class="fas fa-user"></i> 你';
+    header.textContent = sender === 'ai' ? '达菲郁' : (practiceUser?.display_name || practiceUser?.username || '你');
     const contentDiv = document.createElement('div');
     contentDiv.className = 'message-content';
     if (id) contentDiv.id = id;
-    if (sender === 'ai') {
-        contentDiv.innerHTML = isHtml ? content : formatAiResponse(content);
-    } else {
-        contentDiv.textContent = content;
-    }
-    messageDiv.appendChild(header);
-    messageDiv.appendChild(contentDiv);
+    if (sender === 'ai') contentDiv.innerHTML = isHtml ? content : formatAiResponse(content);
+    else contentDiv.textContent = content;
+    bubble.append(header, contentDiv);
+    messageDiv.append(avatar, bubble);
     chatContainer.appendChild(messageDiv);
     chatContainer.scrollTop = chatContainer.scrollHeight;
     return contentDiv;
@@ -806,9 +814,131 @@ async function sendMessage() {
 
 document.getElementById('stopChat').addEventListener('click', () => chatAbortController?.abort());
 
-function toggleAiWindow() {
-    aiFloatingWindow.classList.toggle('hidden');
+const chatWindowStorageKey = 'dafeiyu-chat-window-v1';
+let savedChatGeometry = null;
+try {
+    const stored = JSON.parse(localStorage.getItem(chatWindowStorageKey));
+    if (stored && ['left', 'top', 'width', 'height'].every(key => Number.isFinite(stored[key]))) {
+        savedChatGeometry = stored;
+    }
+} catch (_) { /* Window placement is optional when browser storage is unavailable. */ }
+
+function chatViewport() {
+    const viewport = window.visualViewport;
+    return {left: viewport?.offsetLeft || 0, top: viewport?.offsetTop || 0,
+        width: viewport?.width || window.innerWidth, height: viewport?.height || window.innerHeight};
 }
+
+function defaultChatGeometry() {
+    const viewport = chatViewport();
+    const width = Math.min(440, viewport.width - 24);
+    const height = Math.min(640, viewport.height - 24);
+    return {left: viewport.left + viewport.width - width - 12,
+        top: viewport.top + viewport.height - height - 12, width, height};
+}
+
+function applyChatGeometry(geometry) {
+    const viewport = chatViewport();
+    const maxWidth = Math.max(1, viewport.width - 24);
+    const maxHeight = Math.max(1, viewport.height - 24);
+    const width = Math.max(Math.min(300, maxWidth), Math.min(geometry.width, maxWidth));
+    const height = Math.max(Math.min(300, maxHeight), Math.min(geometry.height, maxHeight));
+    const left = Math.max(viewport.left + 12, Math.min(geometry.left, viewport.left + viewport.width - width - 12));
+    const top = Math.max(viewport.top + 12, Math.min(geometry.top, viewport.top + viewport.height - height - 12));
+    Object.assign(aiFloatingWindow.style, {left: `${left}px`, top: `${top}px`,
+        width: `${width}px`, height: `${height}px`, right: 'auto', bottom: 'auto'});
+    return {left, top, width, height};
+}
+
+function saveChatGeometry() {
+    const rect = aiFloatingWindow.getBoundingClientRect();
+    savedChatGeometry = {left: rect.left, top: rect.top, width: rect.width, height: rect.height};
+    try { localStorage.setItem(chatWindowStorageKey, JSON.stringify(savedChatGeometry)); } catch (_) {}
+}
+
+function setChatWindowOpen(open) {
+    aiFloatingWindow.classList.toggle('hidden', !open);
+    aiToggleBtn.setAttribute('aria-expanded', String(open));
+    aiToggleBtn.setAttribute('aria-label', `${open ? '收起' : '打开'}达菲郁编程助手`);
+    if (open) {
+        applyChatGeometry(savedChatGeometry || defaultChatGeometry());
+        messageInput.focus({preventScroll: true});
+    } else aiToggleBtn.focus({preventScroll: true});
+}
+
+function toggleAiWindow() { setChatWindowOpen(aiFloatingWindow.classList.contains('hidden')); }
+document.getElementById('closeChatWindow').addEventListener('click', () => setChatWindowOpen(false));
+document.getElementById('resetChatWindow').addEventListener('click', () => {
+    applyChatGeometry(defaultChatGeometry());
+    saveChatGeometry();
+});
+aiFloatingWindow.addEventListener('keydown', event => {
+    if (event.key === 'Escape') { event.preventDefault(); setChatWindowOpen(false); }
+});
+
+(function setupChatWindowInteraction() {
+    const header = document.getElementById('aiDragHandle');
+    const resizeHandle = document.getElementById('chatResizeHandle');
+    let interaction = null;
+    function start(event, mode, handle) {
+        if (event.button !== 0 || event.target.closest('.chat-window-actions')) return;
+        const rect = aiFloatingWindow.getBoundingClientRect();
+        interaction = {mode, pointerId: event.pointerId, x: event.clientX, y: event.clientY,
+            left: rect.left, top: rect.top, width: rect.width, height: rect.height};
+        handle.setPointerCapture(event.pointerId);
+        event.preventDefault();
+    }
+    function move(event) {
+        if (!interaction || event.pointerId !== interaction.pointerId) return;
+        const dx = event.clientX - interaction.x, dy = event.clientY - interaction.y;
+        const geometry = {...interaction};
+        if (interaction.mode === 'move') { geometry.left += dx; geometry.top += dy; }
+        else {
+            const viewport = chatViewport();
+            geometry.width = Math.min(geometry.width + dx, viewport.left + viewport.width - geometry.left - 12);
+            geometry.height = Math.min(geometry.height + dy, viewport.top + viewport.height - geometry.top - 12);
+        }
+        applyChatGeometry(geometry);
+    }
+    function end(event) {
+        if (!interaction || event.pointerId !== interaction.pointerId) return;
+        interaction = null;
+        saveChatGeometry();
+    }
+    for (const [handle, mode] of [[header, 'move'], [resizeHandle, 'resize']]) {
+        handle.addEventListener('pointerdown', event => start(event, mode, handle));
+        handle.addEventListener('pointermove', move);
+        handle.addEventListener('pointerup', end);
+        handle.addEventListener('pointercancel', end);
+        handle.addEventListener('lostpointercapture', end);
+        handle.addEventListener('keydown', event => {
+            if (event.target !== handle || !['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) return;
+            event.preventDefault();
+            const rect = aiFloatingWindow.getBoundingClientRect();
+            const step = event.shiftKey ? 40 : 12;
+            const dx = event.key === 'ArrowLeft' ? -step : event.key === 'ArrowRight' ? step : 0;
+            const dy = event.key === 'ArrowUp' ? -step : event.key === 'ArrowDown' ? step : 0;
+            const geometry = {left: rect.left, top: rect.top, width: rect.width, height: rect.height};
+            if (mode === 'move') { geometry.left += dx; geometry.top += dy; }
+            else {
+                const viewport = chatViewport();
+                geometry.width = Math.min(geometry.width + dx, viewport.left + viewport.width - geometry.left - 12);
+                geometry.height = Math.min(geometry.height + dy, viewport.top + viewport.height - geometry.top - 12);
+            }
+            applyChatGeometry(geometry);
+            saveChatGeometry();
+        });
+    }
+    const constrain = () => {
+        if (!aiFloatingWindow.classList.contains('hidden')) {
+            const rect = aiFloatingWindow.getBoundingClientRect();
+            applyChatGeometry({left: rect.left, top: rect.top, width: rect.width, height: rect.height});
+        }
+    };
+    window.addEventListener('resize', constrain);
+    window.visualViewport?.addEventListener('resize', constrain);
+    window.visualViewport?.addEventListener('scroll', constrain);
+})();
 
 runBtn.addEventListener('click', runCode);
 optimizeBtn.addEventListener('click', optimizeCode);
@@ -823,59 +953,43 @@ messageInput.addEventListener('keypress', (e) => {
 codeInput.value = `# 示例Python代码\ndef greet(name):\n    return f"Hello, {name}!"\n\nprint(greet("World"))\n`;
 renderGhostLayer();
 
-// --- 拖拽功能 ---
-(function () {
-    const btn = document.getElementById('aiToggleBtn');
-    let isDragging = false, startX, startY, initialLeft, initialTop, isClick = true;
+chatProblemId = getCurrentProblemId();
+addChatMessage('我是达菲郁，陪你把代码里的小问号一个个捞起来。🐋 有问题就丢给本鱼吧！', 'ai');
 
-    function startDrag(e) {
-        isDragging = true;
-        isClick = true;
-        const rect = btn.getBoundingClientRect();
-        initialLeft = rect.left;
-        initialTop = rect.top;
-        if (e.type === 'mousedown') {
-            startX = e.clientX; startY = e.clientY;
-        } else if (e.type === 'touchstart') {
-            startX = e.touches[0].clientX; startY = e.touches[0].clientY;
-        }
-        btn.style.transition = 'none';
-        btn.style.boxShadow = '0 10px 25px rgba(138, 43, 226, 0.6)';
-        e.preventDefault();
-    }
-
-    function duringDrag(e) {
-        if (!isDragging) return;
-        isClick = false;
-        let currentX, currentY;
-        if (e.type === 'mousemove') {
-            currentX = e.clientX; currentY = e.clientY;
-        } else if (e.type === 'touchmove') {
-            currentX = e.touches[0].clientX; currentY = e.touches[0].clientY;
-        }
-        const dx = currentX - startX, dy = currentY - startY;
-        btn.style.left = `${initialLeft + dx}px`;
-        btn.style.top = `${initialTop + dy}px`;
-        btn.style.right = 'auto';
-        btn.style.bottom = 'auto';
-        e.preventDefault();
-    }
-
-    function endDrag(e) {
-        if (!isDragging) return;
-        isDragging = false;
-        btn.style.transition = 'all 0.3s ease';
-        btn.style.boxShadow = '0 5px 15px rgba(138, 43, 226, 0.4)';
-        if (!isClick) { e.preventDefault(); e.stopPropagation(); }
-    }
-
-    btn.addEventListener('mousedown', startDrag);
-    document.addEventListener('mousemove', duringDrag);
-    document.addEventListener('mouseup', endDrag);
-    btn.addEventListener('touchstart', startDrag, { passive: false });
-    document.addEventListener('touchmove', duringDrag, { passive: false });
-    document.addEventListener('touchend', endDrag);
-    btn.addEventListener('click', function (e) {
-        if (!isClick) { e.preventDefault(); e.stopPropagation(); }
+// A drag moves the pet; only a click opens the conversation.
+(function setupPetDrag() {
+    let drag = null;
+    let suppressClick = false;
+    const clampPet = (left, top) => {
+        const rect = aiToggleBtn.getBoundingClientRect();
+        Object.assign(aiToggleBtn.style, {
+            left: `${Math.max(0, Math.min(left, window.innerWidth - rect.width))}px`,
+            top: `${Math.max(0, Math.min(top, window.innerHeight - rect.height))}px`,
+            right: 'auto', bottom: 'auto'
+        });
+    };
+    aiToggleBtn.addEventListener('pointerdown', event => {
+        if (event.button !== 0) return;
+        const rect = aiToggleBtn.getBoundingClientRect();
+        drag = {pointerId: event.pointerId, x: event.clientX, y: event.clientY, left: rect.left, top: rect.top};
+        suppressClick = false;
+        aiToggleBtn.setPointerCapture(event.pointerId);
+    });
+    aiToggleBtn.addEventListener('pointermove', event => {
+        if (!drag || event.pointerId !== drag.pointerId) return;
+        const dx = event.clientX - drag.x, dy = event.clientY - drag.y;
+        if (Math.hypot(dx, dy) > 4) suppressClick = true;
+        if (suppressClick) clampPet(drag.left + dx, drag.top + dy);
+    });
+    const end = () => { drag = null; };
+    aiToggleBtn.addEventListener('pointerup', end);
+    aiToggleBtn.addEventListener('pointercancel', end);
+    aiToggleBtn.addEventListener('lostpointercapture', end);
+    aiToggleBtn.addEventListener('click', event => {
+        if (suppressClick) { event.preventDefault(); event.stopImmediatePropagation(); suppressClick = false; }
+    }, true);
+    window.addEventListener('resize', () => {
+        const rect = aiToggleBtn.getBoundingClientRect();
+        if (rect.right > window.innerWidth || rect.bottom > window.innerHeight) clampPet(rect.left, rect.top);
     });
 })();

@@ -78,3 +78,91 @@ test('停止思考保留内容且可再次发送', async ({page}) => {
     await expect(page.locator('.reasoning-text')).toContainText('先比较数据');
     await expect(page.locator('#sendMessage')).toBeEnabled();
 });
+
+async function assertWindowFits(page) {
+    const dimensions = await page.locator('#aiFloatingWindow').evaluate(el => {
+        const rect = el.getBoundingClientRect();
+        const send = document.getElementById('sendMessage').getBoundingClientRect();
+        const input = document.getElementById('messageInput').getBoundingClientRect();
+        return {left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom,
+            width: rect.width, sendRight: send.right, inputRight: input.right,
+            inputBottom: input.bottom, inputWidth: input.width,
+            viewportWidth: innerWidth, viewportHeight: innerHeight};
+    });
+    expect(dimensions.left).toBeGreaterThanOrEqual(11);
+    expect(dimensions.top).toBeGreaterThanOrEqual(11);
+    expect(dimensions.right).toBeLessThanOrEqual(dimensions.viewportWidth - 11);
+    expect(dimensions.bottom).toBeLessThanOrEqual(dimensions.viewportHeight - 11);
+    expect(dimensions.sendRight).toBeLessThan(dimensions.right);
+    expect(dimensions.inputBottom).toBeLessThan(dimensions.bottom);
+    expect(dimensions.inputWidth).toBeGreaterThan(100);
+    expect(dimensions.inputRight).toBeLessThan(dimensions.sendRight);
+}
+
+test('聊天框拖动、缩放、位置保存、双方头像及窄屏输入完整', async ({page}) => {
+    await mockSession(page);
+    await mockChatStream(page);
+    await page.setViewportSize({width: 1440, height: 900});
+    await page.goto(baseURL + '/practice.html?problem=DEMO-01');
+    await page.locator('#aiToggleBtn').click();
+    const before = await page.locator('#aiFloatingWindow').boundingBox();
+    const header = await page.locator('#aiDragHandle').boundingBox();
+    await page.mouse.move(header.x + 90, header.y + 20);
+    await page.mouse.down();
+    await page.mouse.move(header.x - 410, header.y - 60, {steps: 12});
+    await page.mouse.up();
+    const moved = await page.locator('#aiFloatingWindow').boundingBox();
+    expect(moved.x).toBeLessThan(before.x - 400);
+    const handle = await page.locator('#chatResizeHandle').boundingBox();
+    await page.mouse.move(handle.x + 10, handle.y + 10);
+    await page.mouse.down();
+    await page.mouse.move(handle.x - 90, handle.y - 140, {steps: 12});
+    await page.mouse.up();
+    const resized = await page.locator('#aiFloatingWindow').boundingBox();
+    expect(resized.width).toBeLessThan(moved.width - 90);
+    expect(resized.height).toBeLessThan(moved.height - 140);
+    await assertWindowFits(page);
+    await page.locator('#closeChatWindow').click();
+    await page.locator('#aiToggleBtn').click();
+    expect(await page.locator('#aiFloatingWindow').boundingBox()).toEqual(resized);
+    await page.locator('#messageInput').fill('比较 list 和 tuple');
+    await page.locator('#sendMessage').click();
+    await expect(page.locator('.user-message .message-avatar img')).toBeVisible();
+    await expect(page.locator('.ai-message .message-avatar img').last()).toBeVisible();
+    await expect(page.locator('.user-message .message-header')).toHaveText('小林');
+    await expect(page.locator('#stopChat')).toBeVisible();
+    await assertWindowFits(page);
+    await expect(page.locator('#stopChat')).toBeHidden();
+    await page.locator('#resetChatWindow').click();
+    expect((await page.locator('#aiFloatingWindow').boundingBox()).width).toBe(440);
+    for (const size of [{width: 1024, height: 768}, {width: 390, height: 844}, {width: 320, height: 568}]) {
+        await page.setViewportSize(size);
+        await expect.poll(async () => page.locator('#aiFloatingWindow').evaluate(el => {
+            const rect = el.getBoundingClientRect();
+            return rect.right <= innerWidth - 11 && rect.bottom <= innerHeight - 11;
+        })).toBe(true);
+        await assertWindowFits(page);
+    }
+});
+
+test('拖动桌宠不误开聊天，移动和缩放不会越出屏幕', async ({page}) => {
+    await page.setViewportSize({width: 1024, height: 768});
+    await page.goto(baseURL + '/practice.html?problem=DEMO-01');
+    const pet = await page.locator('#aiToggleBtn').boundingBox();
+    await page.mouse.move(pet.x + 40, pet.y + 40);
+    await page.mouse.down();
+    await page.mouse.move(900, 100, {steps: 12});
+    await page.mouse.up();
+    await expect(page.locator('#aiFloatingWindow')).toBeHidden();
+    await page.locator('#aiToggleBtn').click();
+    await page.locator('#aiDragHandle').focus();
+    for (let i = 0; i < 30; i++) await page.keyboard.press('Shift+ArrowLeft');
+    for (let i = 0; i < 30; i++) await page.keyboard.press('Shift+ArrowUp');
+    await assertWindowFits(page);
+    await page.locator('#chatResizeHandle').focus();
+    for (let i = 0; i < 30; i++) await page.keyboard.press('Shift+ArrowRight');
+    await assertWindowFits(page);
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#aiFloatingWindow')).toBeHidden();
+    await expect(page.locator('#aiToggleBtn')).toBeFocused();
+});
