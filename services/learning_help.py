@@ -10,7 +10,7 @@ from models import LearningHelp, User, db
 from services.ai_client import AIClientError, chat_completion
 from services.tutor_service import diagnosis_cases, insufficient_diagnosis
 
-PROMPT_VERSION = "graded-help-v3"
+PROMPT_VERSION = "graded-help-v4"
 LEVELS = {1: "概念线索", 2: "定位与解释", 3: "局部修改", 4: "完整参考"}
 LEVEL_RULES = {
     1: "只点出需复习的概念，并提出1到2个开放自查问题，让学生自己检查。不得断言已找到错误或解释本次错误如何产生；不得说漏了哪个值、错在何处、应改什么。不得引用原代码表达式、变量名或具体行号，不使用反引号。摘要同样不能泄露根因。",
@@ -211,6 +211,14 @@ def generate_context_help(context, level):
         level
     )
     if level == 3:
+        context = {
+            **context,
+            "edit_source_lines": [
+                {"line": index, "text": line}
+                for index, line in enumerate(context["code"].splitlines(), 1)
+            ],
+        }
+        system += "\n精确修改必须以edit_source_lines为准：start_line/end_line取其中的line编号；before直接复制这些行的text，保留每一个空格，多行仅用换行连接，不添加行号或末尾换行。不要自行格式化原代码。"
         system += "\n有局部修改时增加edits数组，每项为{start_line:起始行号,end_line:结束行号,before:原片段,after:新片段}。行号从1开始，包含两端，按起始行升序且不重叠。before须逐字符复制原代码对应行，保留缩进，不含末尾换行。after保留所需缩进。仅替换完整行，不猜测行号；code须等于各after用换行拼接，所有after合计最多8行。证据不足或没有修改时不要编造edits。"
     payload = {
         "model": MODEL_NAME,
