@@ -10,7 +10,7 @@ from models import LearningHelp, User, db
 from services.ai_client import AIClientError, chat_completion
 from services.tutor_service import diagnosis_cases, insufficient_diagnosis
 
-PROMPT_VERSION = "graded-help-v2"
+PROMPT_VERSION = "graded-help-v3"
 LEVELS = {1: "概念线索", 2: "定位与解释", 3: "局部修改", 4: "完整参考"}
 LEVEL_RULES = {
     1: "只点出需复习的概念，并提出1到2个开放自查问题，让学生自己检查。不得断言已找到错误或解释本次错误如何产生；不得说漏了哪个值、错在何处、应改什么。不得引用原代码表达式、变量名或具体行号，不使用反引号。摘要同样不能泄露根因。",
@@ -65,6 +65,9 @@ def finish_help(record, result):
     record.result = result
     record.returned_level = record.requested_level
     record.state = "ready"
+    from services.code_proposals import ensure_proposal
+
+    ensure_proposal(record)
     db.session.commit()
 
 
@@ -74,7 +77,12 @@ def fail_help(record, state="failed"):
 
 
 def help_payload(record):
+    from models import CodeProposal
+    from services.code_proposals import proposal_payload
+
+    proposal = CodeProposal.query.filter_by(help_id=record.id).first()
     return {
+        "proposal": proposal_payload(proposal) if proposal else None,
         "id": record.id,
         "submission_id": record.submission_id,
         "source": record.source,
@@ -128,10 +136,18 @@ def validate_help(raw, level, context):
         raise AIClientError("概念线索包含了具体定位或代码，请重试")
     if level == 3 and len(raw["code"].splitlines()) > 8:
         raise AIClientError("局部修改过长，请重试或选择完整参考")
-    return {
+    result = {
         key: raw[key]
         for key in ("status", "summary", "explanation", "lines", "evidence_ids", "code")
     }
+    if level == 3 and raw["status"] == "supported" and raw["code"]:
+        from services.code_proposals import apply_edits
+
+        _, edits = apply_edits(context["code"], raw.get("edits"))
+        if raw["code"] != "\n".join(edit["after"] for edit in edits):
+            raise AIClientError("展示片段与候选修改不一致，请重新请求")
+        result["edits"] = edits
+    return result
 
 
 def submission_context(submission):
@@ -194,6 +210,8 @@ def generate_context_help(context, level):
 "lines":[],"evidence_ids":[],"code":""}。行号从1开始。""" + learning_policy(
         level
     )
+    if level == 3:
+        system += "\n有局部修改时增加edits数组，每项为{start_line:起始行号,end_line:结束行号,before:原片段,after:新片段}。行号从1开始，包含两端，按起始行升序且不重叠。before须逐字符复制原代码对应行，保留缩进，不含末尾换行。after保留所需缩进。仅替换完整行，不猜测行号；code须等于各after用换行拼接，所有after合计最多8行。证据不足或没有修改时不要编造edits。"
     payload = {
         "model": MODEL_NAME,
         "messages": [

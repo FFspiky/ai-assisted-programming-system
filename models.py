@@ -92,3 +92,37 @@ class LearningHelp(db.Model):
     prompt_version = db.Column(db.String(60), nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     shown_at = db.Column(db.DateTime, nullable=True)
+
+
+class CodeProposal(db.Model):
+    """Immutable candidate attached to one explicitly requested help response."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    help_id = db.Column(db.Integer, db.ForeignKey("learning_help.id"), nullable=False, unique=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    submission_id = db.Column(
+        db.Integer, db.ForeignKey("submission.id"), nullable=False, index=True
+    )
+    base_code = db.Column(db.Text, nullable=False)
+    candidate_code = db.Column(db.Text, nullable=False)
+    edits = db.Column(db.JSON, nullable=False)
+    state = db.Column(db.String(20), nullable=False, default="pending")
+    revision = db.Column(db.Integer, nullable=False, default=0)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+
+
+class PracticeEvent(db.Model):
+    __table_args__ = (db.UniqueConstraint("user_id", "operation_id", name="uq_practice_operation"),)
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    problem_id = db.Column(db.String(50), nullable=False, index=True)
+    language = db.Column(db.String(50), nullable=False)
+    submission_id = db.Column(db.Integer, db.ForeignKey("submission.id"), nullable=True)
+    proposal_id = db.Column(
+        db.Integer, db.ForeignKey("code_proposal.id"), nullable=True, index=True
+    )
+    kind = db.Column(db.String(30), nullable=False)
+    payload = db.Column(db.JSON, nullable=False)
+    operation_id = db.Column(db.String(64), nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)

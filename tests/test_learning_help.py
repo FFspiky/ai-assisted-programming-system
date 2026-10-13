@@ -66,7 +66,21 @@ class LearningHelpTest(unittest.TestCase):
             "explanation": "列举覆盖的数值",
             "lines": [] if level == 1 else [3],
             "evidence_ids": ["case-1"],
-            "code": "range(1,n+1)" if level >= 3 else "",
+            "code": "for i in range(1,n+1):" if level >= 3 else "",
+            **(
+                {
+                    "edits": [
+                        {
+                            "start_line": 3,
+                            "end_line": 3,
+                            "before": "for i in range(1,n):",
+                            "after": "for i in range(1,n+1):",
+                        }
+                    ]
+                }
+                if level == 3
+                else {}
+            ),
         }
 
     def test_levels_persist_without_revealing_legacy_diagnosis_and_restore_only_requested(self):
