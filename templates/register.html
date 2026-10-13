@@ -18,8 +18,9 @@
         a { color: #1877f2; text-decoration: none; }
         .hint { margin: -0.4rem 0 1rem; color: #666; font-size: 0.88rem; line-height: 1.4; }
     </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ocean-theme.css') }}">
 </head>
-<body>
+<body class="ocean-theme auth-page">
 <div class="card">
     <h1>创建新账户</h1>
     <div id="formMessage" class="message" role="status" aria-live="polite"></div>

@@ -18,3 +18,13 @@
 `actions.webp` / `actions.json` 由同一来源版本的 `assets/whale/idle-front.png`、`inbetween-jump.png`、`dense-wave.png`、`inbetween-sleep.png`、`story-token.png`、`dense-dance.png` 中选取的完整角色帧编译。
 修改：抽取 92 帧、缩放为 256×256 像素、合并成无损 WebP 图集；未重绘角色。12 个动作的播放顺序参考上游 `src/renderer/motion.js`，时长针对网页互动调整。编译脚本见 `scripts/build_pet_atlas.py`。
 动作图集沿用本目录 LICENSE.txt 中的署名许可。
+
+## 首页高清动作（2026-10-13）
+
+`home/idle-front.png`、`home/dense-wave.png`、`home/dense-dance.png` 是上述固定来源版本的原始文件，未缩放、未重绘。已通过 GitHub Contents API 返回的 Git blob SHA-1 校验：本地副本与上游一致。
+
+- 待机原图 2048×1024，2 列 1 行，每帧 1024×1024。
+- 挥手 / 说话原图 2048×4096，4 列 8 行，每帧 512×512。
+- 跳舞原图 2048×4096，4 列 8 行，每帧 512×512。
+
+`home/actions.json` 记录与现有 `scripts/build_pet_atlas.py` 一致的原始帧号、时长和动作顺序。首页通过 CSS 裁切原图播放；维持原显示尺寸，进入角色区域才加载，跳舞图集在悬停、键盘聚焦或点击时加载。刷题页继续使用原先的轻量图集。许可继续适用本目录 LICENSE.txt 和 ASSET_LICENSE.md。

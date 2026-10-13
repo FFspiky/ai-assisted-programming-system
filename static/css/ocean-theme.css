@@ -1,0 +1,94 @@
+/* Shared ocean palette; page-specific layouts and editor overlay behavior stay intact. */
+:root {
+  --primary:#548ee5; --secondary:#78abef; --accent:#a5c9ff;
+  --light:#f2f7fd; --dark:#172c44; --darker:#0d1b2d;
+  --success:#a0e0cd; --warning:#f0cf99; --danger:#ffb8bd;
+  --gray:#b1c3d8; --light-gray:#c3d3e6; --code-bg:#101f32;
+  --frog-green:#548ee5; --ai-purple:#568dde;
+  --ocean-panel:#172c44; --ocean-raised:#213a56;
+  --ocean-border:rgba(185,214,249,.18);
+  --profile-muted:#b1c3d8; --profile-border:rgba(185,214,249,.18);
+}
+body.ocean-theme {
+  color-scheme:dark;
+  color:var(--light);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  background:radial-gradient(ellipse at 8% 0%,#497cbb38,transparent 42%),radial-gradient(ellipse at 100% 75%,#537caa15,transparent 48%),var(--darker);
+  min-height:100vh;
+}
+.ocean-theme :focus-visible {outline:2px solid var(--accent);outline-offset:3px}
+.ocean-theme header {background:transparent;border:0;border-radius:0;box-shadow:none;backdrop-filter:none}
+.ocean-theme .logo-text {background:linear-gradient(110deg,#f2f8ff,#a7ceff);background-clip:text;-webkit-background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.ocean-theme .logo-icon {color:var(--accent);background:transparent}
+.ocean-theme .logo-icon i {color:var(--accent)}
+.ocean-theme nav a {color:var(--gray)}
+.ocean-theme nav a:hover,.ocean-theme nav a.active {color:var(--light);background:transparent}
+.ocean-theme .user-avatar {background:#213a56;border-color:#a1c8fc73}
+.ocean-theme .user-stats,.ocean-theme .user-stats a,.ocean-theme .user-stats span {color:var(--accent)}
+.ocean-theme .logout-link {color:var(--accent)!important}
+.ocean-theme .glowing {background:radial-gradient(circle,#679cdf55,transparent 70%);opacity:.16}
+.ocean-theme :is(.problem-section,.problem-card,.card,.stat-card,.profile-card,.profile-stat,.learning-path-result) {background:rgba(31,53,79,.88);border-color:var(--ocean-border);box-shadow:0 16px 40px #020b1726}
+.ocean-theme .problem-card:hover {background:#29486b;box-shadow:0 18px 40px #020b1733}
+.ocean-theme :is(.problem-title,.card-title,.output-title,.section-title,.ai-title) {color:var(--accent);-webkit-text-fill-color:currentColor}
+.ocean-theme .problem-title {background:none}
+.ocean-theme :is(.card-description,.hero-subtitle,.stat-label,.problem-meta,.hint) {color:var(--gray)}
+.ocean-theme :is(.editor-container,.code-editor-wrapper,.problem-content pre,.snapshot-code,.help-code) {background:var(--code-bg)}
+.ocean-theme :is(.editor-header,.output-area) {background:#15273f;border-color:var(--ocean-border)}
+.ocean-theme :is(.editor-tools,.problem-header,.chat-help-controls,.finding-card,.input-area,.chat-context-controls) {border-color:var(--ocean-border)}
+.ocean-theme :is(.editor-tools,.panel-note,.next-check,.chat-help-controls) {color:var(--gray)}
+.ocean-theme :is(.case-card,.path-content) {background:#1d3551;border-color:var(--ocean-border)}
+.ocean-theme .case-card.is-selected {border-color:var(--accent);background:#29476a}
+.ocean-theme select {background:#1c3350;color:var(--light);border-color:#99bdeb44}
+.ocean-theme .btn-run,.ocean-theme .btn-select {background:linear-gradient(110deg,#b1d1ff,#91bdf9);color:#122945;box-shadow:none}
+.ocean-theme .btn-run:hover,.ocean-theme .btn-select:hover {background:#d0e3ff;box-shadow:0 5px 16px #0a1c3540}
+.ocean-theme .btn-submit,.ocean-theme .send-btn {background:#4581dd;color:#fff;box-shadow:none}
+.ocean-theme .btn-submit:hover,.ocean-theme .send-btn:hover {background:#5b95f0;box-shadow:0 5px 16px #0a1c3540}
+.ocean-theme .btn-ai,.ocean-theme .btn-back {background:#94c1fb14;color:var(--accent)}
+.ocean-theme .btn-ai:hover,.ocean-theme .btn-back:hover {background:#94c1fb28}
+.ocean-theme .evidence-button {border-color:#a6c9f34f;color:var(--light)}
+.ocean-theme .evidence-button:hover {color:var(--accent);border-color:var(--accent)}
+.ocean-theme .ai-response {background:#8dbcfc12;border-color:var(--accent)}
+/* The transparent textarea overlays ghostLayer; never give codeInput an opaque foreground. */
+.ocean-theme #ghostLayer .typed {color:#dfedff}
+.ocean-theme #ghostLayer .ghost {color:#b1c3d877}
+.ocean-theme .code-area {caret-color:#f2f7fd}
+.ocean-theme .code-area::placeholder {color:#b1c3d899}
+.ocean-theme #customInput {background:#10223a!important;color:var(--light)!important;border-color:#adcff040!important}
+.ocean-theme .ai-floating-window {background:rgba(32,55,83,.92);border-color:#adcdf440;backdrop-filter:blur(24px) saturate(125%);-webkit-backdrop-filter:blur(24px) saturate(125%);box-shadow:0 24px 60px #020b174d}
+.ocean-theme .message-bubble {background:#25405f;color:var(--light)}
+.ocean-theme .user-message .message-bubble {background:#365d8c}
+.ocean-theme .chat-input input,.ocean-theme .chat-input textarea {background:#10223a;color:var(--light);border-color:var(--ocean-border)}
+.ocean-theme .pet-action-menu {background:#172c44f5;border-color:var(--ocean-border)}
+.ocean-theme .reasoning-panel {background:#101f3280;border-color:var(--ocean-border);color:var(--gray)}
+.ocean-theme.profile-page input,.ocean-theme.profile-page textarea {background:#10223a;color:var(--light);border-color:var(--ocean-border)}
+.ocean-theme.auth-page .card {border:1px solid var(--ocean-border);background:rgba(31,53,79,.9);box-shadow:0 25px 80px #020b174d;backdrop-filter:blur(24px)}
+.ocean-theme.auth-page {box-sizing:border-box}
+.ocean-theme.auth-page .card {box-sizing:border-box}
+.ocean-theme.auth-page label {color:var(--light)}
+.ocean-theme.auth-page input,.ocean-theme.admin-page input,.ocean-theme.admin-page textarea {background:#10223a;color:var(--light);border-color:var(--ocean-border)}
+.ocean-theme.auth-page a,.ocean-theme.admin-page a {color:var(--accent)}
+.ocean-theme.auth-page button,.ocean-theme.admin-page button {background:#4581dd;color:#fff;border-color:var(--ocean-border)}
+.ocean-theme.admin-page .secondary-btn {background:var(--ocean-raised)}
+.ocean-theme.admin-page .danger-btn {background:#713a50;color:#ffe8eb}
+.ocean-theme.admin-page :is(.problem-row,.file-upload,#editPanel,#importResult) {border-color:var(--ocean-border)}
+.ocean-theme.admin-page #fileName {color:var(--gray)}
+.ocean-theme.admin-page .result-error {color:var(--danger)}
+.ocean-theme .message.error {background:#513246;color:#ffe2e6;border-color:#bd7b8b}
+.ocean-theme .message.success {background:#1b443f;color:#c7f6e9;border-color:#669e90}
+@supports not (backdrop-filter:blur(1px)){.ocean-theme .ai-floating-window {background:#203753}}
+@media(max-width:650px){
+  .ocean-theme header {gap:16px;flex-wrap:wrap}
+  .ocean-theme header .header-left {flex-wrap:wrap;min-width:0}
+  .ocean-theme header nav {display:block;order:3;width:100%}
+  .ocean-theme header nav ul {display:flex;margin-left:0;justify-content:center;gap:24px}
+  .ocean-theme header nav a {font-size:15px}
+  .ocean-theme .logo-text {font-size:21px}
+  .ocean-theme .logo-icon {font-size:28px}
+  .ocean-theme .user-avatar {width:36px;height:36px}
+  .ocean-theme .user-info {gap:8px}
+  .ocean-theme .user-stats {font-size:12px}
+  .ocean-theme .case-list {grid-template-columns:minmax(0,1fr)}
+  .ocean-theme.admin-page {margin:24px 16px}
+  .ocean-theme.admin-page .problem-row {grid-template-columns:minmax(0,1fr) auto auto}
+}
+@media(prefers-reduced-motion:reduce){.ocean-theme *, .ocean-theme *:before,.ocean-theme *:after {animation:none!important;transition:none!important;scroll-behavior:auto!important}}

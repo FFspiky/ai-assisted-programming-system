@@ -11,9 +11,10 @@
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/learn-analytics.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ocean-theme.css') }}">
 </head>
 
-<body>
+<body class="ocean-theme">
     <div class="container">
         <div class="glowing glowing-1"></div>
         <div class="glowing glowing-2"></div>
@@ -100,7 +101,7 @@
             </div>
             </div>
 
-        <h2 class="section-title">英雄榜</h2>
+        <h2 class="section-title" id="leaderboard">英雄榜</h2>
             <div class="card">
                 <div class="card-header">
                     <div class="card-icon"><i class="fas fa-trophy"></i></div>
