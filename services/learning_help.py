@@ -232,7 +232,11 @@ def generate_context_help(context, level):
         "response_format": {"type": "json_object"},
     }
     try:
-        raw = json.loads(chat_completion(payload, timeout=(8, 60)))
+        metadata = {}
+        raw = json.loads(chat_completion(payload, timeout=(8, 60), metadata=metadata))
     except (ValueError, TypeError) as exc:
         raise AIClientError("模型没有返回有效提示，请重试") from exc
-    return validate_help(raw, level, context)
+    result = validate_help(raw, level, context)
+    if metadata:
+        result["generation"] = metadata
+    return result

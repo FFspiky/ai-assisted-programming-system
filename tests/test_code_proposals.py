@@ -50,3 +50,22 @@ class ExactEditsTest(unittest.TestCase):
         }
         result = validate_help(raw, 3, context)
         self.assertEqual(apply_edits(context["code"], result["edits"])[0], "print(1)\n")
+
+    def test_provider_model_metadata_is_separate_from_configured_model(self):
+        from unittest.mock import MagicMock, patch
+
+        from services.ai_client import chat_completion
+
+        response = MagicMock()
+        response.__enter__.return_value = response
+        response.json.return_value = {
+            "model": "returned-model",
+            "choices": [{"message": {"content": "ok"}}],
+        }
+        metadata = {}
+        with (
+            patch("services.ai_client.ensure_ai_configured"),
+            patch("services.ai_client.requests.post", return_value=response),
+        ):
+            self.assertEqual(chat_completion({"model": "requested-model"}, metadata=metadata), "ok")
+        self.assertEqual(metadata, {"response_model": "returned-model"})

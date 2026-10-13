@@ -27,7 +27,7 @@ def _provider_payload(payload):
     return prepared
 
 
-def chat_completion(payload, timeout=120):
+def chat_completion(payload, timeout=120, metadata=None):
     ensure_ai_configured()
     headers = {
         "Authorization": f"Bearer {API_KEY}",
@@ -38,7 +38,10 @@ def chat_completion(payload, timeout=120):
             API_URL, headers=headers, json=_provider_payload(payload), timeout=timeout
         ) as response:
             response.raise_for_status()
-            content = response.json()["choices"][0]["message"]["content"]
+            packet = response.json()
+            content = packet["choices"][0]["message"]["content"]
+            if metadata is not None and isinstance(packet.get("model"), str):
+                metadata["response_model"] = packet["model"]
         if not isinstance(content, str) or not content.strip():
             raise AIClientError("AI未返回有效文本，请重试")
         return content
