@@ -211,3 +211,34 @@ class LearningHelpTest(unittest.TestCase):
             records = LearningHelp.query.filter_by(source="autocomplete", state="ready").all()
             self.assertEqual(len(records), 1)
             self.assertEqual(records[0].returned_level, 4)
+
+    def test_real_judging_public_passes_hidden_fails_returns_insufficient_help(self):
+        self.prepare()
+        judged = self.post(
+            "/api/check-solution",
+            {
+                "problem_id": "DEMO-01",
+                "language": "python",
+                "code": "n=int(input())\nprint(sum(range(1, min(n,10)+1)))",
+            },
+        ).get_json()
+        self.assertEqual(judged["status"], "Wrong Answer", judged)
+        public = [case for case in judged["test_results"] if case["is_public"]]
+        self.assertEqual([case["status"] for case in public], ["Accepted", "Accepted"])
+        hidden = [case for case in judged["test_results"] if not case["is_public"]]
+        self.assertEqual(hidden[0]["status"], "Wrong Answer")
+        self.assertNotIn("input", hidden[0])
+        sid = judged["submission_id"]
+        with patch("services.learning_help.chat_completion") as ai:
+            for level in [1, 2, 3]:
+                response = self.post(f"/api/submissions/{sid}/help", {"level": level})
+                self.assertEqual(response.status_code, 200, response.get_json())
+                result = response.get_json()["data"]["result"]
+                self.assertEqual(result["status"], "insufficient_evidence")
+                self.assertEqual(result["lines"], [])
+                self.assertEqual(result["evidence_ids"], [])
+                self.assertEqual(result["code"], "")
+            ai.assert_not_called()
+        self.assertEqual(
+            self.client.get(f"/api/submissions/{sid}").get_json()["data"]["status"], "Wrong Answer"
+        )
