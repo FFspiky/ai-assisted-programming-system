@@ -193,13 +193,24 @@
             {% endfor %}
         </div>
 
-        <button class="ai-toggle-btn" id="aiToggleBtn" aria-label="打开达菲郁编程助手" aria-expanded="false" aria-controls="aiFloatingWindow" title="达菲郁 · 点击聊天，按住拖动">
+        <button class="ai-toggle-btn" id="aiToggleBtn" aria-label="打开达菲郁编程助手" aria-expanded="false" aria-controls="aiFloatingWindow" title="达菲郁 · 点击聊天，拖动提起，右键选择动作">
             <span class="pet-sprite" aria-hidden="true"></span>
+            <span class="pet-caption" aria-hidden="true">陪你写代码</span>
         </button>
+        <div class="pet-action-menu" id="petActionMenu" role="group" aria-label="达菲郁的动作" hidden>
+            <span class="pet-menu-title">陪本鱼活动一下</span>
+            <button type="button" data-pet-action="wave">挥挥手</button>
+            <button type="button" data-pet-action="jump">跳一下</button>
+            <button type="button" data-pet-action="dance">跳个舞</button>
+            <button type="button" data-pet-action="eat">吃小鱼干</button>
+            <button type="button" data-pet-action="sleep">休息一会</button>
+            <button type="button" data-pet-action="wake">醒一醒</button>
+        </div>
     </div>
 
     <script src="{{ url_for('static', filename='js/user-session.js') }}"></script>
     <script src="{{ url_for('static', filename='js/safe-content.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dafeiyu-pet.js') }}"></script>
     <script src="{{ url_for('static', filename='js/practice.js') }}"></script>
     <script src="{{ url_for('static', filename='js/evidence.js') }}"></script>
 </body>

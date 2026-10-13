@@ -12,3 +12,9 @@
 
 资源入口：https://treapgogo.github.io/deepseek-whale-girl/
 形象为社区二创，本应用不代表 DeepSeek 官方。
+
+## 动作图集
+
+`actions.webp` / `actions.json` 由同一来源版本的 `assets/whale/idle-front.png`、`inbetween-jump.png`、`dense-wave.png`、`inbetween-sleep.png`、`story-token.png`、`dense-dance.png` 中选取的完整角色帧编译。
+修改：抽取 92 帧、缩放为 256×256 像素、合并成无损 WebP 图集；未重绘角色。12 个动作的播放顺序参考上游 `src/renderer/motion.js`，时长针对网页互动调整。编译脚本见 `scripts/build_pet_atlas.py`。
+动作图集沿用本目录 LICENSE.txt 中的署名许可。

@@ -925,3 +925,15 @@ nav a:hover::after {
 #stopChat[hidden] { display: none; }
 
 .chat-icon-btn svg, .send-btn svg { width: 18px; height: 18px; display: block; margin: auto; }
+
+/* Interaction uses whole-character sprite frames, preserving the upstream artwork. */
+.ai-toggle-btn.has-actions .pet-sprite { animation: none; transform-origin: 50% 24%; will-change: transform; }
+.ai-toggle-btn.is-dragging { z-index: 1004; }
+.pet-caption { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); padding: 5px 9px; border: 1px solid #85b4ed44; border-radius: 9px; color: #d6eaff; background: #17283ef5; font: 12px/1.5 sans-serif; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .15s; }
+.ai-toggle-btn:hover .pet-caption, .ai-toggle-btn:focus-visible .pet-caption, .ai-toggle-btn.is-dragging .pet-caption { opacity: 1; }
+.pet-action-menu { position: fixed; z-index: 1005; width: 180px; padding: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; border: 1px solid #85b4ed44; border-radius: 12px; color: #d6eaff; background: #17283efc; box-shadow: 0 10px 25px #0005; }
+.pet-action-menu[hidden] { display: none; }
+.pet-menu-title { grid-column: 1 / -1; padding: 4px 5px 6px; color: #9bbce1; font-size: 12px; }
+.pet-action-menu button { padding: 8px 4px; background: #ffffff08; border: none; border-radius: 7px; color: inherit; cursor: pointer; font: inherit; font-size: 12px; }
+.pet-action-menu button:hover, .pet-action-menu button:focus-visible { background: #78b3ff25; outline: 1px solid #8bbcff; }
+@media (prefers-reduced-motion: reduce) { .pet-caption { transition: none; } }

@@ -704,6 +704,7 @@ async function sendMessage() {
         chatProblemId = problemId;
     }
     chatBusy = true;
+    window.DafeiyuPet?.setActivity('think');
     const attachment = attachedPractice;
 
     addChatMessage(message + (attachment ? '\n已附带：' + attachment.title + '（代码快照与最近提交）' : ''), 'user');
@@ -753,6 +754,7 @@ async function sendMessage() {
             reasoningText.textContent = reasoning;
             status.textContent = '正在思考…';
         } else if (event.type === 'content') {
+            if (!fullText) window.DafeiyuPet?.setActivity('talk');
             finishReasoning();
             fullText += event.text || '';
             answer.innerHTML = formatAiResponse(fullText);
@@ -817,6 +819,7 @@ async function sendMessage() {
         if (reasoning && !reasoningFinished) summary.textContent = '思考已中止';
     } finally {
         chatBusy = false;
+        window.DafeiyuPet?.setActivity('idle');
         chatAbortController = null;
         stopButton.hidden = true;
         sendMessageBtn.disabled = false;
@@ -1024,41 +1027,3 @@ renderGhostLayer();
 
 chatProblemId = getCurrentProblemId();
 addChatMessage('我是达菲郁，陪你把代码里的小问号一个个捞起来。🐋 有问题就丢给本鱼吧！', 'ai');
-
-// A drag moves the pet; only a click opens the conversation.
-(function setupPetDrag() {
-    let drag = null;
-    let suppressClick = false;
-    const clampPet = (left, top) => {
-        const rect = aiToggleBtn.getBoundingClientRect();
-        Object.assign(aiToggleBtn.style, {
-            left: `${Math.max(0, Math.min(left, window.innerWidth - rect.width))}px`,
-            top: `${Math.max(0, Math.min(top, window.innerHeight - rect.height))}px`,
-            right: 'auto', bottom: 'auto'
-        });
-    };
-    aiToggleBtn.addEventListener('pointerdown', event => {
-        if (event.button !== 0) return;
-        const rect = aiToggleBtn.getBoundingClientRect();
-        drag = {pointerId: event.pointerId, x: event.clientX, y: event.clientY, left: rect.left, top: rect.top};
-        suppressClick = false;
-        aiToggleBtn.setPointerCapture(event.pointerId);
-    });
-    aiToggleBtn.addEventListener('pointermove', event => {
-        if (!drag || event.pointerId !== drag.pointerId) return;
-        const dx = event.clientX - drag.x, dy = event.clientY - drag.y;
-        if (Math.hypot(dx, dy) > 4) suppressClick = true;
-        if (suppressClick) clampPet(drag.left + dx, drag.top + dy);
-    });
-    const end = () => { drag = null; };
-    aiToggleBtn.addEventListener('pointerup', end);
-    aiToggleBtn.addEventListener('pointercancel', end);
-    aiToggleBtn.addEventListener('lostpointercapture', end);
-    aiToggleBtn.addEventListener('click', event => {
-        if (suppressClick) { event.preventDefault(); event.stopImmediatePropagation(); suppressClick = false; }
-    }, true);
-    window.addEventListener('resize', () => {
-        const rect = aiToggleBtn.getBoundingClientRect();
-        if (rect.right > window.innerWidth || rect.bottom > window.innerHeight) clampPet(rect.left, rect.top);
-    });
-})();
