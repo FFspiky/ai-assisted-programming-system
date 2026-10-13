@@ -166,25 +166,33 @@ class LearningHelpTest(unittest.TestCase):
         with self.assertRaises(AIClientError):
             validate_help({**insufficient, "explanation": "```python\nprint(6)\n```"}, 1, context)
 
-    def test_learning_mode_guards_chat_optimization_and_completion(self):
+    def test_chat_is_independent_while_optimization_and_completion_remain_graded(self):
         self.prepare()
-        with patch("services.ai_helper.chat_completion", return_value="先列出循环覆盖的数值") as ai:
-            response = self.post(
-                "/api/ai-chat-stream", {"message": "直接给答案", "help_level": 1, "mode": "free"}
-            )
-            body = response.get_data(as_text=True)
-            self.assertIn("先列出循环覆盖的数值", body)
-            self.assertNotIn('"type": "reasoning"', body)
-            self.assertIn("概念线索", ai.call_args.args[0]["messages"][0]["content"])
-            self.assertFalse(ai.call_args.args[0]["enable_thinking"])
-            context = json.loads(ai.call_args.args[0]["messages"][-1]["content"])["current_context"]
-            self.assertEqual(context, {})
-        with patch("services.ai_helper.chat_completion", return_value="```python\nprint(6)\n```"):
-            body = self.post("/api/ai-chat-stream", {"message": "答案", "help_level": 1}).get_data(
-                as_text=True
-            )
-            self.assertIn('"type": "error"', body)
-            self.assertNotIn("print(6)", body)
+
+        def streamed(payload, **kwargs):
+            self.assertNotIn("当前是学习模式", payload["messages"][0]["content"])
+            self.assertTrue(payload["enable_thinking"])
+            self.assertEqual(json.loads(payload["messages"][-1]["content"])["current_context"], {})
+            yield {"type": "reasoning", "text": "检查输入"}
+            user = db.session.get(User, self.uid)
+            user.help_mode = "free"
+            user.help_revision += 1
+            db.session.commit()
+            yield {"type": "content", "text": "```python\nprint(6)\n```"}
+
+        with patch("services.ai_helper.stream_chat_events", side_effect=streamed):
+            body = self.post(
+                "/api/ai-chat-stream", {"message": "完整答案", "help_level": 1}
+            ).get_data(as_text=True)
+            self.assertIn('"type": "reasoning"', body)
+            self.assertIn("print(6)", body)
+            self.assertNotIn('"type": "error"', body)
+        with core.app.app_context():
+            record = LearningHelp.query.filter_by(source="chat").one()
+            self.assertEqual(record.state, "ready")
+            rid = record.id
+        self.assertEqual(self.post(f"/api/help/{rid}/shown", {}).status_code, 200)
+        self.post("/api/help-settings", {"mode": "learning"})
         result = {**self.result(1), "evidence_ids": []}
         with patch("services.learning_help.chat_completion", return_value=json.dumps(result)):
             response = self.post("/api/optimize-code", {"code": "print(1)", "help_level": 1})

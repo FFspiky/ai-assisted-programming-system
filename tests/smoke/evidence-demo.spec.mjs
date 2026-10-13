@@ -80,13 +80,13 @@ test('分级帮助：真实证据、主动揭示、恢复、模式隔离与重�
     expect(chatRequests[0].include_context).toBe(false);
     expect(chatRequests[0].code).toBeUndefined();
     await page.locator('#attachPracticeContext').click();
-    await page.locator('#chatHelpLevel').selectOption('2');
+    await page.locator('#codeHelpLevel').selectOption('2');
     await page.locator('#messageInput').fill('给我一些线索');
     await page.locator('#sendMessage').click();
     await expect(page.locator('#sendMessage')).toBeEnabled();
     expect(chatRequests[1].include_context).toBe(true);
-    expect(chatRequests[1].help_level).toBe(2);
-    expect(chatRequests[1].history).toEqual([]);
+    expect(chatRequests[1].help_level).toBeUndefined();
+    expect(chatRequests[1].history).toHaveLength(2);
     await page.locator('#closeChatWindow').click();
 
     await page.locator('#codeInput').fill('n = int(input())\ntotal = 0\nfor i in range(1, n + 1):\n    total += i\nprint(total)\n');

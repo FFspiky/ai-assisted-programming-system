@@ -189,9 +189,11 @@ def mark_help_shown(help_id):
 
     from models import LearningHelp
 
-    record = LearningHelp.query.filter_by(
-        id=help_id, user_id=current_user.id, state="ready", mode=current_user.help_mode
-    ).first()
+    record = (
+        LearningHelp.query.filter_by(id=help_id, user_id=current_user.id, state="ready")
+        .filter((LearningHelp.source == "chat") | (LearningHelp.mode == current_user.help_mode))
+        .first()
+    )
     if not record:
         return api_error("HELP_NOT_FOUND", "帮助记录不存在或当前模式已改变", 404)
     if record.shown_at is None:

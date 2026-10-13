@@ -58,7 +58,7 @@ def mode_is_current(record):
 
 
 def finish_help(record, result):
-    if not mode_is_current(record):
+    if record.source != "chat" and not mode_is_current(record):
         record.state = "cancelled"
         db.session.commit()
         raise AIClientError("帮助模式已改变，本次结果未展示，请重新请求")

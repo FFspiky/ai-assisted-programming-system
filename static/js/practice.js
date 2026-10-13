@@ -6,6 +6,7 @@ let attachedPractice = null;
 let chatAbortController = null;
 let optimizeController = null;
 let aiContextRevision = 0;
+let chatContextRevision = 0;
 document.addEventListener('DOMContentLoaded', function () {
     UserSession.init({ logoutRedirect: '/index.html' }).then(user => {
         practiceUser = user;
@@ -719,8 +720,7 @@ document.getElementById('attachPracticeContext').addEventListener('click', () =>
 
 async function sendMessage() {
     if (chatBusy) return;
-    const help = LearningHelpUI.get();
-    const contextRevision = aiContextRevision;
+    const contextRevision = chatContextRevision;
     const message = messageInput.value.trim();
     if (!message) return;
     const problemId = getCurrentProblemId();
@@ -772,8 +772,7 @@ async function sendMessage() {
         if (!userToggledReasoning) reasoningPanel.open = false;
     };
     const consumeEvent = (event) => {
-        if ((help.epoch !== LearningHelpUI.get().epoch || contextRevision !== aiContextRevision)) return;
-        if (event.type === 'reasoning' && help.mode === 'learning') return;
+        if (contextRevision !== chatContextRevision) return;
         const followBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight < 80;
         if (event.type === 'reasoning') {
             if (reasoningStarted === null) reasoningStarted = Date.now();
@@ -802,13 +801,12 @@ async function sendMessage() {
 
     const chatTimeout = setTimeout(() => chatAbortController?.abort(), 130000);
     try {
-        if (practiceUser && !help.ready) throw new Error('帮助设置尚未就绪，请刷新页面重试。');
         const response = await UserSession.csrfFetch('/api/ai-chat-stream', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
             signal: chatAbortController.signal,
             body: JSON.stringify({ message, language: attachment?.language || document.getElementById('languageSelector').value,
-                include_context: !!attachment, history: chatHistory, help_level: help.level,
+                include_context: !!attachment, history: chatHistory,
                 ...(attachment ? {code: attachment.code, input_text: attachment.input_text, problem_id: attachment.problem_id} : {}) })
         });
         if (!response.ok || !response.body) {
@@ -836,7 +834,7 @@ async function sendMessage() {
         }
         buffer += decoder.decode();
         consumeBuffer();
-        if ((help.epoch !== LearningHelpUI.get().epoch || contextRevision !== aiContextRevision)) return;
+        if (contextRevision !== chatContextRevision) return;
         if (!finished) throw new Error('连接已中断，请重试。已生成的内容已保留。');
         if (!failed && fullText.trim()) {
             const historyText = attachment ? JSON.stringify({question:message, attached_practice:attachment}) : message;
@@ -847,7 +845,7 @@ async function sendMessage() {
             updateChatContext();
         }
     } catch (error) {
-        if ((help.epoch !== LearningHelpUI.get().epoch || contextRevision !== aiContextRevision)) return;
+        if (contextRevision !== chatContextRevision) return;
         if (UserSession.handleAuthError(error, status, '请先登录后再使用编程助手。')) return;
         status.textContent = error.name === 'AbortError' ? '已停止，已生成的内容已保留。' : `请求失败：${error.message}`;
         if (reasoning && !reasoningFinished) summary.textContent = '思考已中止';
@@ -880,27 +878,31 @@ function resetHelpOutputs() {
     aiContextRevision += 1;
     cancelInlineCompletion();
     inlineCompletionCache.clear();
-    chatAbortController?.abort();
     optimizeController?.abort();
-    chatHistory = [];
-    chatContainer.replaceChildren();
     globalOptimizedVersions = [];
     optimizationBase = null;
     aiSuggestion.replaceChildren();
     document.getElementById('optimizationResult').hidden = true;
 }
+function resetChatContext() {
+    chatContextRevision += 1;
+    chatAbortController?.abort();
+    chatHistory = [];
+    chatContainer.replaceChildren();
+    attachedPractice = null;
+    updateChatContext();
+}
+window.addEventListener('auth:required', resetChatContext);
 window.addEventListener('practice:help-settings', resetHelpOutputs);
 window.addEventListener('practice:help-level', resetHelpOutputs);
 document.getElementById('languageSelector').addEventListener('change', () => {
     resetHelpOutputs();
-    attachedPractice = null;
-    updateChatContext();
+    resetChatContext();
 });
 window.addEventListener('practice:submission', () => {
     // New judging evidence supersedes old context, without attaching the new submission to chat.
     resetHelpOutputs();
-    attachedPractice = null;
-    updateChatContext();
+    resetChatContext();
 });
 
 document.getElementById('stopChat').addEventListener('click', () => chatAbortController?.abort());

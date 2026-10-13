@@ -11,7 +11,7 @@ from routes.guards import rate_limit
 from routes.validators import validate_ai_prompt, validate_language, validate_text_size
 from services.ai_client import AIClientError
 from services.ai_helper import stream_code_from_prompt
-from services.learning_help import begin_help, fail_help, finish_help, mode_is_current, parse_level
+from services.learning_help import begin_help, fail_help, finish_help
 
 generate_blueprint = Blueprint("generate", __name__)
 
@@ -97,20 +97,13 @@ def generate_code_stream():
                 ][:3],
             }
 
-    try:
-        level = (
-            parse_level(data.get("help_level", 1)) if current_user.help_mode == "learning" else 4
-        )
-    except ValueError as exc:
-        return api_error("INVALID_HELP_LEVEL", str(exc), 400)
-    learning = current_user.help_mode == "learning"
     sid = (
         context.get("latest_submission", {}).get("id") if context.get("latest_submission") else None
     )
     record = begin_help(
         current_user,
         "chat",
-        level,
+        4,
         {"question": prompt, "language": language, "context": context},
         sid,
     )
@@ -123,16 +116,10 @@ def generate_code_stream():
         answer = ""
         try:
             kwargs = {"context": context, "history": history, "structured": True}
-            if learning:
-                kwargs["help_level"] = level
             for chunk in stream_code_from_prompt(prompt, language, **kwargs):
-                if not mode_is_current(record):
-                    raise AIClientError("帮助模式已改变，请重新发送")
                 event = chunk if isinstance(chunk, dict) else {"type": "content", "text": chunk}
                 if event["type"] == "error":
                     raise AIClientError(event.get("text", "生成失败"))
-                if learning and event["type"] == "reasoning":
-                    continue
                 if event["type"] == "content":
                     answer += event.get("text", "")
                 yield "data: " + json.dumps(event, ensure_ascii=False) + "\n\n"

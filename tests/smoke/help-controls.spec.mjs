@@ -43,3 +43,57 @@ test('改变帮助层级、编辑和切换语言时不沿用过期定位或建�
     await expect(page.locator('#optimizeBtn')).toBeEnabled();
     await expect(page.locator('#optimizationResult')).toBeHidden();
 });
+
+test('聊天不受模式或层级切换影响，练习上下文仍主动附带', async ({page}) => {
+    let mode='learning', revision=0;
+    await page.route('**/api/current_user', route => route.fulfill({json:{success:true,user:{id:99996,username:'对话检查',points:0}}}));
+    await page.route('**/api/csrf-token', route => route.fulfill({json:{csrf_token:'test-token'}}));
+    await page.route('**/api/help-settings', route => {
+        if (route.request().method()==='POST') { mode=route.request().postDataJSON().mode; revision++; }
+        return route.fulfill({json:{success:true,data:{mode,revision}}});
+    });
+    await page.addInitScript(() => {
+        const original=window.fetch;
+        window.chatRequests=[];
+        window.fetch=(url, options)=> {
+            if (url!=='/api/ai-chat-stream') return original(url,options);
+            window.chatRequests.push(JSON.parse(options.body));
+            const encoder=new TextEncoder();
+            const stream=new ReadableStream({start(controller) {
+                options.signal.addEventListener('abort',()=>controller.error(new DOMException('Stopped','AbortError')));
+                controller.enqueue(encoder.encode('data: {"type":"reasoning","text":"检查输入"}\n\ndata: {"type":"content","text":"完整代码"}\n\n'));
+                window.finishChat=()=>{controller.enqueue(encoder.encode('data: {"type":"content","text":"已给出"}\n\ndata: {"type":"done"}\n\n'));controller.close();};
+            }});
+            return Promise.resolve(new Response(stream,{headers:{'Content-Type':'text/event-stream'}}));
+        };
+    });
+    await page.goto(baseURL+'/practice.html?problem=DEMO-01');
+    await expect(page.locator('#helpMode')).toBeEnabled();
+    await expect(page.locator('#chatHelpLevel')).toHaveCount(0);
+    await page.locator('#aiToggleBtn').click();
+    await page.locator('#messageInput').fill('直接给完整代码');
+    await page.locator('#sendMessage').click();
+    await expect(page.locator('#chatContainer')).toContainText('完整代码');
+    await expect(page.locator('.reasoning-panel')).toBeVisible();
+    // Use the existing control even if the floating chat happens to cover the toolbar.
+    await page.locator('#helpMode').selectOption('free');
+    await expect(page.locator('#completionStatus')).toContainText('已开启');
+    await page.locator('#helpMode').selectOption('learning');
+    await expect(page.locator('#codeHelpLevel')).toBeEnabled();
+    await page.locator('#codeHelpLevel').selectOption('3');
+    await page.evaluate(()=>window.finishChat());
+    await expect(page.locator('#chatContainer')).toContainText('完整代码已给出');
+    await expect(page.locator('#sendMessage')).toBeEnabled();
+    await page.locator('#attachPracticeContext').click();
+    await page.locator('#messageInput').fill('现在结合我的练习');
+    await page.locator('#sendMessage').click();
+    await expect.poll(()=>page.evaluate(()=>window.chatRequests.length)).toBe(2);
+    await page.evaluate(()=>window.finishChat());
+    const requests=await page.evaluate(()=>window.chatRequests);
+    expect(requests[0].include_context).toBe(false);
+    expect(requests[0].code).toBeUndefined();
+    expect(requests[1].include_context).toBe(true);
+    expect(requests[1].problem_id).toBe('DEMO-01');
+    expect(requests[1].history).toHaveLength(2);
+    expect(requests[1].help_level).toBeUndefined();
+});

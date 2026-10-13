@@ -12,7 +12,6 @@
         levels.forEach(select => { select.value = String(state.mode === 'free' ? 4 : state.level); select.disabled = !state.ready || state.mode === 'free'; });
         document.getElementById('completionStatus').textContent = state.mode === 'free' && state.ready
             ? '自动补全已开启 · Tab 接受' : '自动补全已关闭';
-        document.getElementById('chatHelpMode').textContent = state.mode === 'free' ? '自由辅助' : '学习模式';
     }
     function notify(type = 'practice:help-settings') {
         state.epoch += 1;
