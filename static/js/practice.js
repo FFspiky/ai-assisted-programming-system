@@ -1,4 +1,8 @@
 let practiceUser = null;
+let chatHistory = [];
+let chatBusy = false;
+let chatProblemId = null;
+let attachedPractice = null;
 document.addEventListener('DOMContentLoaded', function () {
     UserSession.init({ logoutRedirect: '/index.html' }).then(user => {
         practiceUser = user;
@@ -566,7 +570,7 @@ async function optimizeCode() {
                     </div>
                 `).join('');
             } else {
-                versionsHtml = `<p style="color:var(--warning);">未能生成优化版本，或AI返回格式不符预期。</p>`;
+                versionsHtml = `<p>本次没有提供需要应用的代码修改，请查看上方分析。</p>`;
             }
 
             aiSuggestion.innerHTML = `
@@ -666,11 +670,37 @@ function addChatMessage(content, sender, id = null, isHtml = false) {
     return contentDiv;
 }
 
+function updateChatContext() {
+    const button = document.getElementById('attachPracticeContext');
+    button.setAttribute('aria-pressed', String(!!attachedPractice));
+    button.textContent = attachedPractice ? '取消附带' : '附带当前练习';
+    document.getElementById('chatContextStatus').textContent = attachedPractice ? '下一条消息附带题目、代码和提交结果' : '';
+}
+document.getElementById('attachPracticeContext').addEventListener('click', () => {
+    if (chatBusy) return;
+    attachedPractice = attachedPractice ? null : {
+        problem_id: getCurrentProblemId(), code: codeInput.value,
+        input_text: document.getElementById('customInput').value,
+        language: document.getElementById('languageSelector').value,
+        title: document.querySelector('.problem-title').textContent
+    };
+    updateChatContext();
+});
+
 async function sendMessage() {
+    if (chatBusy) return;
     const message = messageInput.value.trim();
     if (!message) return;
+    const problemId = getCurrentProblemId();
+    if (chatProblemId !== problemId) {
+        chatHistory = [];
+        chatContainer.replaceChildren();
+        chatProblemId = problemId;
+    }
+    chatBusy = true;
+    const attachment = attachedPractice;
 
-    addChatMessage(message, 'user');
+    addChatMessage(message + (attachment ? '\n已附带：' + attachment.title + '（代码快照与最近提交）' : ''), 'user');
     messageInput.value = '';
 
     const aiId = `ai-${Date.now()}`;
@@ -680,7 +710,9 @@ async function sendMessage() {
         const response = await UserSession.csrfFetch('/api/ai-chat-stream', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message, language: document.getElementById('languageSelector').value })
+            body: JSON.stringify({ message, language: attachment?.language || document.getElementById('languageSelector').value,
+                include_context: !!attachment, history: chatHistory,
+                ...(attachment ? {code: attachment.code, input_text: attachment.input_text, problem_id: attachment.problem_id} : {}) })
         });
 
         if (!response.ok) {
@@ -698,10 +730,20 @@ async function sendMessage() {
             fullText += decoder.decode(value, { stream: true });
             aiContentDiv.innerHTML = formatAiResponse(fullText);
         }
+        if (fullText.trim() && !fullText.includes('【流式输出失败】')) {
+            const historyText = attachment ? JSON.stringify({question:message, attached_practice:attachment}) : message;
+            chatHistory.push({role:'user', content:historyText.slice(0,8000)},
+                {role:'assistant', content:fullText.slice(0,8000)});
+            chatHistory = chatHistory.slice(-10);
+            attachedPractice = null;
+            updateChatContext();
+        }
     } catch (error) {
         if (UserSession.handleAuthError(error, aiContentDiv, '请先登录后再使用编程助手。')) return;
         aiContentDiv.innerText = `请求失败: ${error.message}`;
         console.error('聊天错误:', error);
+    } finally {
+        chatBusy = false;
     }
 }
 

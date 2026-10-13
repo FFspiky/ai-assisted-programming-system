@@ -1,4 +1,6 @@
 # routes/assessment.py
+import json
+
 from flask import Blueprint, Response, request  # <-- 1. 从 flask 导入 Response
 from flask_login import login_required
 
@@ -18,6 +20,12 @@ def assess_learning_path():
 
     if not answers:
         return api_error("ANSWERS_MISSING", "未提供问卷答案", 400)
+    if (
+        not isinstance(answers, list)
+        or len(answers) > 50
+        or len(json.dumps(answers, ensure_ascii=False)) > 16000
+    ):
+        return api_error("INVALID_ANSWERS", "问卷答案必须是最多 50 项的列表，且内容不能过长", 400)
 
     try:
         # 2. 返回一个流式 Response 对象

@@ -1204,3 +1204,26 @@ nav a:hover::after {
 [data-theme="light"] .output-title {
     color: #d1505b; /* 使用主题的强调色 */
 }
+
+.chat-context-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px 0;
+    font-size: 12px;
+    color: var(--gray);
+}
+.chat-context-btn {
+    flex-shrink: 0;
+    padding: 5px 9px;
+    border: 1px solid var(--light-gray);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--light);
+    font: inherit;
+    cursor: pointer;
+}
+.chat-context-btn[aria-pressed="true"] {
+    border-color: var(--primary);
+    color: var(--primary);
+}
