@@ -191,6 +191,9 @@ app.register_blueprint(assessment_blueprint)
 app.register_blueprint(autocomplete_blueprint)
 app.register_blueprint(tutoring_blueprint, url_prefix="/api")
 app.register_blueprint(profile_blueprint, url_prefix="/api")
+from routes.practice_history import practice_history_blueprint
+
+app.register_blueprint(practice_history_blueprint, url_prefix="/api")
 
 
 # 页面路由
