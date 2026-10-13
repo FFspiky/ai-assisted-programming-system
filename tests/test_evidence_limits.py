@@ -39,6 +39,8 @@ class EvidenceLimitsTest(unittest.TestCase):
             {"status": "Not Run", "passed": False},
             {"status": "Runtime Error", "error_truncated": True},
             {"status": "Wrong Answer", "input": "x" * 2501},
+            {"status": "Wrong Answer", "input": "1", "expected_output": "1"},
+            {"status": "Runtime Error", "input": "1", "error": ""},
         ]:
             with patch("services.tutor_service.chat_completion") as ai:
                 result = diagnose_submission(submission([{**case, "id": "c", "is_public": True}]))
@@ -46,7 +48,18 @@ class EvidenceLimitsTest(unittest.TestCase):
             self.assertEqual(result["findings"], [])
 
     def test_model_can_abstain_and_normal_diagnosis_still_validates_references(self):
-        sub = submission([{"id": "c", "status": "Wrong Answer", "is_public": True}])
+        sub = submission(
+            [
+                {
+                    "id": "c",
+                    "status": "Wrong Answer",
+                    "is_public": True,
+                    "input": "",
+                    "expected_output": "1",
+                    "actual_output": "0",
+                }
+            ]
+        )
         empty = {"status": "insufficient_evidence", "summary": "无法确定", "findings": []}
         with patch("services.tutor_service.chat_completion", return_value=json.dumps(empty)):
             self.assertEqual(diagnose_submission(sub)["status"], "insufficient_evidence")

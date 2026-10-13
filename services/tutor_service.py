@@ -64,6 +64,15 @@ def diagnosis_cases(submission):
             continue
         if item.get("output_truncated") or item.get("error_truncated"):
             continue
+        if not isinstance(item.get("id"), str) or not isinstance(item.get("input"), str):
+            continue
+        if item["status"] in {"Accepted", "Wrong Answer"}:
+            if any(
+                not isinstance(item.get(key), str) for key in ("expected_output", "actual_output")
+            ):
+                continue
+        elif not isinstance(item.get("error"), str) or not item["error"].strip():
+            continue
         if any(
             len(str(item.get(key, ""))) > 2500
             for key in ("input", "expected_output", "actual_output", "error")
