@@ -71,6 +71,10 @@
         diagnosisContent.replaceChildren();
         if (!result) return;
         diagnosisContent.append(node('p', result.summary, 'diagnosis-summary'));
+        if (result.status === 'insufficient_evidence') {
+            diagnosisContent.prepend(node('p', '公开证据不足', 'hypothesis-tag'));
+            return;
+        }
         result.findings.forEach(finding => {
             const card = node('article', undefined, 'finding-card');
             card.append(node('span', '可能原因', 'hypothesis-tag'), node('h3', finding.title), node('p', finding.explanation));

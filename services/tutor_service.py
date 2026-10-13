@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from config import MODEL_NAME
 from services.ai_client import AIClientError, chat_completion
 
-PROMPT_VERSION = "evidence-diagnosis-v3"
+PROMPT_VERSION = "evidence-diagnosis-v4"
 
 
 def public_snapshot(snapshot):
@@ -41,8 +41,46 @@ def serialize_submission(submission):
         "status": submission.status,
         "created_at": submission.timestamp.isoformat(),
         "evidence": public_snapshot(submission.evidence_snapshot),
-        "diagnosis": submission.diagnosis,
+        "diagnosis": safe_saved_diagnosis(submission),
     }
+
+
+DIAGNOSABLE = {"Wrong Answer", "Runtime Error", "Compile Error"}
+
+
+def diagnosis_cases(submission):
+    """Only completed, public, sufficiently intact observations support diagnosis."""
+    cases = []
+    for item in (submission.evidence_snapshot or {}).get("cases", []):
+        if not item.get("is_public") or item.get("status") not in DIAGNOSABLE | {"Accepted"}:
+            continue
+        if item.get("output_truncated") or item.get("error_truncated"):
+            continue
+        if any(
+            len(str(item.get(key, ""))) > 2500
+            for key in ("input", "expected_output", "actual_output", "error")
+        ):
+            continue
+        cases.append(item)
+    failed = [item for item in cases if item["status"] in DIAGNOSABLE]
+    return (failed + [item for item in cases if item["status"] == "Accepted"])[:3] if failed else []
+
+
+def insufficient_diagnosis():
+    return {
+        "status": "insufficient_evidence",
+        "summary": "现有公开运行结果不足以确定失败原因。请检查题目边界或补充可复现的输入；本次判题结果保持不变。",
+        "findings": [],
+        "source": "evidence_check",
+        "prompt_version": PROMPT_VERSION,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+def safe_saved_diagnosis(submission):
+    if submission.diagnosis and not diagnosis_cases(submission):
+        return insufficient_diagnosis()
+    return submission.diagnosis
 
 
 def _validate_diagnosis(raw, evidence_ids, line_count):
@@ -51,6 +89,13 @@ def _validate_diagnosis(raw, evidence_ids, line_count):
     summary, findings = raw.get("summary"), raw.get("findings")
     if not isinstance(summary, str) or not summary.strip() or len(summary) > 800:
         raise AIClientError("AI诊断缺少有效摘要，请重试")
+    status = raw.get("status", "supported")
+    if status not in {"supported", "insufficient_evidence"}:
+        raise AIClientError("AI诊断状态无效，请重试")
+    if status == "insufficient_evidence":
+        if findings != []:
+            raise AIClientError("证据不足时不能附带问题定位，请重试")
+        return {"status": status, "summary": summary, "findings": []}
     if not isinstance(findings, list) or not 1 <= len(findings) <= 3:
         raise AIClientError("AI诊断缺少可核验的发现，请重试")
     cleaned = []
@@ -76,16 +121,14 @@ def _validate_diagnosis(raw, evidence_ids, line_count):
         cleaned.append(
             {k: item[k] for k in ("title", "explanation", "next_check", "lines", "evidence_ids")}
         )
-    return {"summary": summary, "findings": cleaned}
+    return {"status": status, "summary": summary, "findings": cleaned}
 
 
 def diagnose_submission(submission):
     snapshot = submission.evidence_snapshot
-    cases = [case for case in snapshot["cases"] if case.get("is_public")]
-    failed = [case for case in cases if not case["passed"]]
-    chosen = (failed + [case for case in cases if case["passed"]])[:3]
+    chosen = diagnosis_cases(submission)
     if not chosen:
-        raise AIClientError("本次提交没有可公开的执行证据，不能生成有依据的诊断")
+        return insufficient_diagnosis()
     context = {
         "problem": BeautifulSoup(snapshot["problem"]["description"], "html.parser").get_text()[
             :6000
@@ -122,8 +165,9 @@ def diagnose_submission(submission):
 判题会忽略行尾空白和末尾换行；不要把print的默认换行作为格式错误。
 不要给完整答案，不声称测过未提供的用例或提升了性能。
 代码行从1计数；不能定位时lines可为空。每个发现必须引用相关真实证据。
-只返回JSON，不使用Markdown围栏，结构：
-{"summary":"简短诊断摘要", "findings":[{"title":"疑似问题","explanation":"解释证据与原因的关系",
+证据不足时返回status为insufficient_evidence、summary说明限制、findings为空数组；这是有效结果。
+有依据的疑似发现返回status为supported。只返回JSON，不使用Markdown围栏，结构：
+{"status":"supported","summary":"简短诊断摘要", "findings":[{"title":"疑似问题","explanation":"解释证据与原因的关系",
 "lines":[3],"evidence_ids":["case-1"],"next_check":"建议学生下一步检查什么"}]}"""
     payload = {
         "model": MODEL_NAME,

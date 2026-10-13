@@ -5,7 +5,7 @@ from models import Submission, db
 from routes.api_response import api_error, api_success
 from routes.guards import rate_limit
 from services.ai_client import AIClientError
-from services.tutor_service import diagnose_submission, serialize_submission
+from services.tutor_service import diagnose_submission, safe_saved_diagnosis, serialize_submission
 
 tutoring_blueprint = Blueprint("tutoring", __name__)
 
@@ -50,6 +50,8 @@ def submission_diagnosis(submission_id):
     if submission.status not in {"Wrong Answer", "Runtime Error", "Compile Error"}:
         return api_error("DIAGNOSIS_NOT_APPLICABLE", "此状态无需错因诊断，请先处理运行状态", 409)
     if submission.diagnosis:
+        submission.diagnosis = safe_saved_diagnosis(submission)
+        db.session.commit()
         return api_success(serialize_submission(submission))
     try:
         diagnosis = diagnose_submission(submission)
