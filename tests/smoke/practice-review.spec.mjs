@@ -68,6 +68,11 @@ test('F3 精确差异、保存失败保护、采纳拒绝撤销、实际复测�
     await page.locator('#practiceReview > summary').click();
     await expect(page.locator('#practiceTimeline')).toContainText('通过当前 3 个用例');
     await expect(page.locator('#codeInput')).toHaveValue(finalCode);
+    const savedStatus=page.locator('#practiceTimeline [data-proposal-status]').first();
+    await expect(savedStatus).toContainText('这份代码通过当前 3 个用例');
+    await page.locator('#codeInput').fill(finalCode+'# 未复测的改动\n');
+    await expect(savedStatus).toContainText('尚未复测');
+    await page.locator('#codeInput').fill(finalCode);
     await page.screenshot({path:'tmp/f3-check/history-desktop.png',fullPage:true});
     await page.setViewportSize({width:390,height:844});
     await page.screenshot({path:'tmp/f3-check/history-mobile.png',fullPage:true});
