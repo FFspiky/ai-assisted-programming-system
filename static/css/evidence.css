@@ -36,5 +36,3 @@
 .snapshot-line code {padding-right:14px;}
 [hidden] {display:none!important;}
 @media(max-width:600px) {.case-list {grid-template-columns:minmax(0,1fr);} .editor-tools {flex-wrap:wrap;} #draftStatus {margin-left:0;}}
-[data-theme="light"] .case-card,[data-theme="light"] .finding-card {border-color:#0002;}
-[data-theme="light"] .evidence-button {border-color:#0003;}

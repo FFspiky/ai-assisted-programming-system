@@ -4,7 +4,7 @@
     box-sizing: border-box;
 }
 
-/* 默认主题 (基于 practice1.html 的样式) */
+
 :root {
     --primary: #4361ee;
     --secondary: #3f37c9;
@@ -29,98 +29,6 @@ body {
     min-height: 100vh;
     overflow-x: hidden;
     transition: background 0.5s ease, color 0.5s ease;
-}
-
-/* 炫彩科技主题 */
-[data-theme="dark"] {
-    --primary: #ff2a6d;
-    --secondary: #ffd166;
-    --accent: #05d9e8;
-    --light: #ececec;
-    --dark: #100a35;
-    --darker: #080611;
-    --success: #05d9e8;
-    --warning: #ff2a6d;
-    --text-primary: #ffffff;
-    --text-secondary: #e0e0e0;
-    --text-accent: var(--accent);
-}
-
-[data-theme="dark"] body {
-    background-image: url('/static/images/科技.jpg');
-    background-size: cover;
-    background-attachment: fixed;
-}
-
-/* 梦幻灵动主题 */
-[data-theme="light"] {
-    --primary: #4ecdc4;
-    --secondary: #3dbbaf;
-    --accent: #ff6b6b;
-    --light: #292f36;
-    /* 深色文字以保证可读性 */
-    --dark: #f7fff7;
-    /* 浅色背景 */
-    --darker: #eaf4f4;
-    --success: #6bcb77;
-    --warning: #ff8c42;
-    --gray: #9aa3b1;
-    --light-gray: #f0f4f8;
-    --code-bg: #eaf4f4;
-}
-
-[data-theme="light"] body {
-    background-image: url('/static/images/灵眸与影.jpg');
-    background-size: cover;
-    background-position: center 10%;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
-}
-
-[data-theme="light"] nav a {
-     color: var(--light);
-}
-
-/* 像素世界主题 */
-[data-theme="blue"] {
-    --primary: #00a8cc;
-    --secondary: #007ea7;
-    --accent: #ffd166;
-    --light: #eef7ff;
-    --dark: #003459;
-    --darker: #00171f;
-    --success: #00b894;
-    --warning: #e74c3c;
-}
-
-[data-theme="blue"] body {
-    background-image: url('/static/images/像素.jpg');
-    background-size: cover;
-    background-attachment: fixed;
-}
-
-
-
-/* 确保在浅色主题下，特定元素的颜色反转以保证可读性 */
-[data-theme="light"] .logo-text,
-[data-theme="light"] .problem-title,
-[data-theme="light"] .ai-title {
-     -webkit-text-fill-color: initial; /* 移除透明填充 */
-     color: var(--dark); /* 使用主题深色 */
-     background: none; /* 移除渐变背景 */
-}
-
-[data-theme="light"] .btn-ai {
-    color: var(--dark);
-    background: rgba(0,0,0,0.1);
-}
-[data-theme="light"] .btn-ai:hover {
-    background: rgba(0,0,0,0.2);
-}
-[data-theme="light"] .message-input {
-    color: var(--dark);
-    background: rgba(0,0,0,0.05);
-    border: 1px solid rgba(0,0,0,0.1);
 }
 
 .container {
@@ -168,7 +76,7 @@ nav ul {
     display: flex;
     gap: 30px;
     list-style: none;
-    margin-left: 30px; /* 与Logo和主题选择器保持距离 */
+    margin-left: 30px; 
 }
 
 nav a {
@@ -199,7 +107,7 @@ nav a:hover::after {
     width: 100%;
 }
 
-/* 美化后的主题选择器 */
+
 .theme-selector {
     display: flex;
     align-items: center;
@@ -210,50 +118,6 @@ nav a:hover::after {
     color: var(--accent);
     font-size: 1.2rem;
     transition: color 0.3s;
-}
-
-#themeSelector {
-    padding: 8px 15px;
-    background-color: rgba(255, 255, 255, 0.1);
-    color: var(--light);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 20px; /* 圆角更大 */
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
-    background-repeat: no-repeat;
-    background-position: right 15px center;
-    background-size: 12px;
-    padding-right: 40px; /* 为箭头留出空间 */
-}
-
-#themeSelector:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-    border-color: var(--accent);
-    box-shadow: 0 0 10px rgba(var(--accent), 0.5);
-}
-
-#themeSelector option {
-    background: var(--darker);
-    color: var(--light);
-}
-
-/* 浅色主题下的选择器样式 */
-[data-theme="light"] #themeSelector {
-    background-color: rgba(0, 0, 0, 0.05);
-    color: var(--light);
-    border-color: rgba(0, 0, 0, 0.1);
-    background-image: url('data:image/svg+xml;utf8,<svg fill="black" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
-}
-
-[data-theme="light"] #themeSelector option {
-    background: var(--darker);
-    color: var(--light);
 }
 
 .glowing {
@@ -351,11 +215,6 @@ nav a:hover::after {
     overflow: hidden;
 }
 
-[data-theme="light"] .problem-section {
-    background: rgba(255, 255, 255, 0.85); /* 提高透明度至85% */
-    backdrop-filter: blur(5px);            /* 添加毛玻璃效果 */
-}
-
 .problem-header {
     display: flex;
     justify-content: space-between;
@@ -427,10 +286,6 @@ nav a:hover::after {
     border-radius: 8px;
     overflow: hidden;
     margin-top: 20px;
-}
-
-[data-theme="light"] .editor-container {
-    background: rgba(239, 244, 244, 0.95);
 }
 
 .editor-header {
@@ -505,10 +360,6 @@ nav a:hover::after {
     background: #1e1e2e;
 }
 
-[data-theme="light"] .code-editor-wrapper {
-    background: #fdf6e3; /* Solarized Light like theme */
-}
-
 #ghostLayer {
     position: absolute;
     top: 0;
@@ -533,14 +384,6 @@ nav a:hover::after {
     color: rgba(248, 248, 242, 0.35);
 }
 
-[data-theme="light"] #ghostLayer .ghost {
-    color: rgba(0, 0, 0, 0.35);
-}
-
-[data-theme="light"] #ghostLayer .typed {
-    color: #657b83;
-}
-
 .code-area {
     width: 100%;
     min-height: 300px;
@@ -561,15 +404,6 @@ nav a:hover::after {
 
 .code-area::placeholder {
     color: rgba(248, 248, 242, 0.4);
-}
-
-[data-theme="light"] .code-area {
-    color: transparent;
-    caret-color: #657b83;
-}
-
-[data-theme="light"] .code-area::placeholder {
-    color: rgba(0, 0, 0, 0.4);
 }
 
 .inline-hint {
@@ -906,11 +740,6 @@ nav a:hover::after {
     display: none;
 }
 
-[data-theme="light"] .back-to-home-btn {
-    background: rgba(0,0,0,0.1);
-    color: var(--light);
-}
-
 .back-to-home-btn:hover {
     background: rgba(255, 255, 255, 0.2);
 }
@@ -1169,40 +998,9 @@ nav a:hover::after {
     height: 40px; /* 确保与其他按钮高度一致 */
 }
 
-/* 梦幻灵动主题下的语言选择器 - 强制深色文本 */
-[data-theme="light"] #languageSelector {
-    background-color: rgba(23, 33, 50, 0.9) !important;
-    color: #fdfdfd !important;
-    border: 1px solid rgba(0, 0, 0, 0.1) !important;
-    background-image: url('data:image/svg+xml;utf8,<svg fill="%23292f36" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') !important;
-}
-
-/* 下拉选项样式 - 确保在任何主题下都可见 */
 #languageSelector option {
     background: var(--darker);
     color: var(--light);
-}
-
-/* 梦幻灵动主题下的下拉选项 */
-[data-theme="light"] #languageSelector option {
-    background: var(--dark); /* 使用主题定义的深色背景 */
-    color: var(--light); /* 使用主题定义的浅色文本 */
-}
-
-[data-theme="light"] #languageSelector {
-    background-color: rgba(0,0,0,0.05);
-    color: var(--light);
-    border-color: rgba(0, 0, 0, 0.214);
-    background-image: url('data:image/svg+xml;utf8,<svg fill="black" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
-}
-[data-theme="light"] .output-area,
-[data-theme="light"] .ai-response {
-    color: #292f36; /* 明确的深灰色 */
-    background: rgba(241, 241, 240, 0.9); /* 几乎白色背景 */
-}
-
-[data-theme="light"] .output-title {
-    color: #d1505b; /* 使用主题的强调色 */
 }
 
 .chat-context-controls {

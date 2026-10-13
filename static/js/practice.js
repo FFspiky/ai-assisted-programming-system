@@ -12,22 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     loadProblem();
 
-    // --- 主题切换功能 ---
-    const themeSelector = document.getElementById('themeSelector');
-    const savedTheme = localStorage.getItem('selectedTheme') || 'default';
 
-    document.documentElement.setAttribute('data-theme', savedTheme === 'default' ? null : savedTheme);
-    themeSelector.value = savedTheme;
-
-    themeSelector.addEventListener('change', function () {
-        const theme = this.value;
-        if (theme === 'default') {
-            document.documentElement.removeAttribute('data-theme');
-        } else {
-            document.documentElement.setAttribute('data-theme', theme);
-        }
-        localStorage.setItem('selectedTheme', theme);
-    });
 });
 
 function getCurrentProblemId() {
