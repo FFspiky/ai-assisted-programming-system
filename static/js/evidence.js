@@ -223,6 +223,7 @@
             if (ticket !== sequence || submission?.submission_id !== id || help.epoch !== LearningHelpUI.get().epoch) return;
             if (!response.ok || !result.success) throw new Error(UserSession.apiErrorMessage(result));
             showHelp(result.data, true);
+            window.PracticeReview?.refresh();
             byId('diagnosisStatus').textContent = '已保存，可按需查看其他层级。';
         } catch (error) {
             if (ticket !== sequence) return;

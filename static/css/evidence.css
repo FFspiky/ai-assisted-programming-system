@@ -49,3 +49,15 @@
 .help-code {white-space:pre-wrap;overflow-wrap:anywhere;max-height:350px;overflow:auto;padding:12px;background:var(--code-bg);border:1px solid #ffffff18;border-radius:6px;font-size:13px;line-height:1.7;}
 .help-result p {margin:8px 0;white-space:pre-wrap;line-height:1.7;}
 #helpSettingsStatus {color:var(--warning);}
+.review-entry {margin:12px 0;padding:10px 0;border-top:1px solid var(--border-color,#ffffff18);font-size:13px;min-width:0;}
+.review-entry summary {cursor:pointer;line-height:1.7;overflow-wrap:anywhere;}
+.review-entry > p {margin:10px 0;line-height:1.7;}
+.review-entry .review-entry {margin-left:10px;}
+.review-diff {margin:12px 0;padding:12px;max-height:320px;overflow:auto;background:var(--code-bg);border:1px solid var(--border-color,#ffffff18);border-radius:6px;white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.7 ui-monospace,monospace;}
+.review-diff span {display:block;white-space:pre-wrap;}
+.diff-add {color:var(--success);}
+.diff-remove {color:var(--danger);}
+.review-message,#reviewStatus {font-size:13px;color:var(--warning);line-height:1.7;}
+.review-entry .evidence-button,#reviewReload,#reviewOlder {min-height:44px;}
+.review-entry summary:focus-visible,.review-entry button:focus-visible {outline:2px solid var(--accent);outline-offset:3px;}
+.review-case {margin-top:12px;}

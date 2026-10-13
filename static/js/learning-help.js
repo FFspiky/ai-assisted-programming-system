@@ -104,6 +104,7 @@
             card.append(element('pre', result.code, 'help-code'));
             card.append(element('p', '建议尚未运行，修改后请重新提交验证。', 'panel-note'));
         }
+        window.PracticeReview?.attach(record, card);
         target.append(card);
     }
     window.LearningHelpUI = {get: () => ({...state}), labels, render, acknowledge};

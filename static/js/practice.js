@@ -619,6 +619,7 @@ async function optimizeCode() {
     }
 }
 
+let submissionAttempt = null;
 async function submitCode() {
     const code = codeInput.value;
     const language = document.getElementById('languageSelector').value;
@@ -635,13 +636,21 @@ async function submitCode() {
     outputContent.innerHTML = `<div style="display:flex; align-items:center; gap:10px;"><i class="fas fa-spinner fa-spin" style="color:var(--accent)"></i><span>正在提交代码并检查...</span></div>`;
 
     try {
+        const context = window.PracticeReview?.submissionContext() || {};
+        const signature = JSON.stringify({code,language,problem_id:problemId,proposal_id:context.proposal_id});
+        if (submissionAttempt?.signature !== signature) submissionAttempt = {signature, body:{code,language,problem_id:problemId,...context,operation_id:crypto.randomUUID()}};
         const response = await UserSession.csrfFetch('/api/check-solution', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code, language, problem_id: problemId })
+            body: JSON.stringify(submissionAttempt.body)
         });
         const result = await response.json();
+        if (result.error?.code === 'PRACTICE_CONFLICT') {
+            submissionAttempt = null;
+            window.PracticeReview?.refresh();
+        }
         if (result.success && result.submission_id) {
+            submissionAttempt = null;
             window.dispatchEvent(new CustomEvent('practice:submission', {detail: result.data}));
         }
         const safeDetails = escapeHtml(result.details || apiErrorMessage(result, '没有返回详细信息。'));

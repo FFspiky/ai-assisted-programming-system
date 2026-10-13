@@ -167,6 +167,13 @@
                             <div id="diagnosisContent"></div>
                         </section>
 
+                        <details id="practiceReview" class="help-history" hidden>
+                            <summary>练习过程</summary>
+                            <p id="reviewStatus" role="status" aria-live="polite"></p>
+                            <button type="button" id="reviewReload" class="evidence-button">刷新记录</button>
+                            <div id="practiceTimeline"></div>
+                            <button type="button" id="reviewOlder" class="evidence-button" hidden>更早的记录</button>
+                        </details>
                         <div class="ai-response" id="optimizationResult" hidden>
                             <h4><i class="fas fa-lightbulb"></i> AI建议</h4>
                             <div id="aiSuggestion">AI建议将显示在此处...</div>
@@ -232,6 +239,7 @@
     <script src="{{ url_for('static', filename='js/dafeiyu-pet.js') }}"></script>
     <script src="{{ url_for('static', filename='js/learning-help.js') }}"></script>
     <script src="{{ url_for('static', filename='js/practice.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/practice-review.js') }}"></script>
     <script src="{{ url_for('static', filename='js/evidence.js') }}"></script>
 </body>
 
