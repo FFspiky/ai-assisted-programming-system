@@ -33,6 +33,14 @@ def public_snapshot(snapshot):
 
 
 def serialize_submission(submission):
+    from flask import has_request_context
+    from flask_login import current_user
+
+    learning = (
+        has_request_context()
+        and current_user.is_authenticated
+        and current_user.help_mode == "learning"
+    )
     return {
         "submission_id": submission.id,
         "problem_id": submission.problem_id,
@@ -41,7 +49,7 @@ def serialize_submission(submission):
         "status": submission.status,
         "created_at": submission.timestamp.isoformat(),
         "evidence": public_snapshot(submission.evidence_snapshot),
-        "diagnosis": safe_saved_diagnosis(submission),
+        "diagnosis": None if learning else safe_saved_diagnosis(submission),
     }
 
 

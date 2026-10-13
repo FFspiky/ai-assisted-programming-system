@@ -25,6 +25,11 @@ class User(db.Model, UserMixin):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=True)
     auth_version = db.Column(db.Integer, nullable=False, default=0, server_default="0")
 
+    help_mode = db.Column(
+        db.String(20), nullable=False, default="learning", server_default="learning"
+    )
+    help_revision = db.Column(db.Integer, nullable=False, default=0, server_default="0")
+
     submissions = db.relationship("Submission", backref="author", lazy=True)
 
     def set_password(self, password):
@@ -67,3 +72,23 @@ class Submission(db.Model):
     timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
     problem_id = db.Column(db.String(50), db.ForeignKey("problem.id"), nullable=False, index=True)
+
+
+class LearningHelp(db.Model):
+    """A requested help level and the content actually returned, never a mastery score."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    submission_id = db.Column(db.Integer, db.ForeignKey("submission.id"), nullable=True, index=True)
+    source = db.Column(db.String(20), nullable=False)
+    mode = db.Column(db.String(20), nullable=False)
+    mode_revision = db.Column(db.Integer, nullable=False)
+    requested_level = db.Column(db.Integer, nullable=False)
+    returned_level = db.Column(db.Integer, nullable=True)
+    state = db.Column(db.String(20), nullable=False, default="pending")
+    request_snapshot = db.Column(db.JSON, nullable=False)
+    result = db.Column(db.JSON, nullable=True)
+    model = db.Column(db.String(120), nullable=False)
+    prompt_version = db.Column(db.String(60), nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    shown_at = db.Column(db.DateTime, nullable=True)
