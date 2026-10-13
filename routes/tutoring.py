@@ -169,7 +169,15 @@ def request_submission_help(submission_id):
         current_user,
         "panel",
         level,
-        {"code": submission.code_submitted, "language": submission.language},
+        {
+            "code": submission.code_submitted,
+            "language": submission.language,
+            "generation": {
+                "temperature": 0.2,
+                "max_tokens": 2500 if level < 4 else 4000,
+                "enable_thinking": False,
+            },
+        },
         submission_id,
     )
     try:

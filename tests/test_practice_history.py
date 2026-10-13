@@ -84,3 +84,56 @@ class PracticeHistoryTest(unittest.TestCase):
         with core.app.app_context():
             self.assertEqual(db.session.get(CodeProposal, p["id"]).state, "pending")
             self.assertEqual(PracticeEvent.query.count(), 0)
+
+    def test_real_retests_persist_failure_then_edited_success_without_false_attribution(self):
+        p = self.proposal()
+        # A model suggestion can be syntactically valid and still wrong.
+        with core.app.app_context():
+            proposal = db.session.get(CodeProposal, p["id"])
+            proposal.candidate_code = p["base_code"].replace("range(1,n)", "range(1,n-1)")
+            db.session.commit()
+            p["candidate_code"] = proposal.candidate_code
+        p = self.act(p, "accept").get_json()["data"]["proposal"]
+        body = {
+            "problem_id": "DEMO-01",
+            "language": "python",
+            "code": p["candidate_code"],
+            "proposal_id": p["id"],
+            "proposal_revision": p["revision"],
+            "parent_submission_id": self.sid,
+            "operation_id": "first-retest",
+        }
+        failed = self.post("/api/check-solution", body).get_json()
+        self.assertEqual(failed["status"], "Wrong Answer", failed)
+        with patch("routes.solution_checker.run_code") as runner:
+            repeated = self.post("/api/check-solution", body).get_json()
+            self.assertEqual(repeated["submission_id"], failed["submission_id"])
+            runner.assert_not_called()
+        history = self.client.get("/api/problems/DEMO-01/practice-history").get_json()["data"]
+        latest = next(row for row in history["proposals"] if row["id"] == p["id"])
+        body.update(
+            code=p["base_code"].replace("range(1,n)", "range(1,n+1)"),
+            proposal_revision=latest["revision"],
+            parent_submission_id=failed["submission_id"],
+            operation_id="second-retest",
+        )
+        passed = self.post("/api/check-solution", body).get_json()
+        self.assertEqual(passed["status"], "Accepted", passed)
+        self.assertEqual(passed["data"]["evidence"]["executed"], 3)
+        history = self.client.get("/api/problems/DEMO-01/practice-history").get_json()["data"]
+        events = [event for event in history["events"] if event["kind"] == "retest"]
+        self.assertEqual([e["data"]["edited_after_accept"] for e in events], [False, True])
+        self.assertEqual(events[-1]["submission_id"], passed["submission_id"])
+        self.assertEqual(events[-1]["data"]["parent_submission_id"], failed["submission_id"])
+        hidden = [
+            case
+            for sub in history["submissions"]
+            for case in sub["evidence"]["cases"]
+            if not case["is_public"]
+        ]
+        self.assertTrue(hidden)
+        self.assertTrue(
+            all("input" not in case and "expected_output" not in case for case in hidden)
+        )
+        self.client.post("/api/logout", headers=self.headers)
+        self.assertEqual(self.client.get("/api/problems/DEMO-01/practice-history").status_code, 401)
