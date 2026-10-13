@@ -160,13 +160,10 @@
     byId('customInput').addEventListener('input', saveDraft);
     language.addEventListener('change', () => {
         saveDraft(); activeLanguage = language.value;
-        inlineRequestId += 1; inlineAbortController?.abort(); clearInlineSuggestion();
+        cancelInlineCompletion();
         cancelPending(); showSubmission(null);
         editor.value = ''; byId('customInput').value = '';
         restoreDraft(); markStale(); restoreSubmission();
-    });
-    byId('completionEnabled').addEventListener('change', () => {
-        inlineRequestId += 1; inlineAbortController?.abort(); clearInlineSuggestion();
     });
     diagnose.addEventListener('click', async () => {
         if (!submission) return;

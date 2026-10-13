@@ -130,3 +130,5 @@ GitHub Actions 会在推送到 `main` 或打开 PR 时执行同样的检查。
 助手头像与眨眼桌宠素材：作者 [YunYueSama](https://github.com/YunYueSama/codex-deepseek-pet)，经 CSS 裁切与动画展示。许可及修改说明见 [素材署名](static/images/dafeiyu/ATTRIBUTION.md)。语气参考 [dafeiyu-persona](https://github.com/ERUIHNIYHBKBNF/dafeiyu-persona)，保留准确、尊重学生的教学风格。
 
 聊天默认启用模型思考，通过 SSE 分别传输 `reasoning_content` 与回答；思考区支持实时更新、折叠与停止。仅展示模型接口实际返回的内容，不生成角色心声充当推理。其他短任务维持各自的思考设置。
+
+代码自动补全默认开启（登录后使用）：输入停顿 120 毫秒触发，Tab 接受、Esc 取消，Ctrl+空格立即请求。补全显式关闭思考并使用短输出预算；结果逐段显示，近期相同上下文从当前页面的短期缓存读取。

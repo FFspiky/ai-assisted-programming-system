@@ -22,9 +22,9 @@ def ai_inline_complete_stream():
     if error_response:
         return error_response, status
     try:
-        max_tokens = int(data.get("max_tokens", 128))
+        max_tokens = int(data.get("max_tokens", 96))
     except (TypeError, ValueError):
-        max_tokens = 128
+        max_tokens = 96
     max_tokens = max(32, min(max_tokens, 256))
 
     if not prefix:
@@ -34,4 +34,8 @@ def ai_inline_complete_stream():
         for chunk in stream_inline_completion(prefix, suffix, language, max_tokens=max_tokens):
             yield chunk
 
-    return Response(generate(), content_type="text/plain; charset=utf-8")
+    return Response(
+        generate(),
+        content_type="text/plain; charset=utf-8",
+        headers={"Cache-Control": "no-store, no-transform", "X-Accel-Buffering": "no"},
+    )

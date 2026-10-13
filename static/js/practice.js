@@ -141,6 +141,10 @@ let inlineSuggestionContext = null;
 let inlineAbortController = null;
 let inlineRequestId = 0;
 let inlineDebounceTimer = null;
+let inlineComposing = false;
+let inlineActiveContext = null;
+let inlineRetryAfter = 0;
+const inlineCompletionCache = new Map();
 
 function getCursorContext() {
     const text = codeInput.value || '';
@@ -177,57 +181,63 @@ function clearInlineSuggestion() {
     renderGhostLayer();
 }
 
+function cancelInlineCompletion() {
+    clearTimeout(inlineDebounceTimer);
+    inlineDebounceTimer = null;
+    inlineRequestId += 1;
+    inlineAbortController?.abort();
+    inlineAbortController = null;
+    inlineActiveContext = null;
+    clearInlineSuggestion();
+}
+
 function scheduleInlineCompletion(force = false) {
-    if (!codeInput || !document.getElementById('completionEnabled')?.checked) {
-        return;
-    }
-    if (inlineDebounceTimer) {
-        clearTimeout(inlineDebounceTimer);
-    }
-    if (force) {
-        inlineRequestId += 1;
-        requestInlineCompletion(inlineRequestId);
-        return;
-    }
-    inlineDebounceTimer = setTimeout(() => {
-        inlineRequestId += 1;
-        requestInlineCompletion(inlineRequestId);
-    }, 200);
+    clearTimeout(inlineDebounceTimer);
+    if (!codeInput || !practiceUser || inlineComposing || document.activeElement !== codeInput
+        || Date.now() < inlineRetryAfter) return;
+    const requestId = ++inlineRequestId;
+    if (force) requestInlineCompletion(requestId);
+    else inlineDebounceTimer = setTimeout(() => requestInlineCompletion(requestId), 120);
 }
 
 async function requestInlineCompletion(requestId) {
-    if (!document.getElementById('completionEnabled')?.checked) return;
+    if (!practiceUser || inlineComposing || document.activeElement !== codeInput) return;
     const { prefix, suffix, start, end } = getCursorContext();
-    if (start !== end || prefix.length < 5) {
-        clearInlineSuggestion();
-        return;
-    }
-    if (inlineAbortController) {
-        inlineAbortController.abort();
-    }
-    inlineAbortController = new AbortController();
-    const requestController = inlineAbortController;
+    if (start !== end || prefix.trim().length < 3) { clearInlineSuggestion(); return; }
+    inlineAbortController?.abort();
+    const requestController = new AbortController();
+    inlineAbortController = requestController;
     const language = document.getElementById('languageSelector').value || 'python';
     const code = codeInput.value;
-    const isCurrent = () => requestId === inlineRequestId && codeInput.value === code
-        && codeInput.selectionStart === start && codeInput.selectionEnd === end
+    inlineActiveContext = {code, start, language};
+    const cacheKey = JSON.stringify([language, prefix, suffix]);
+    const isCurrent = () => !requestController.signal.aborted && requestId === inlineRequestId
+        && codeInput.value === code && codeInput.selectionStart === start && codeInput.selectionEnd === end
         && document.getElementById('languageSelector').value === language
-        && document.getElementById('completionEnabled')?.checked;
-
+        && document.activeElement === codeInput && !inlineComposing && !!practiceUser;
+    const show = text => {
+        if (!isCurrent()) return;
+        inlineSuggestion = text;
+        inlineSuggestionContext = {code, start, language};
+        renderGhostLayer();
+    };
+    const cached = inlineCompletionCache.get(cacheKey);
+    if (cached && Date.now() - cached.at < 120000) {
+        show(cached.text);
+        inlineAbortController = null;
+        return;
+    }
+    const deadline = setTimeout(() => requestController.abort(), 15000);
     try {
         const response = await UserSession.csrfFetch('/api/ai-inline-complete-stream', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                language,
-                prefix,
-                suffix,
-                max_tokens: 128
-            }),
+            body: JSON.stringify({language, prefix, suffix, max_tokens: 96}),
             signal: requestController.signal
         });
         if (!isCurrent()) { requestController.abort(); return; }
         if (!response.ok || !response.body) {
+            if (response.status === 429) inlineRetryAfter = Date.now() + 10000;
             clearInlineSuggestion();
             return;
         }
@@ -236,20 +246,22 @@ async function requestInlineCompletion(requestId) {
         let buffer = '';
         while (true) {
             const { value, done } = await reader.read();
-            if (done) {
-                break;
-            }
+            if (!isCurrent()) { requestController.abort(); return; }
+            if (done) { buffer += decoder.decode(); break; }
             buffer += decoder.decode(value, { stream: true });
-            if (!isCurrent()) {
-                requestController.abort();
-                return;
-            }
-            inlineSuggestion = buffer;
-            inlineSuggestionContext = {code, start, language};
-            renderGhostLayer();
+            show(buffer);
         }
-    } catch (error) {
+        show(buffer);
+        if (buffer) {
+            inlineCompletionCache.delete(cacheKey);
+            inlineCompletionCache.set(cacheKey, {text: buffer, at: Date.now()});
+            if (inlineCompletionCache.size > 24) inlineCompletionCache.delete(inlineCompletionCache.keys().next().value);
+        }
+    } catch (_) {
         if (requestId === inlineRequestId) clearInlineSuggestion();
+    } finally {
+        clearTimeout(deadline);
+        if (inlineAbortController === requestController) inlineAbortController = null;
     }
 }
 
@@ -275,42 +287,42 @@ function acceptInlineSuggestion() {
 
 if (codeInput) {
     codeInput.addEventListener('input', () => {
-        inlineRequestId += 1;
-        inlineAbortController?.abort();
-        clearInlineSuggestion();
+        cancelInlineCompletion();
         scheduleInlineCompletion();
     });
-    codeInput.addEventListener('keydown', (e) => {
+    codeInput.addEventListener('compositionstart', () => { inlineComposing = true; cancelInlineCompletion(); });
+    codeInput.addEventListener('compositionend', () => { inlineComposing = false; scheduleInlineCompletion(); });
+    codeInput.addEventListener('blur', cancelInlineCompletion);
+    document.getElementById('languageSelector').addEventListener('change', cancelInlineCompletion);
+    window.addEventListener('auth:required', () => {
+        practiceUser = null;
+        cancelInlineCompletion();
+        inlineCompletionCache.clear();
+    });
+    codeInput.addEventListener('keydown', e => {
+        if (e.isComposing || inlineComposing) return;
         if (e.key === 'Tab' && inlineSuggestion) {
             e.preventDefault();
             acceptInlineSuggestion();
-            return;
-        }
-        if (e.key === 'Escape' && inlineSuggestion) {
+        } else if (e.key === 'Escape') {
             e.preventDefault();
-            clearInlineSuggestion();
-            return;
-        }
-        if (e.ctrlKey && e.key === ' ') {
+            cancelInlineCompletion();
+        } else if (e.ctrlKey && e.key === ' ') {
             e.preventDefault();
+            cancelInlineCompletion();
             scheduleInlineCompletion(true);
         }
     });
     const handleCursorMove = () => {
-        if (inlineSuggestionContext && (codeInput.selectionStart !== inlineSuggestionContext.start
-            || codeInput.selectionEnd !== inlineSuggestionContext.start)) {
-            inlineRequestId += 1;
-            inlineAbortController?.abort();
-            clearInlineSuggestion();
-        }
+        if (inlineActiveContext && (codeInput.selectionStart !== inlineActiveContext.start
+            || codeInput.selectionEnd !== inlineActiveContext.start)) cancelInlineCompletion();
         renderGhostLayer();
     };
     codeInput.addEventListener('click', handleCursorMove);
     codeInput.addEventListener('keyup', handleCursorMove);
+    codeInput.addEventListener('select', handleCursorMove);
     codeInput.addEventListener('scroll', () => {
-        if (!ghostLayer) {
-            return;
-        }
+        if (!ghostLayer) return;
         ghostLayer.scrollTop = codeInput.scrollTop;
         ghostLayer.scrollLeft = codeInput.scrollLeft;
     });
