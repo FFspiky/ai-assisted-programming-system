@@ -20,10 +20,10 @@ def ensure_ai_configured():
 
 def _provider_payload(payload):
     prepared = dict(payload)
-    # Official DeepSeek defaults to thinking; short teaching/completion requests
-    # need a text response within their existing output budget.
     if urlparse(API_URL).hostname == "api.deepseek.com":
-        prepared.setdefault("thinking", {"type": AI_THINKING_MODE})
+        enabled = prepared.pop("enable_thinking", None)
+        mode = AI_THINKING_MODE if enabled is None else ("enabled" if enabled else "disabled")
+        prepared.setdefault("thinking", {"type": mode})
     return prepared
 
 
@@ -50,7 +50,8 @@ def chat_completion(payload, timeout=120):
         raise AIClientError(f"AI响应格式异常: {exc}") from exc
 
 
-def stream_chat_deltas(payload, timeout=120):
+def stream_chat_events(payload, timeout=120):
+    """Keep provider reasoning separate from the assistant's visible answer."""
     ensure_ai_configured()
     headers = {
         "Authorization": f"Bearer {API_KEY}",
@@ -67,20 +68,40 @@ def stream_chat_deltas(payload, timeout=120):
             timeout=timeout,
         ) as response:
             response.raise_for_status()
-            for line in response.iter_lines():
-                if not line or not line.startswith(b"data: "):
+            for line in response.iter_lines(chunk_size=1):
+                if not line or not line.startswith(b"data:"):
                     continue
-                raw = line[6:].decode("utf-8")
+                raw = line[5:].decode("utf-8").strip()
                 if raw.strip() == "[DONE]":
                     break
                 try:
-                    delta = json.loads(raw)["choices"][0]["delta"].get("content", "")
-                except (json.JSONDecodeError, KeyError, IndexError) as exc:
+                    packet = json.loads(raw)
+                    if packet.get("error"):
+                        raise AIClientError("模型服务返回错误，请稍后重试")
+                    choices = packet.get("choices") or []
+                    if not choices:
+                        continue
+                    delta = choices[0].get("delta") or {}
+                except (
+                    json.JSONDecodeError,
+                    KeyError,
+                    IndexError,
+                    TypeError,
+                    AttributeError,
+                ) as exc:
                     logger.debug("Skipping malformed AI stream chunk: %s", exc)
                     continue
-                if delta:
-                    yield delta
+                for field, kind in (("reasoning_content", "reasoning"), ("content", "content")):
+                    value = delta.get(field)
+                    if isinstance(value, str) and value:
+                        yield {"type": kind, "text": value}
     except requests.exceptions.Timeout as exc:
         raise AIClientError("AI服务响应超时") from exc
     except requests.exceptions.RequestException as exc:
         raise AIClientError(f"AI服务请求失败: {exc}") from exc
+
+
+def stream_chat_deltas(payload, timeout=120):
+    for event in stream_chat_events(payload, timeout=timeout):
+        if event["type"] == "content":
+            yield event["text"]

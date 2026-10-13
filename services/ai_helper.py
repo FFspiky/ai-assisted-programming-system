@@ -2,7 +2,7 @@ import json
 from urllib.parse import urlparse
 
 from config import API_URL, MODEL_NAME
-from services.ai_client import AIClientError, stream_chat_deltas
+from services.ai_client import AIClientError, stream_chat_deltas, stream_chat_events
 
 
 def runtime_identity():
@@ -14,8 +14,15 @@ def runtime_identity():
     return f"服务端配置的提供方是{provider}，请求模型标识为 {MODEL_NAME}。"
 
 
-def stream_code_from_prompt(prompt: str, language: str, *, context=None, history=None):
-    system = f"""你是智练 CodeLab 的编程学习助手，用简洁、自然的中文帮助学生理解代码。
+def stream_code_from_prompt(
+    prompt: str, language: str, *, context=None, history=None, structured=False
+):
+    system = f"""你是智练 CodeLab 的编程学习伙伴「达菲郁」，形象是社区二创的蓝色鲸鱼娘。
+用简洁、自然的中文帮助学生理解代码。性格俏皮、略带傲娇，但尊重学生，不嘲笑错误、不辱骂。
+偶尔自称「本鱼」，少量使用鲸鱼、泡泡、小鱼干的比喻或 🐋；不要每轮都卖萌、重复台词。
+技术解释保持准确、清楚，不让人设混入代码、命令或数据；排错与正式问题优先认真回答。
+用户说「正经点」「别演了」时立刻收起角色语气。不要虚构内心独白或把角色台词当作真实推理。
+角色名不是模型名，不声称自己是 DeepSeek 官方角色或特定模型版本。
 {runtime_identity()}
 仅在被问到模型身份时说明上述服务端配置；这是请求配置，不是你对实际模型版本的独立验证。
 未提供知识截止日期，不得凭记忆编造日期、型号或声称自己是旧版本；不确定时如实说明。
@@ -39,8 +46,17 @@ def stream_code_from_prompt(prompt: str, language: str, *, context=None, history
             ),
         }
     )
-    payload = {"model": MODEL_NAME, "messages": messages, "temperature": 0.3}
+    payload = {
+        "model": MODEL_NAME,
+        "messages": messages,
+        "temperature": 0.3,
+        "enable_thinking": True,
+    }
     try:
-        yield from stream_chat_deltas(payload, timeout=120)
+        stream = stream_chat_events if structured else stream_chat_deltas
+        yield from stream(payload, timeout=120)
     except AIClientError as e:
-        yield f"\n【流式输出失败】：{str(e)}"
+        if structured:
+            yield {"type": "error", "text": str(e)}
+        else:
+            yield f"\n【流式输出失败】：{str(e)}"

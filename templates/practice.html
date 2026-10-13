@@ -157,14 +157,14 @@
             </div>
         </div>
 
-        <div class="ai-floating-window hidden" id="aiFloatingWindow">
+        <div class="ai-floating-window hidden" id="aiFloatingWindow" data-avatar="{{ url_for('static', filename='images/dafeiyu/portrait.png') }}">
             <div class="ai-assistant-section">
                 <div class="ai-header">
                     <div class="ai-avatar">
-                        <i class="fas fa-robot floating"></i>
+                        <img src="{{ url_for('static', filename='images/dafeiyu/portrait.png') }}" alt="达菲郁的鲸鱼娘头像" draggable="false">
                     </div>
                     <div>
-                        <div class="ai-title">AI编程助手</div>
+                        <div class="ai-title" id="aiChatTitle">达菲郁</div>
                         <div class="ai-status">在线</div>
                     </div>
                 </div>
@@ -173,10 +173,10 @@
                     <div class="message ai-message">
                         <div class="message-header">
                             <i class="fas fa-robot"></i>
-                            AI助手
+                            达菲郁
                         </div>
                         <div class="message-content">
-                            你好！我是你的AI编程助手，有什么问题可以随时问我。
+                            我是达菲郁，陪你把代码里的小问号一个个捞起来。🐋 有问题就丢给本鱼吧！
                         </div>
                     </div>
                 </div>
@@ -186,16 +186,17 @@
                     <span id="chatContextStatus" aria-live="polite"></span>
                 </div>
                 <div class="input-container">
-                    <input type="text" class="message-input" id="messageInput" placeholder="向AI助手提问...">
-                    <button class="send-btn" id="sendMessage">
+                    <input type="text" class="message-input" id="messageInput" placeholder="向达菲郁提问...">
+                    <button type="button" id="stopChat" class="chat-context-btn" hidden>停止生成</button>
+                    <button class="send-btn" id="sendMessage" aria-label="发送消息">
                         <i class="fas fa-paper-plane"></i>
                     </button>
                 </div>
             </div>
         </div>
 
-        <button class="ai-toggle-btn" id="aiToggleBtn">
-            <img src="{{ url_for('static', filename='images/wa.png') }}" alt="AI 助手图标" class="ai-icon">
+        <button class="ai-toggle-btn" id="aiToggleBtn" aria-label="打开达菲郁编程助手" aria-expanded="false" aria-controls="aiFloatingWindow" title="达菲郁 · 点击聊天，按住拖动">
+            <span class="pet-sprite" aria-hidden="true"></span>
         </button>
     </div>
 

@@ -1,3 +1,5 @@
+import json
+
 from bs4 import BeautifulSoup
 from flask import Blueprint, Response, request
 from flask_login import current_user, login_required
@@ -94,7 +96,15 @@ def generate_code_stream():
             }
 
     def generate():
-        for chunk in stream_code_from_prompt(prompt, language, context=context, history=history):
-            yield chunk
+        for chunk in stream_code_from_prompt(
+            prompt, language, context=context, history=history, structured=True
+        ):
+            event = chunk if isinstance(chunk, dict) else {"type": "content", "text": chunk}
+            yield "data: " + json.dumps(event, ensure_ascii=False) + "\n\n"
+        yield 'data: {"type": "done"}\n\n'
 
-    return Response(generate(), content_type="text/plain; charset=utf-8")
+    return Response(
+        generate(),
+        content_type="text/event-stream; charset=utf-8",
+        headers={"Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no"},
+    )

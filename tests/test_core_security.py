@@ -513,7 +513,8 @@ class CoreSecurityTest(unittest.TestCase):
                 headers=headers,
                 json={"message": "问题", "code": "print(3)", "problem_id": "context-test"},
             )
-            self.assertEqual(response.get_data(as_text=True), "回答")
+            self.assertIn('"type": "content", "text": "回答"', response.get_data(as_text=True))
+            self.assertIn('"type": "done"', response.get_data(as_text=True))
             self.assertEqual(call.call_args.kwargs["context"], {})
         with patch("routes.helper.stream_code_from_prompt", return_value=iter(["回答"])) as call:
             response = self.client.post(
@@ -563,6 +564,7 @@ class CoreSecurityTest(unittest.TestCase):
         self.assertTrue(parsed["success"])
         self.assertEqual(parsed["optimizedVersions"][0]["code"], "print('ok')")
 
+    @patch("services.ai_client.API_KEY", "")
     def test_ai_optimize_reports_missing_api_key(self):
         self.client.post(
             "/api/register",

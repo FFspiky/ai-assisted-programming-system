@@ -3,6 +3,7 @@ let chatHistory = [];
 let chatBusy = false;
 let chatProblemId = null;
 let attachedPractice = null;
+let chatAbortController = null;
 document.addEventListener('DOMContentLoaded', function () {
     UserSession.init({ logoutRedirect: '/index.html' }).then(user => {
         practiceUser = user;
@@ -639,7 +640,7 @@ function addChatMessage(content, sender, id = null, isHtml = false) {
     messageDiv.className = `message ${sender}-message`;
     const header = document.createElement('div');
     header.className = 'message-header';
-    header.innerHTML = sender === 'ai' ? '<i class="fas fa-robot"></i> AI助手' : '<i class="fas fa-user"></i> 你';
+    header.innerHTML = sender === 'ai' ? '<i class="fas fa-robot"></i> 达菲郁' : '<i class="fas fa-user"></i> 你';
     const contentDiv = document.createElement('div');
     contentDiv.className = 'message-content';
     if (id) contentDiv.id = id;
@@ -688,34 +689,101 @@ async function sendMessage() {
     addChatMessage(message + (attachment ? '\n已附带：' + attachment.title + '（代码快照与最近提交）' : ''), 'user');
     messageInput.value = '';
 
-    const aiId = `ai-${Date.now()}`;
-    const aiContentDiv = addChatMessage('<span class="thinking">🤔 AI助手正在思考中...</span>', 'ai', aiId, true);
+    const aiContentDiv = addChatMessage('', 'ai');
+    const reasoningPanel = document.createElement('details');
+    reasoningPanel.className = 'reasoning-panel';
+    reasoningPanel.hidden = true;
+    reasoningPanel.open = true;
+    const summary = document.createElement('summary');
+    summary.textContent = '正在思考…';
+    const reasoningText = document.createElement('div');
+    reasoningText.className = 'reasoning-text';
+    reasoningPanel.append(summary, reasoningText);
+    const answer = document.createElement('div');
+    const status = document.createElement('p');
+    status.className = 'chat-stream-status';
+    status.setAttribute('role', 'status');
+    status.textContent = '达菲郁正在思考…';
+    aiContentDiv.append(reasoningPanel, answer, status);
+    const stopButton = document.getElementById('stopChat');
+    stopButton.hidden = false;
+    sendMessageBtn.disabled = true;
+    chatAbortController = new AbortController();
+    let fullText = '';
+    let reasoning = '';
+    let failed = false;
+    let finished = false;
+    let reasoningFinished = false;
+    let userToggledReasoning = false;
+    let reasoningStarted = null;
+    summary.addEventListener('click', () => { userToggledReasoning = true; });
+    const finishReasoning = () => {
+        if (!reasoning || reasoningFinished) return;
+        reasoningFinished = true;
+        const seconds = Math.max(1, Math.round((Date.now() - reasoningStarted) / 1000));
+        summary.textContent = `已思考 ${seconds} 秒`;
+        if (!userToggledReasoning) reasoningPanel.open = false;
+    };
+    const consumeEvent = (event) => {
+        const followBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight < 80;
+        if (event.type === 'reasoning') {
+            if (reasoningStarted === null) reasoningStarted = Date.now();
+            reasoning += event.text || '';
+            reasoningPanel.hidden = false;
+            reasoningText.textContent = reasoning;
+            status.textContent = '正在思考…';
+        } else if (event.type === 'content') {
+            finishReasoning();
+            fullText += event.text || '';
+            answer.innerHTML = formatAiResponse(fullText);
+            status.textContent = '正在回答…';
+        } else if (event.type === 'error') {
+            failed = true;
+            status.textContent = `生成失败：${event.text || '请重试'}`;
+        } else if (event.type === 'done') {
+            finished = true;
+            finishReasoning();
+            if (!failed) status.textContent = fullText.trim() ? '' : '模型未返回回答，请重试。';
+        }
+        if (followBottom) chatContainer.scrollTop = chatContainer.scrollHeight;
+    };
 
     try {
         const response = await UserSession.csrfFetch('/api/ai-chat-stream', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
+            signal: chatAbortController.signal,
             body: JSON.stringify({ message, language: attachment?.language || document.getElementById('languageSelector').value,
                 include_context: !!attachment, history: chatHistory,
                 ...(attachment ? {code: attachment.code, input_text: attachment.input_text, problem_id: attachment.problem_id} : {}) })
         });
-
-        if (!response.ok) {
-            aiContentDiv.innerText = `错误: ${response.statusText}`;
-            return;
+        if (!response.ok || !response.body) {
+            const result = await response.json().catch(() => ({}));
+            throw new Error(apiErrorMessage(result, `请求失败 (${response.status})`));
         }
-
         const reader = response.body.getReader();
         const decoder = new TextDecoder('utf-8');
-        let fullText = '';
-
+        let buffer = '';
+        const consumeBuffer = () => {
+            let boundary;
+            while ((boundary = buffer.indexOf('\n\n')) !== -1) {
+                const frame = buffer.slice(0, boundary);
+                buffer = buffer.slice(boundary + 2);
+                const data = frame.split('\n').filter(line => line.startsWith('data:'))
+                    .map(line => line.slice(5).trimStart()).join('\n');
+                if (data) consumeEvent(JSON.parse(data));
+            }
+        };
         while (true) {
             const { done, value } = await reader.read();
             if (done) break;
-            fullText += decoder.decode(value, { stream: true });
-            aiContentDiv.innerHTML = formatAiResponse(fullText);
+            buffer += decoder.decode(value, { stream: true });
+            consumeBuffer();
         }
-        if (fullText.trim() && !fullText.includes('【流式输出失败】')) {
+        buffer += decoder.decode();
+        consumeBuffer();
+        if (!finished) throw new Error('连接已中断，请重试。已生成的内容已保留。');
+        if (!failed && fullText.trim()) {
             const historyText = attachment ? JSON.stringify({question:message, attached_practice:attachment}) : message;
             chatHistory.push({role:'user', content:historyText.slice(0,8000)},
                 {role:'assistant', content:fullText.slice(0,8000)});
@@ -724,13 +792,19 @@ async function sendMessage() {
             updateChatContext();
         }
     } catch (error) {
-        if (UserSession.handleAuthError(error, aiContentDiv, '请先登录后再使用编程助手。')) return;
-        aiContentDiv.innerText = `请求失败: ${error.message}`;
-        console.error('聊天错误:', error);
+        if (UserSession.handleAuthError(error, status, '请先登录后再使用编程助手。')) return;
+        status.textContent = error.name === 'AbortError' ? '已停止，已生成的内容已保留。' : `请求失败：${error.message}`;
+        if (reasoning && !reasoningFinished) summary.textContent = '思考已中止';
     } finally {
         chatBusy = false;
+        chatAbortController = null;
+        stopButton.hidden = true;
+        sendMessageBtn.disabled = false;
+        messageInput.focus({preventScroll: true});
     }
 }
+
+document.getElementById('stopChat').addEventListener('click', () => chatAbortController?.abort());
 
 function toggleAiWindow() {
     aiFloatingWindow.classList.toggle('hidden');
