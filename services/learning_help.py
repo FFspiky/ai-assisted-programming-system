@@ -140,7 +140,7 @@ def validate_help(raw, level, context):
         key: raw[key]
         for key in ("status", "summary", "explanation", "lines", "evidence_ids", "code")
     }
-    if level == 3 and raw["status"] == "supported" and raw["code"]:
+    if level == 3 and raw["status"] == "supported" and (raw["code"] or raw.get("edits")):
         from services.code_proposals import apply_edits
 
         _, edits = apply_edits(context["code"], raw.get("edits"))

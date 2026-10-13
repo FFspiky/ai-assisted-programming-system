@@ -3,7 +3,7 @@
 import difflib
 
 from config import MAX_CODE_CHARS
-from models import CodeProposal, db
+from models import CodeProposal, PracticeEvent, Submission, db
 from services.ai_client import AIClientError
 
 
@@ -48,7 +48,7 @@ def ensure_proposal(record):
     if record.source != "panel" or record.requested_level not in {3, 4}:
         return None
     result = record.result or {}
-    if result.get("status") != "supported" or not result.get("code"):
+    if result.get("status") != "supported":
         return None
     existing = CodeProposal.query.filter_by(help_id=record.id).first()
     if existing:
@@ -60,7 +60,7 @@ def ensure_proposal(record):
             return None
         candidate, edits = apply_edits(base, result["edits"])
     else:
-        candidate, edits = result["code"], []
+        candidate, edits = result.get("code", ""), []
         if not candidate.strip() or len(candidate) > MAX_CODE_CHARS or candidate == base:
             return None
     proposal = CodeProposal(
@@ -89,7 +89,27 @@ def code_diff(before, after):
 
 
 def proposal_payload(proposal):
+    latest = (
+        Submission.query.join(PracticeEvent, PracticeEvent.submission_id == Submission.id)
+        .filter(
+            PracticeEvent.proposal_id == proposal.id,
+            PracticeEvent.kind == "retest",
+            Submission.user_id == proposal.user_id,
+        )
+        .order_by(PracticeEvent.id.desc())
+        .first()
+    )
     return {
+        "latest_test": (
+            {
+                "submission_id": latest.id,
+                "code": latest.code_submitted,
+                "status": latest.status,
+                "total": (latest.evidence_snapshot or {}).get("total"),
+            }
+            if latest
+            else None
+        ),
         "id": proposal.id,
         "help_id": proposal.help_id,
         "submission_id": proposal.submission_id,

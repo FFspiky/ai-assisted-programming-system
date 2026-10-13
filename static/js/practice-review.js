@@ -28,7 +28,13 @@
             const p = proposals.get(Number(card.dataset.proposalCard)); if (!p) return;
             const note = card.querySelector('[data-proposal-status]');
             note.textContent = states[p.state] || p.state;
-            if (p.state === 'accepted' && editor.value !== p.candidate_code) note.textContent = '已采纳；当前代码与建议不同，复测将记录这份修改。';
+            if (p.state === 'accepted') {
+                const tested = p.latest_test;
+                if (tested && editor.value === tested.code) {
+                    note.textContent = tested.status === 'Accepted' ? `这份代码通过当前 ${tested.total ?? '?'} 个用例。` : `这份代码上次复测：${tested.status}。`;
+                    if (tested.code !== p.candidate_code) note.textContent += ' 通过与否以修改后的实际提交为准。';
+                } else if (editor.value !== p.candidate_code) note.textContent = '已采纳；当前代码与建议不同，这份修改尚未复测。';
+            }
             else if (p.state !== 'accepted' && editor.value !== p.base_code) note.textContent += ' · 编辑器已变化，采纳前请核对原代码。';
             card.querySelectorAll('[data-proposal-action]').forEach(node => {
                 const action = node.dataset.proposalAction;
@@ -47,7 +53,7 @@
         details.append(diff(p.diff));
         const base = panel('建议依据的原代码', 'base-'+p.id);
         base.append(el('pre', p.base_code, 'help-code')); details.append(base);
-        const candidate = panel('候选代码（尚未验证）', 'candidate-'+p.id);
+        const candidate = panel('候选代码', 'candidate-'+p.id);
         candidate.append(el('pre', p.candidate_code, 'help-code')); details.append(candidate);
         const note = el('p', '', 'panel-note'); note.dataset.proposalStatus = ''; details.append(note);
         const controls = el('div', '', 'diagnosis-actions');

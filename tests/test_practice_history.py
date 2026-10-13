@@ -71,6 +71,11 @@ class PracticeHistoryTest(unittest.TestCase):
             f'/api/proposals/{p["id"]}/actions', headers={"X-CSRF-Token": token}, json={}
         )
         self.assertEqual(response.status_code, 404)
+        self.assertEqual(other.get(f'/api/help/{p["help_id"]}/review').status_code, 404)
+        self.assertEqual(
+            other.get("/api/problems/DEMO-01/practice-history").get_json()["data"]["submissions"],
+            [],
+        )
 
     def test_save_failure_does_not_commit_action(self):
         from sqlalchemy.exc import OperationalError
@@ -121,6 +126,10 @@ class PracticeHistoryTest(unittest.TestCase):
         self.assertEqual(passed["status"], "Accepted", passed)
         self.assertEqual(passed["data"]["evidence"]["executed"], 3)
         history = self.client.get("/api/problems/DEMO-01/practice-history").get_json()["data"]
+        latest = next(row for row in history["proposals"] if row["id"] == p["id"])
+        self.assertEqual(latest["latest_test"]["code"], body["code"])
+        self.assertEqual(latest["latest_test"]["status"], "Accepted")
+        self.assertNotEqual(latest["candidate_code"], latest["latest_test"]["code"])
         events = [event for event in history["events"] if event["kind"] == "retest"]
         self.assertEqual([e["data"]["edited_after_accept"] for e in events], [False, True])
         self.assertEqual(events[-1]["submission_id"], passed["submission_id"])
