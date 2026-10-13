@@ -1,8 +1,14 @@
 import json
+import re
 from urllib.parse import urlparse
 
 from config import API_URL, MODEL_NAME
-from services.ai_client import AIClientError, stream_chat_deltas, stream_chat_events
+from services.ai_client import (
+    AIClientError,
+    chat_completion,
+    stream_chat_deltas,
+    stream_chat_events,
+)
 
 
 def runtime_identity():
@@ -15,7 +21,7 @@ def runtime_identity():
 
 
 def stream_code_from_prompt(
-    prompt: str, language: str, *, context=None, history=None, structured=False
+    prompt: str, language: str, *, context=None, history=None, structured=False, help_level=None
 ):
     system = f"""你是智练 CodeLab 的编程学习伙伴「达菲郁」，形象是社区二创的蓝色鲸鱼娘。
 用简洁、自然的中文帮助学生理解代码。性格俏皮、略带傲娇，但尊重学生，不嘲笑错误、不辱骂。
@@ -35,6 +41,10 @@ def stream_code_from_prompt(
 问题缺少决定性信息时询问具体缺项；可以给条件化建议，不把假设当成事实。
 涉及新版本、库接口或时效信息时说明无法联网核验，不编造资料来源。
 代码示例使用对应语言的 Markdown 围栏。"""
+    if help_level is not None:
+        from services.learning_help import learning_policy
+
+        system += learning_policy(help_level)
     messages = [{"role": "system", "content": system}]
     messages.extend(history or [])
     messages.append(
@@ -53,6 +63,22 @@ def stream_code_from_prompt(
         "enable_thinking": True,
     }
     try:
+        if help_level is not None:
+            payload.update(enable_thinking=False, max_tokens=3000)
+            answer = chat_completion(payload, timeout=(8, 60))
+            if help_level <= 2 and "```" in answer:
+                raise AIClientError(
+                    "回答包含超出所选层级的代码，未展示；可重试或选择局部修改/完整参考"
+                )
+            if help_level == 1 and re.search(r"第\s*\d+\s*行", answer):
+                raise AIClientError("回答包含具体定位，未展示；可重试或选择定位与解释")
+            if help_level == 3 and any(
+                len(block.strip().splitlines()) > 8
+                for block in re.findall(r"```[^\n]*\n(.*?)```", answer, re.S)
+            ):
+                raise AIClientError("回答包含过长代码，未展示；可选择完整参考")
+            yield {"type": "content", "text": answer} if structured else answer
+            return
         stream = stream_chat_events if structured else stream_chat_deltas
         yield from stream(payload, timeout=120)
     except AIClientError as e:

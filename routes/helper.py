@@ -1,15 +1,17 @@
 import json
 
 from bs4 import BeautifulSoup
-from flask import Blueprint, Response, request
+from flask import Blueprint, Response, request, stream_with_context
 from flask_login import current_user, login_required
 
 from config import MAX_CODE_CHARS
-from models import Problem, Submission, db
+from models import LearningHelp, Problem, Submission, db
 from routes.api_response import api_error, api_success
 from routes.guards import rate_limit
 from routes.validators import validate_ai_prompt, validate_language, validate_text_size
+from services.ai_client import AIClientError
 from services.ai_helper import stream_code_from_prompt
+from services.learning_help import begin_help, fail_help, finish_help, mode_is_current, parse_level
 
 generate_blueprint = Blueprint("generate", __name__)
 
@@ -95,13 +97,60 @@ def generate_code_stream():
                 ][:3],
             }
 
+    try:
+        level = (
+            parse_level(data.get("help_level", 1)) if current_user.help_mode == "learning" else 4
+        )
+    except ValueError as exc:
+        return api_error("INVALID_HELP_LEVEL", str(exc), 400)
+    learning = current_user.help_mode == "learning"
+    sid = (
+        context.get("latest_submission", {}).get("id") if context.get("latest_submission") else None
+    )
+    record = begin_help(
+        current_user,
+        "chat",
+        level,
+        {"question": prompt, "language": language, "context": context},
+        sid,
+    )
+
+    record_id = record.id
+
+    @stream_with_context
     def generate():
-        for chunk in stream_code_from_prompt(
-            prompt, language, context=context, history=history, structured=True
-        ):
-            event = chunk if isinstance(chunk, dict) else {"type": "content", "text": chunk}
-            yield "data: " + json.dumps(event, ensure_ascii=False) + "\n\n"
-        yield 'data: {"type": "done"}\n\n'
+        record = db.session.get(LearningHelp, record_id)
+        answer = ""
+        try:
+            kwargs = {"context": context, "history": history, "structured": True}
+            if learning:
+                kwargs["help_level"] = level
+            for chunk in stream_code_from_prompt(prompt, language, **kwargs):
+                if not mode_is_current(record):
+                    raise AIClientError("帮助模式已改变，请重新发送")
+                event = chunk if isinstance(chunk, dict) else {"type": "content", "text": chunk}
+                if event["type"] == "error":
+                    raise AIClientError(event.get("text", "生成失败"))
+                if learning and event["type"] == "reasoning":
+                    continue
+                if event["type"] == "content":
+                    answer += event.get("text", "")
+                yield "data: " + json.dumps(event, ensure_ascii=False) + "\n\n"
+            if not answer.strip():
+                raise AIClientError("模型未返回回答，请重试")
+            finish_help(record, {"text": answer})
+            yield "data: " + json.dumps({"type": "help_record", "id": record.id}) + "\n\n"
+            yield 'data: {"type": "done"}\n\n'
+        except AIClientError as exc:
+            if record.state == "pending":
+                fail_help(record)
+            yield "data: " + json.dumps(
+                {"type": "error", "text": str(exc)}, ensure_ascii=False
+            ) + "\n\n"
+            yield 'data: {"type": "done"}\n\n'
+        finally:
+            if record.state == "pending":
+                fail_help(record, "cancelled")
 
     return Response(
         generate(),

@@ -162,3 +162,49 @@ class LearningHelpTest(unittest.TestCase):
             "code": "",
         }
         self.assertEqual(validate_help(insufficient, 1, context), insufficient)
+
+    def test_learning_mode_guards_chat_optimization_and_completion(self):
+        self.prepare()
+        with patch("services.ai_helper.chat_completion", return_value="先列出循环覆盖的数值") as ai:
+            response = self.post(
+                "/api/ai-chat-stream", {"message": "直接给答案", "help_level": 1, "mode": "free"}
+            )
+            body = response.get_data(as_text=True)
+            self.assertIn("先列出循环覆盖的数值", body)
+            self.assertNotIn('"type": "reasoning"', body)
+            self.assertIn("概念线索", ai.call_args.args[0]["messages"][0]["content"])
+            self.assertFalse(ai.call_args.args[0]["enable_thinking"])
+            context = json.loads(ai.call_args.args[0]["messages"][-1]["content"])["current_context"]
+            self.assertEqual(context, {})
+        with patch("services.ai_helper.chat_completion", return_value="```python\nprint(6)\n```"):
+            body = self.post("/api/ai-chat-stream", {"message": "答案", "help_level": 1}).get_data(
+                as_text=True
+            )
+            self.assertIn('"type": "error"', body)
+            self.assertNotIn("print(6)", body)
+        result = {**self.result(1), "evidence_ids": []}
+        with patch("services.learning_help.chat_completion", return_value=json.dumps(result)):
+            response = self.post("/api/optimize-code", {"code": "print(1)", "help_level": 1})
+            self.assertEqual(response.status_code, 200)
+            self.assertNotIn("optimizedVersions", response.get_json())
+            self.assertEqual(response.get_json()["learning_help"]["level"], 1)
+        with patch("routes.autocomplete.stream_inline_completion") as ai:
+            self.assertEqual(
+                self.post(
+                    "/api/ai-inline-complete-stream", {"prefix": "pri", "mode": "free"}
+                ).status_code,
+                409,
+            )
+            ai.assert_not_called()
+        self.post("/api/help-settings", {"mode": "free"})
+        with patch("routes.autocomplete.stream_inline_completion", return_value=iter(["nt(1)"])):
+            self.assertEqual(
+                self.post("/api/ai-inline-complete-stream", {"prefix": "pri"}).get_data(
+                    as_text=True
+                ),
+                "nt(1)",
+            )
+        with core.app.app_context():
+            records = LearningHelp.query.filter_by(source="autocomplete", state="ready").all()
+            self.assertEqual(len(records), 1)
+            self.assertEqual(records[0].returned_level, 4)
