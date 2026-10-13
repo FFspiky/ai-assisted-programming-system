@@ -4,7 +4,8 @@
     const language = byId('languageSelector');
     const cases = byId('evidenceCases');
     const diagnosisContent = byId('diagnosisContent');
-    const diagnose = byId('diagnoseBtn');
+    const helpButtons = [...document.querySelectorAll('[data-help-level]')];
+    let historySequence = 0;
     let submission = null, user = null, userReady = false, problem = null;
     let controller = null, sequence = 0, restoreSequence = 0, edited = false;
     let activeLanguage = language.value;
@@ -46,12 +47,14 @@
     }
     function markStale() {
         byId('evidenceStale').hidden = !submission || (editor.value === submission.code && language.value === submission.language);
+        updateButtons();
     }
     function cancelPending() {
         sequence += 1;
         controller?.abort();
         controller = null;
         byId('cancelDiagnosisBtn').hidden = true;
+        updateButtons();
     }
     function focusEvidence(ids, lines) {
         cases.querySelectorAll('.case-card').forEach(card => card.classList.toggle('is-selected', ids.includes(card.dataset.caseId)));
@@ -67,23 +70,50 @@
             editor.setSelectionRange(start, start + chunks[first].length);
         }
     }
-    function showDiagnosis(result) {
-        diagnosisContent.replaceChildren();
-        if (!result) return;
-        diagnosisContent.append(node('p', result.summary, 'diagnosis-summary'));
-        if (result.status === 'insufficient_evidence') {
-            diagnosisContent.prepend(node('p', '公开证据不足', 'hypothesis-tag'));
-            return;
-        }
-        result.findings.forEach(finding => {
-            const card = node('article', undefined, 'finding-card');
-            card.append(node('span', '可能原因', 'hypothesis-tag'), node('h3', finding.title), node('p', finding.explanation));
-            const action = node('button', `查看依据 · ${finding.lines.length ? '第 ' + finding.lines.join('、') + ' 行' : '执行用例'}`, 'evidence-button evidence-link');
-            action.type = 'button';
-            action.addEventListener('click', () => focusEvidence(finding.evidence_ids, finding.lines));
-            card.append(action, node('p', '建议：' + finding.next_check, 'next-check'));
-            diagnosisContent.append(card);
+    function updateButtons() {
+        const applicable = submission?.evidence && ['Wrong Answer', 'Runtime Error', 'Compile Error'].includes(submission.status);
+        byId('helpActions').hidden = !applicable;
+        const stale = submission && (editor.value !== submission.code || language.value !== submission.language);
+        helpButtons.forEach(button => {
+            button.disabled = !applicable || stale || !!controller || !LearningHelpUI.get().ready;
+            button.title = stale ? '代码已修改，请重新提交后获取新提示' : '';
         });
+    }
+    function showHelp(record, open = false) {
+        let details = diagnosisContent.querySelector(`[data-help-id="${record.id}"]`);
+        if (!details) {
+            details = node('details', undefined, 'help-history');
+            details.dataset.helpId = String(record.id);
+            const title = LearningHelpUI.labels[record.level];
+            details.append(node('summary', title + ' · ' + (record.shown_at ? '已查看' : '已生成')));
+            LearningHelpUI.render(record, details, focusEvidence);
+            details.addEventListener('toggle', () => {
+                if (details.open) {
+                    LearningHelpUI.acknowledge(record.id);
+                    details.querySelector('summary').textContent = title + ' · 已查看';
+                }
+            });
+            diagnosisContent.append(details);
+        }
+        if (open) {
+            diagnosisContent.querySelectorAll('details').forEach(item => { item.open = item === details; });
+            details.open = true;
+            LearningHelpUI.acknowledge(record.id);
+        }
+    }
+    async function restoreHelp() {
+        const ticket = ++historySequence;
+        const id = submission?.submission_id, help = LearningHelpUI.get();
+        if (!id || !help.ready) return;
+        try {
+            const response = await fetch(`/api/submissions/${id}/help`, {cache: 'no-store'});
+            const result = await response.json();
+            if (ticket !== historySequence || id !== submission?.submission_id || help.epoch !== LearningHelpUI.get().epoch) return;
+            if (!response.ok || !result.success) throw new Error(UserSession.apiErrorMessage(result));
+            result.data.records.forEach(record => showHelp(record));
+        } catch (_) {
+            if (ticket === historySequence) byId('diagnosisStatus').textContent = '历史提示暂时无法读取，可点击对应层级重试。';
+        }
     }
     function showSubmission(data) {
         cancelPending();
@@ -95,7 +125,7 @@
         byId('submissionCodePanel').hidden = !submission;
         if (!submission) {
             byId('evidenceSummary').textContent = '';
-            diagnose.disabled = true;
+            updateButtons();
             byId('diagnosisStatus').textContent = user ? '请先提交一段代码。' : '登录后可以保存提交并查看 AI 诊断。';
             markStale();
             return;
@@ -126,12 +156,9 @@
             line.append(node('span', String(index + 1), 'line-number'), node('code', text || ' '));
             byId('submissionCode').append(line);
         });
-        diagnose.disabled = !evidence || !['Wrong Answer', 'Runtime Error', 'Compile Error'].includes(submission.status);
-        diagnose.textContent = submission.diagnosis ? '查看分析' : '分析错误';
-        diagnose.hidden = diagnose.disabled;
-        byId('diagnosisStatus').textContent = submission.diagnosis ? '已保存的分析'
-            : submission.status === 'Accepted' ? '全部用例通过。' : '';
-        showDiagnosis(submission.diagnosis);
+        byId('diagnosisStatus').textContent = submission.status === 'Accepted' ? '全部用例通过。'
+            : '需要帮助时，选择一个提示层级。';
+        restoreHelp();
         markStale();
     }
     async function restoreSubmission() {
@@ -169,25 +196,27 @@
         editor.value = ''; byId('customInput').value = '';
         restoreDraft(); markStale(); restoreSubmission();
     });
-    diagnose.addEventListener('click', async () => {
-        if (!submission) return;
-        if (submission.diagnosis) { showDiagnosis(submission.diagnosis); return; }
+    async function requestHelp(level) {
+        if (!submission || !LearningHelpUI.get().ready) return;
         cancelPending();
+        historySequence += 1;
         const ticket = sequence, id = submission.submission_id;
+        const help = LearningHelpUI.get();
         const requestController = new AbortController();
         controller = requestController;
         const timer = setTimeout(() => requestController.abort(), 70000);
-        diagnose.disabled = true;
+        updateButtons();
         byId('cancelDiagnosisBtn').hidden = false;
-        byId('diagnosisStatus').textContent = '正在分析…';
+        byId('diagnosisStatus').textContent = `正在生成${LearningHelpUI.labels[level]}…`;
         try {
-            const response = await UserSession.csrfFetch(`/api/submissions/${id}/diagnosis`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'}, body: '{}', signal: requestController.signal
+            const response = await UserSession.csrfFetch(`/api/submissions/${id}/help`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({level}), signal: requestController.signal
             });
             const result = await response.json();
-            if (ticket !== sequence || submission?.submission_id !== id) return;
+            if (ticket !== sequence || submission?.submission_id !== id || help.epoch !== LearningHelpUI.get().epoch) return;
             if (!response.ok || !result.success) throw new Error(UserSession.apiErrorMessage(result));
-            showSubmission(result.data);
+            showHelp(result.data, true);
+            byId('diagnosisStatus').textContent = '已保存，可按需查看其他层级。';
         } catch (error) {
             if (ticket !== sequence) return;
             if (UserSession.handleAuthError(error, byId('diagnosisStatus'))) return;
@@ -195,13 +224,22 @@
         } finally {
             clearTimeout(timer);
             if (ticket === sequence && submission?.submission_id === id) {
-                diagnose.disabled = false;
+                controller = null;
+                updateButtons();
                 byId('cancelDiagnosisBtn').hidden = true;
             }
         }
+    }
+    helpButtons.forEach(button => button.addEventListener('click', () => requestHelp(Number(button.dataset.helpLevel))));
+    window.addEventListener('practice:help-settings', () => {
+        cancelPending();
+        historySequence += 1;
+        diagnosisContent.replaceChildren();
+        byId('diagnosisStatus').textContent = '';
+        restoreHelp();
     });
     byId('cancelDiagnosisBtn').addEventListener('click', () => {
-        cancelPending(); diagnose.disabled = false;
+        cancelPending();
         byId('diagnosisStatus').textContent = '已取消等待。后台请求可能仍在完成，稍后可重试读取。';
     });
 })();

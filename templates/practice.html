@@ -106,7 +106,22 @@
                         </div>
                     </div>
                     <div class="editor-tools">
-                        <span class="completion-label" title="输入后自动建议代码，Tab 接受，Esc 取消">自动补全已开启 · Tab 接受</span>
+                        <label>辅助方式
+                            <select id="helpMode" data-help-mode disabled>
+                                <option value="learning">学习模式</option>
+                                <option value="free">自由辅助</option>
+                            </select>
+                        </label>
+                        <label>AI 帮助
+                            <select id="codeHelpLevel" data-help-select disabled>
+                                <option value="1">概念线索</option>
+                                <option value="2">定位与解释</option>
+                                <option value="3">局部修改</option>
+                                <option value="4">完整参考</option>
+                            </select>
+                        </label>
+                        <span id="completionStatus" class="completion-label">自动补全已关闭</span>
+                        <span id="helpSettingsStatus" role="status"></span>
                         <span id="draftStatus" role="status">草稿自动保存</span>
                     </div>
                     <div class="code-editor-wrapper">
@@ -140,8 +155,11 @@
                                 <summary>本次提交的代码</summary>
                                 <div id="submissionCode" class="snapshot-code"></div>
                             </details>
-                            <div class="diagnosis-actions">
-                                <button type="button" id="diagnoseBtn" class="btn btn-ai" disabled>分析错误</button>
+                            <div class="diagnosis-actions" id="helpActions" aria-label="选择本次提交的帮助程度">
+                                <button type="button" id="diagnoseBtn" data-help-level="1" class="evidence-button" disabled>概念线索</button>
+                                <button type="button" data-help-level="2" class="evidence-button" disabled>定位与解释</button>
+                                <button type="button" data-help-level="3" class="evidence-button" disabled>局部修改</button>
+                                <button type="button" data-help-level="4" class="evidence-button" disabled>完整参考</button>
                                 <button type="button" id="cancelDiagnosisBtn" class="evidence-button" hidden>取消</button>
                             </div>
                             <p id="diagnosisStatus" role="status" aria-live="polite"></p>
@@ -150,7 +168,7 @@
 
                         <div class="ai-response" id="optimizationResult" hidden>
                             <h4><i class="fas fa-lightbulb"></i> AI建议</h4>
-                            <p id="aiSuggestion">AI建议将显示在此处...</p>
+                            <div id="aiSuggestion">AI建议将显示在此处...</div>
                         </div>
                     </div>
                 </div>
@@ -176,6 +194,17 @@
 
                 <div class="chat-container" id="chatContainer" aria-label="与达菲郁的对话"></div>
 
+                <div class="chat-help-controls">
+                    <span id="chatHelpMode">学习模式</span>
+                    <label>帮助程度
+                        <select id="chatHelpLevel" data-help-select disabled>
+                            <option value="1">概念线索</option>
+                            <option value="2">定位与解释</option>
+                            <option value="3">局部修改</option>
+                            <option value="4">完整参考</option>
+                        </select>
+                    </label>
+                </div>
                 <div class="chat-context-controls">
                     <button type="button" id="attachPracticeContext" class="chat-context-btn" aria-pressed="false" title="下一条消息附带当前题目、代码、输入和最近提交结果">附带当前练习</button>
                     <span id="chatContextStatus" aria-live="polite"></span>
@@ -211,6 +240,7 @@
     <script src="{{ url_for('static', filename='js/user-session.js') }}"></script>
     <script src="{{ url_for('static', filename='js/safe-content.js') }}"></script>
     <script src="{{ url_for('static', filename='js/dafeiyu-pet.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/learning-help.js') }}"></script>
     <script src="{{ url_for('static', filename='js/practice.js') }}"></script>
     <script src="{{ url_for('static', filename='js/evidence.js') }}"></script>
 </body>

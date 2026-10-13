@@ -36,3 +36,16 @@
 .snapshot-line code {padding-right:14px;}
 [hidden] {display:none!important;}
 @media(max-width:600px) {.case-list {grid-template-columns:minmax(0,1fr);} .editor-tools {flex-wrap:wrap;} #draftStatus {margin-left:0;}}
+.editor-tools {flex-wrap:wrap;}
+.editor-tools select,.chat-help-controls select {font:inherit;color:var(--light);background:var(--dark);border:1px solid #ffffff30;border-radius:6px;padding:5px 8px;max-width:100%;}
+.chat-help-controls {display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 18px;font-size:12px;color:var(--light-gray);border-top:1px solid #ffffff18;}
+.chat-help-controls label {display:flex;align-items:center;gap:6px;}
+.diagnosis-actions {flex-wrap:wrap;}
+.evidence-button:disabled {opacity:.45;cursor:default;}
+.help-history {margin-top:12px;border-top:1px solid #ffffff18;padding-top:10px;font-size:13px;}
+.help-history summary {cursor:pointer;color:var(--light-gray);}
+.help-history summary:hover {color:var(--accent);}
+.help-history .diagnosis-summary {margin-top:0;}
+.help-code {white-space:pre-wrap;overflow-wrap:anywhere;max-height:350px;overflow:auto;padding:12px;background:var(--code-bg);border:1px solid #ffffff18;border-radius:6px;font-size:13px;line-height:1.7;}
+.help-result p {margin:8px 0;white-space:pre-wrap;line-height:1.7;}
+#helpSettingsStatus {color:var(--warning);}

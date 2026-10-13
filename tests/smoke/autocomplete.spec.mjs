@@ -6,6 +6,7 @@ async function setup(page) {
     await page.route('**/api/current_user', route => route.fulfill({json: {
         success: true, user: {id: 99998, username: '补全测试', points: 0}
     }}));
+    await page.route('**/api/help-settings', route => route.fulfill({json: {success: true, data: {mode: 'free', revision: 1}}}));
     await page.route('**/api/csrf-token', route => route.fulfill({json: {csrf_token: 'test-token'}}));
     await page.route('**/api/update_learning_time', route => route.fulfill({json: {success: true}}));
     await page.addInitScript(() => {
@@ -31,6 +32,7 @@ async function setup(page) {
     });
     await page.goto(baseURL + '/practice.html?problem=DEMO-01');
     await expect(page.locator('.username')).toHaveText('补全测试');
+    await expect(page.locator('#helpMode')).toBeEnabled();
 }
 
 test('自动补全无需开关、流式显示、Tab 接受且重复上下文命中缓存', async ({page}) => {

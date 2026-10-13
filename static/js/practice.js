@@ -4,6 +4,7 @@ let chatBusy = false;
 let chatProblemId = null;
 let attachedPractice = null;
 let chatAbortController = null;
+let optimizeController = null;
 document.addEventListener('DOMContentLoaded', function () {
     UserSession.init({ logoutRedirect: '/index.html' }).then(user => {
         practiceUser = user;
@@ -193,7 +194,7 @@ function cancelInlineCompletion() {
 
 function scheduleInlineCompletion(force = false) {
     clearTimeout(inlineDebounceTimer);
-    if (!codeInput || !practiceUser || inlineComposing || document.activeElement !== codeInput
+    if (!LearningHelpUI.get().ready || LearningHelpUI.get().mode !== 'free' || !codeInput || !practiceUser || inlineComposing || document.activeElement !== codeInput
         || Date.now() < inlineRetryAfter) return;
     const requestId = ++inlineRequestId;
     if (force) requestInlineCompletion(requestId);
@@ -201,7 +202,7 @@ function scheduleInlineCompletion(force = false) {
 }
 
 async function requestInlineCompletion(requestId) {
-    if (!practiceUser || inlineComposing || document.activeElement !== codeInput) return;
+    if (!LearningHelpUI.get().ready || LearningHelpUI.get().mode !== 'free' || !practiceUser || inlineComposing || document.activeElement !== codeInput) return;
     const { prefix, suffix, start, end } = getCursorContext();
     if (start !== end || prefix.trim().length < 3) { clearInlineSuggestion(); return; }
     inlineAbortController?.abort();
@@ -214,7 +215,8 @@ async function requestInlineCompletion(requestId) {
     const isCurrent = () => !requestController.signal.aborted && requestId === inlineRequestId
         && codeInput.value === code && codeInput.selectionStart === start && codeInput.selectionEnd === end
         && document.getElementById('languageSelector').value === language
-        && document.activeElement === codeInput && !inlineComposing && !!practiceUser;
+        && document.activeElement === codeInput && !inlineComposing && !!practiceUser
+        && LearningHelpUI.get().ready && LearningHelpUI.get().mode === 'free';
     const show = text => {
         if (!isCurrent()) return;
         inlineSuggestion = text;
@@ -253,6 +255,7 @@ async function requestInlineCompletion(requestId) {
         }
         show(buffer);
         if (buffer) {
+            LearningHelpUI.acknowledge(response.headers.get('X-Help-Id'));
             inlineCompletionCache.delete(cacheKey);
             inlineCompletionCache.set(cacheKey, {text: buffer, at: Date.now()});
             if (inlineCompletionCache.size > 24) inlineCompletionCache.delete(inlineCompletionCache.keys().next().value);
@@ -266,6 +269,7 @@ async function requestInlineCompletion(requestId) {
 }
 
 function acceptInlineSuggestion() {
+    if (!LearningHelpUI.get().ready || LearningHelpUI.get().mode !== 'free') { cancelInlineCompletion(); return; }
     if (!inlineSuggestion) {
         return;
     }
@@ -510,6 +514,7 @@ async function runCode() {
 
 // 优化代码
 async function optimizeCode() {
+    const help = LearningHelpUI.get();
     document.getElementById('optimizationResult').hidden = false;
     const code = document.getElementById('codeInput').value;
     const requestedLanguage = document.getElementById('languageSelector').value;
@@ -531,23 +536,36 @@ async function optimizeCode() {
         </div>
     `;
 
+    const requestController = new AbortController();
+    optimizeController = requestController;
+    const timeout = setTimeout(() => requestController.abort(), 70000);
     try {
+        if (practiceUser && !help.ready) throw new Error('帮助设置尚未就绪，请刷新页面重试。');
         const response = await UserSession.csrfFetch('/api/optimize-code', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ code, language: requestedLanguage })
+            body: JSON.stringify({ code, language: requestedLanguage, help_level: help.level }),
+            signal: requestController.signal
         });
 
-        if (!response.ok) {
-            throw new Error(`HTTP错误: ${response.status}`);
-        }
-
         const result = await response.json();
-
-        if (result.success) {
+        if (help.epoch !== LearningHelpUI.get().epoch) return;
+        if (!response.ok) throw new Error(apiErrorMessage(result));
+        if (result.success && result.learning_help) {
+            globalOptimizedVersions = [];
+            optimizationBase = null;
+            aiSuggestion.replaceChildren();
+            const label = document.createElement('p');
+            label.textContent = LearningHelpUI.labels[result.learning_help.level];
+            label.className = 'hypothesis-tag';
+            aiSuggestion.append(label);
+            LearningHelpUI.render(result.learning_help, aiSuggestion);
+            LearningHelpUI.acknowledge(result.learning_help.id);
+        } else if (result.success) {
+            LearningHelpUI.acknowledge(result.help_id);
             // 将获取到的优化版本存储到全局变量
             optimizationBase = {code, language: requestedLanguage};
             globalOptimizedVersions = result.optimizedVersions; // <--- 关键：保存到全局变量
@@ -585,10 +603,13 @@ async function optimizeCode() {
             aiSuggestion.innerHTML = `<div style="color:var(--warning)"><i class="fas fa-exclamation-triangle"></i> AI优化失败: ${escapeHtml(apiErrorMessage(result))}</div>`;
         }
     } catch (error) {
+        if (help.epoch !== LearningHelpUI.get().epoch) return;
         if (UserSession.handleAuthError(error, aiSuggestion, '请先登录后再使用 AI 优化。')) return;
         aiSuggestion.innerHTML = `<div style="color:var(--warning)"><i class="fas fa-exclamation-triangle"></i> 请求失败: ${escapeHtml(error.message)}</div>`;
         console.error('优化代码请求错误:', error);
     } finally {
+        clearTimeout(timeout);
+        if (optimizeController === requestController) optimizeController = null;
         optimizeBtn.disabled = false;
         optimizeBtn.innerHTML = '<i class="fas fa-cogs"></i> AI优化';
     }
@@ -695,6 +716,7 @@ document.getElementById('attachPracticeContext').addEventListener('click', () =>
 
 async function sendMessage() {
     if (chatBusy) return;
+    const help = LearningHelpUI.get();
     const message = messageInput.value.trim();
     if (!message) return;
     const problemId = getCurrentProblemId();
@@ -746,6 +768,8 @@ async function sendMessage() {
         if (!userToggledReasoning) reasoningPanel.open = false;
     };
     const consumeEvent = (event) => {
+        if (help.epoch !== LearningHelpUI.get().epoch) return;
+        if (event.type === 'reasoning' && help.mode === 'learning') return;
         const followBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight < 80;
         if (event.type === 'reasoning') {
             if (reasoningStarted === null) reasoningStarted = Date.now();
@@ -762,6 +786,8 @@ async function sendMessage() {
         } else if (event.type === 'error') {
             failed = true;
             status.textContent = `生成失败：${event.text || '请重试'}`;
+        } else if (event.type === 'help_record') {
+            LearningHelpUI.acknowledge(event.id);
         } else if (event.type === 'done') {
             finished = true;
             finishReasoning();
@@ -770,13 +796,15 @@ async function sendMessage() {
         if (followBottom) chatContainer.scrollTop = chatContainer.scrollHeight;
     };
 
+    const chatTimeout = setTimeout(() => chatAbortController?.abort(), 130000);
     try {
+        if (practiceUser && !help.ready) throw new Error('帮助设置尚未就绪，请刷新页面重试。');
         const response = await UserSession.csrfFetch('/api/ai-chat-stream', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
             signal: chatAbortController.signal,
             body: JSON.stringify({ message, language: attachment?.language || document.getElementById('languageSelector').value,
-                include_context: !!attachment, history: chatHistory,
+                include_context: !!attachment, history: chatHistory, help_level: help.level,
                 ...(attachment ? {code: attachment.code, input_text: attachment.input_text, problem_id: attachment.problem_id} : {}) })
         });
         if (!response.ok || !response.body) {
@@ -804,6 +832,7 @@ async function sendMessage() {
         }
         buffer += decoder.decode();
         consumeBuffer();
+        if (help.epoch !== LearningHelpUI.get().epoch) return;
         if (!finished) throw new Error('连接已中断，请重试。已生成的内容已保留。');
         if (!failed && fullText.trim()) {
             const historyText = attachment ? JSON.stringify({question:message, attached_practice:attachment}) : message;
@@ -814,10 +843,12 @@ async function sendMessage() {
             updateChatContext();
         }
     } catch (error) {
+        if (help.epoch !== LearningHelpUI.get().epoch) return;
         if (UserSession.handleAuthError(error, status, '请先登录后再使用编程助手。')) return;
         status.textContent = error.name === 'AbortError' ? '已停止，已生成的内容已保留。' : `请求失败：${error.message}`;
         if (reasoning && !reasoningFinished) summary.textContent = '思考已中止';
     } finally {
+        clearTimeout(chatTimeout);
         chatBusy = false;
         window.DafeiyuPet?.setActivity('idle');
         chatAbortController = null;
@@ -826,6 +857,21 @@ async function sendMessage() {
         messageInput.focus({preventScroll: true});
     }
 }
+
+function resetHelpOutputs() {
+    cancelInlineCompletion();
+    inlineCompletionCache.clear();
+    chatAbortController?.abort();
+    optimizeController?.abort();
+    chatHistory = [];
+    chatContainer.replaceChildren();
+    globalOptimizedVersions = [];
+    optimizationBase = null;
+    aiSuggestion.replaceChildren();
+    document.getElementById('optimizationResult').hidden = true;
+}
+window.addEventListener('practice:help-settings', resetHelpOutputs);
+window.addEventListener('practice:help-level', resetHelpOutputs);
 
 document.getElementById('stopChat').addEventListener('click', () => chatAbortController?.abort());
 
