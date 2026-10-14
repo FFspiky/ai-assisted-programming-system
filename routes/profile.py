@@ -1,8 +1,9 @@
 import io
 import re
 import warnings
+from pathlib import Path
 
-from flask import Blueprint, request, send_file, session
+from flask import current_app, Blueprint, request, send_file, session
 from flask_login import current_user, login_required, logout_user
 from PIL import Image, ImageOps, UnidentifiedImageError
 from sqlalchemy.exc import IntegrityError
@@ -113,11 +114,18 @@ def avatar_image():
 def upload_avatar():
     request.max_content_length = 3 * 1024 * 1024
     upload = request.files.get("avatar")
-    if not upload:
-        return api_error("AVATAR_MISSING", "请选择头像图片", 400)
-    raw = upload.stream.read(2 * 1024 * 1024 + 1)
-    if len(raw) > 2 * 1024 * 1024:
-        return api_error("AVATAR_TOO_LARGE", "头像不能超过 2 MB", 400)
+    if request.is_json:
+        data = request.get_json(silent=True)
+        preset = data.get("preset") if isinstance(data, dict) else None
+        if not isinstance(preset, str) or preset not in {"whale", "seal", "penguin", "otter", "octopus", "robot"}:
+            return api_error("INVALID_AVATAR", "请选择有效的默认头像", 400)
+        raw = (Path(current_app.static_folder) / "images" / "brand-v1" / "avatars" / f"{preset}.png").read_bytes()
+    else:
+        if not upload:
+            return api_error("AVATAR_MISSING", "请选择头像图片", 400)
+        raw = upload.stream.read(2 * 1024 * 1024 + 1)
+        if len(raw) > 2 * 1024 * 1024:
+            return api_error("AVATAR_TOO_LARGE", "头像不能超过 2 MB", 400)
     try:
         with warnings.catch_warnings():
             warnings.simplefilter("error", Image.DecompressionBombWarning)

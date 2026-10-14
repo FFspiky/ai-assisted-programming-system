@@ -16,7 +16,6 @@
   q('[data-problem-content]', demo).textContent = '给定一个整数，判断它是否为 3 的幂。示例：27 → true；45 → false。';
   qa('textarea', demo).forEach(el => el.readOnly = true);
   qa('select', demo).forEach(el => el.disabled = true);
-  qa('.og-chat-help-controls select').forEach(el => el.disabled = true);
   for (const title of ['3的幂', '4的幂']) {
     const card = document.createElement('article'); card.className = 'og-problem-card';
     const titleNode = document.createElement('div'); titleNode.className = 'og-card-title'; titleNode.textContent = title;
@@ -136,17 +135,105 @@
   }, {threshold: .25});
   petObserver.observe(art);
 
-  function sendDemoMessage() {
-    const chat = q('#oc-home-chat');
-    const input = q('[data-chat-input]', chat);
-    if (!input.value.trim()) return;
-    q('.og-user-message .og-message-bubble', chat).textContent = input.value.trim();
-    q('[data-reply]', chat).textContent = '这是对话演示。练习时，达菲郁会结合你主动附带的题目、代码和运行结果来帮助你。点击“开始练习”，试着一起解决一道题吧。';
-    input.value = ''; playPet('talk');
+  const chat = q('#oc-home-chat');
+  const chatLog = q('.og-chat-container', chat);
+  const chatInput = q('[data-chat-input]', chat);
+  const chatStatus = q('[data-chat-status]', chat);
+  let chatBusy = false, chatAttached = false, chatTimer, streamState;
+  function updateDemoContext() {
+    const button = q('[data-attach]', chat);
+    button.setAttribute('aria-pressed', String(chatAttached));
+    button.textContent = chatAttached ? '取消附带' : '附带当前练习';
+    button.disabled = chatBusy;
+    q('[data-context-status]', chat).textContent = chatAttached ? '下一条消息附带题目、代码和提交结果' : '';
   }
-  q('[data-chat-input]').addEventListener('keydown', event => {
+  function appendDemoMessage(text, user, attached = false) {
+    const message = textNode('div', '', 'og-message' + (user ? ' og-user-message' : ''));
+    const bubble = textNode('div', '', 'og-message-bubble');
+    bubble.append(textNode('div', user ? '你' : '达菲郁 · 示例回复', 'og-message-header'));
+    const content = textNode('div', text); bubble.append(content);
+    if (attached) bubble.append(textNode('div', '已附带：3的幂（代码快照与最近提交）', 'oc-context-tag'));
+    message.append(bubble); chatLog.append(message);
+    chatLog.scrollTop = chatLog.scrollHeight;
+    return content;
+  }
+  function finishDemoChat(stopped = false) {
+    clearTimeout(chatTimer); chatTimer = undefined;
+    chatBusy = false;
+    if (!stopped) chatAttached = false;
+    streamState = null;
+    chatLog.setAttribute('aria-busy', 'false');
+    q('[data-chat-send]', chat).disabled = false;
+    q('[data-chat-stop]', chat).hidden = true;
+    qa('[data-chat-example]', chat).forEach(button => button.disabled = false);
+    chatStatus.textContent = stopped ? '已停止，已生成的内容已保留。' : '示例回答完成';
+    updateDemoContext(); playPet('idle');
+  }
+  function advanceDemoChat() {
+    clearTimeout(chatTimer); chatTimer = undefined;
+    if (!streamState || document.hidden) return;
+    const followBottom = chatLog.scrollHeight - chatLog.scrollTop - chatLog.clientHeight < 80;
+    streamState.index = state.motion ? Math.min(streamState.text.length, streamState.index + 3) : streamState.text.length;
+    streamState.node.textContent = streamState.text.slice(0, streamState.index);
+    chatStatus.textContent = '正在回答…';
+    if (followBottom) chatLog.scrollTop = chatLog.scrollHeight;
+    if (streamState.index === streamState.text.length) finishDemoChat();
+    else chatTimer = setTimeout(advanceDemoChat, 45);
+  }
+  function sendDemoMessage() {
+    const message = chatInput.value.trim();
+    if (chatBusy || !message) return;
+    chatBusy = true;
+    appendDemoMessage(message, true, chatAttached);
+    chatInput.value = '';
+    const answer = appendDemoMessage('', false);
+    // Product demo only: never imply a server/model has processed arbitrary text.
+    let reply;
+    if (/完整|解法|代码|python/i.test(message)) reply = '可以直接看完整解法，不必逐级解锁帮助。以「3的幂」为例：\n\ndef is_power_of_three(n):\n    while n > 1 and n % 3 == 0:\n        n //= 3\n    return n == 1\n\n它也处理了 0、负数和 1。你可以继续问其中任何一步。';
+    else if (/45|3.*幂|三.*幂/.test(message)) reply = '45 = 3 × 3 × 5，还包含因子 5，所以它不是 3 的幂。反复除以 3 后，27 剩下 1，而 45 剩下 5；因此可以用“最后是否为 1”来判断。';
+    else reply = '已收到这条演示消息。这里提供预置回复来展示连续对话；进入实际练习后，可以自由讨论思路、调试或完整解法，聊天不受帮助级别限制。';
+    if (chatAttached) reply = '已附带本次练习示例：当前判断只检查了一次整除，这就是输入 45 却输出 true 的原因。\n\n' + reply;
+    streamState = {node: answer, text: reply, index: 0};
+    chatLog.setAttribute('aria-busy', 'true');
+    q('[data-chat-send]', chat).disabled = true;
+    q('[data-chat-stop]', chat).hidden = false;
+    qa('[data-chat-example]', chat).forEach(button => button.disabled = true);
+    updateDemoContext();
+    chatStatus.textContent = '达菲郁正在思考…';
+    playPet('talk');
+    chatTimer = setTimeout(advanceDemoChat, state.motion ? 450 : 0);
+  }
+  chatInput.addEventListener('keydown', event => {
     if (event.key === 'Enter' && !event.isComposing) { event.preventDefault(); sendDemoMessage(); }
   });
+
+  const originalDiffCode = 'n = int(input())\ntotal = 0\nfor i in range(1, n):\n    total += i\nprint(total)';
+  const candidateDiffCode = originalDiffCode.replace('range(1, n)', 'range(1, n + 1)');
+  let diffState = 'pending', diffTested = false;
+  function renderDiff() {
+    const accepted = diffState === 'accepted';
+    q('[data-diff-editor]').textContent = accepted ? candidateDiffCode : originalDiffCode;
+    q('[data-diff-version]').textContent = accepted ? '已采纳的候选代码' : '原代码';
+    q('[data-diff-status]').textContent = accepted ? (diffTested ? '示例复测：这份代码通过当前 2 个用例。' : '已采纳，待复测') : ({pending:'尚未采纳',rejected:'已拒绝',undone:'已撤销'}[diffState]);
+    qa('[data-diff-action]').forEach(button => {
+      const action = button.dataset.diffAction;
+      if (action === 'accept') button.hidden = accepted;
+      if (action === 'reject') button.hidden = !['pending', 'undone'].includes(diffState);
+      if (action === 'undo' || action === 'retest') button.hidden = !accepted;
+    });
+    const result = q('[data-diff-result]');
+    if (diffTested) result.replaceChildren(textNode('span','示例复测 · 输入 3 与 5','oc-caption'),textNode('p','实际输出 6 与 15，2/2 通过','oc-pass'));
+    else result.replaceChildren(textNode('span','上次提交 · 输入 3','oc-caption'),textNode('p','预期 6，实际 3 · 未通过','oc-fail'),...(accepted ? [textNode('p','代码已修改，以上是采纳前的结果。','oc-caption')] : []));
+  }
+  function actOnDiff(action) {
+    if (action === 'accept' && diffState !== 'accepted') { diffState = 'accepted'; diffTested = false; }
+    if (action === 'reject' && ['pending','undone'].includes(diffState)) { diffState = 'rejected'; diffTested = false; }
+    if (action === 'undo' && diffState === 'accepted') { diffState = 'undone'; diffTested = false; }
+    if (action === 'retest' && diffState === 'accepted') diffTested = true;
+    if (action === 'reset') { diffState = 'pending'; diffTested = false; }
+    renderDiff();
+  }
+  renderDiff();
   root.addEventListener('click', event => {
     const button = event.target.closest('button');
     if (!button) return;
@@ -162,13 +249,14 @@
       if (button.hasAttribute('data-submit')) state.step = 3;
       state.manualDemo = true; renderDemo();
     }
-    if (button.hasAttribute('data-attach')) {
-      const context = q('[data-context]'); context.hidden = !context.hidden;
-      button.setAttribute('aria-pressed', String(!context.hidden));
-      button.textContent = context.hidden ? '附带当前练习' : '取消附带';
-      q('[data-context-status]').textContent = context.hidden ? '由你决定分享哪些上下文' : '示例上下文已附带';
-      playPet('talk');
+    if (button.hasAttribute('data-attach') && !chatBusy) {
+      chatAttached = !chatAttached; updateDemoContext(); playPet('talk');
     }
+    if (button.hasAttribute('data-chat-example') && !chatBusy) {
+      chatInput.value = button.dataset.chatExample; sendDemoMessage();
+    }
+    if (button.hasAttribute('data-chat-stop') && chatBusy) finishDemoChat(true);
+    if (button.hasAttribute('data-diff-action')) actOnDiff(button.dataset.diffAction);
     if (button.hasAttribute('data-chat-send')) sendDemoMessage();
   });
   const revealObserver = new IntersectionObserver(entries => entries.forEach(entry => {
@@ -187,10 +275,10 @@
     if (!state.motion || state.manualDemo || document.hidden || !demoVisible || q('#oc-demo').contains(document.activeElement)) return;
     state.step = (state.step + 1) % 4; renderDemo();
   }, 6500);
-  document.addEventListener('visibilitychange', () => { root.dataset.hidden = String(document.hidden); syncPet(); });
+  document.addEventListener('visibilitychange', () => { root.dataset.hidden = String(document.hidden); syncPet(); if (document.hidden) clearTimeout(chatTimer); else if (streamState) advanceDemoChat(); });
   reduced.addEventListener('change', () => { state.motion = !reduced.matches; renderMotion(); });
   window.addEventListener('pagehide', event => {
-    if (!event.persisted) { clearInterval(demoTimer); clearTimeout(petTimer); petObserver.disconnect(); demoObserver.disconnect(); oceanObserver.disconnect(); revealObserver.disconnect(); }
+    if (!event.persisted) { clearInterval(demoTimer); clearTimeout(chatTimer); clearTimeout(petTimer); petObserver.disconnect(); demoObserver.disconnect(); oceanObserver.disconnect(); revealObserver.disconnect(); }
   });
   renderDemo(); renderMotion();
 })();

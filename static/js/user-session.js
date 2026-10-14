@@ -1,5 +1,5 @@
 (function () {
-    const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2EwYWVjMCI+PHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6bTAgM2MxLjY2IDAgMyAxLjM0IDMgM3MtMS4zNCAzLTMgMy0zLTEuMzQtMy0zIDEuMzQtMyAzLTN6bTAgMTRjLTIuNjcgMC04IDEuMzQtOCA0djJoMTZjMC0yLjY2LTUuMzMtNC04LTR6Ii8+PC9zdmc+';
+    const defaultAvatar = '/static/images/brand-v1/avatars/whale.png';
 
     function escapeHtml(text) {
         const map = {
@@ -23,9 +23,47 @@
     let csrfToken = null;
     let csrfTokenPromise = null;
 
-    function loginUrl() {
-        return '/login.html?next=' + encodeURIComponent(location.pathname + location.search);
+    function safeReturnPath(value) {
+        if (!value) return '/';
+        try {
+            const target = new URL(value, location.origin);
+            if (target.origin !== location.origin || target.username || target.password ||
+                ['/login.html', '/register.html'].includes(target.pathname)) return '/';
+            return target.pathname + target.search + target.hash;
+        } catch (_) { return '/'; }
     }
+
+    function returnPath() {
+        if (['/login.html', '/register.html'].includes(location.pathname)) {
+            const params = new URLSearchParams(location.search);
+            return safeReturnPath(params.has('next') ? params.get('next') : document.referrer);
+        }
+        return location.pathname + location.search + location.hash;
+    }
+
+    function authUrl(page) {
+        return page + '?next=' + encodeURIComponent(returnPath());
+    }
+
+    function loginUrl() {
+        return authUrl('/login.html');
+    }
+
+    // Cover static links, dynamically rendered prompts and newly selected anchors.
+    function updateAuthLink(link) {
+        if (!link) return;
+        const target = new URL(link.href, location.origin);
+        if (target.origin === location.origin &&
+            ['/login.html', '/register.html'].includes(target.pathname) &&
+            (!target.searchParams.has('next') || link.dataset.returnToCurrent === 'true')) {
+            target.searchParams.set('next', returnPath());
+            link.href = target.pathname + target.search + target.hash;
+            link.dataset.returnToCurrent = 'true';
+        }
+    }
+    document.querySelectorAll('a[href]').forEach(updateAuthLink);
+    document.addEventListener('click', event => updateAuthLink(event.target.closest('a[href]')), true);
+    document.addEventListener('auxclick', event => updateAuthLink(event.target.closest('a[href]')), true);
 
     function authRequired() {
         csrfToken = null;
@@ -41,6 +79,7 @@
         text.textContent = message + ' ';
         const link = document.createElement('a');
         link.href = loginUrl();
+        link.dataset.returnToCurrent = 'true';
         link.textContent = '去登录';
         link.style.color = 'var(--accent, #4895ef)';
         container.append(text, link);
@@ -104,11 +143,11 @@
             <div class="user-details">
                 <div class="username">访客</div>
                 <div class="user-stats">
-                    <a href="/login.html">登录</a>
-                    <a href="/register.html">注册</a>
+                    <a href="${escapeHtml(loginUrl())}" data-return-to-current="true">登录</a>
+                    <a href="${escapeHtml(authUrl('/register.html'))}" data-return-to-current="true">注册</a>
                 </div>
             </div>
-            <a class="user-avatar" href="${escapeHtml(loginUrl())}" aria-label="登录后进入个人主页">
+            <a class="user-avatar" href="${escapeHtml(loginUrl())}" data-return-to-current="true" aria-label="登录后返回当前页">
                 <img src="${defaultAvatar}" alt="默认头像">
             </a>
         `;
@@ -201,6 +240,9 @@
         handleAuthError,
         init,
         loginUrl,
+        authUrl,
+        returnPath,
+        safeReturnPath,
         logout,
         promptLogin,
         renderGuest,

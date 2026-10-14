@@ -222,7 +222,7 @@ document.getElementById('accuracyRate').textContent = '-';
 document.getElementById('learningHours').textContent = '-';
 document.getElementById('aiAnalysisContainer').innerHTML = `
     <div class="card-body" style="text-align:center;">
-        <p>请<a href="/login.html" style="color:var(--primary)">登录</a>后查看您的学习数据和AI分析。</p>
+        <p>请<a href="${UserSession.escapeHtml(UserSession.loginUrl())}" data-return-to-current="true" style="color:var(--primary)">登录</a>后查看您的学习数据和AI分析。</p>
     </div>`;
     }
 

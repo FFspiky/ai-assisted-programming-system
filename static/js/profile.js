@@ -156,7 +156,7 @@
         } catch(error) {showError('profileFormMessage',error);} finally {button.disabled = false;}
     });
     byId('resetProfileForm').addEventListener('click',()=>{if(currentUser) fillForm(currentUser); byId('profileFormMessage').hidden = true;});
-    const avatarButtons = [byId('changeAvatarBtn'),byId('uploadAvatarBtn'),byId('resetAvatarBtn')];
+    const avatarButtons = [byId('changeAvatarBtn'),byId('uploadAvatarBtn'),byId('resetAvatarBtn'), ...document.querySelectorAll('[data-avatar-preset]')];
     const selectAvatar = () => byId('avatarFile').click();
     byId('changeAvatarBtn').addEventListener('click',selectAvatar);
     byId('uploadAvatarBtn').addEventListener('click',selectAvatar);
@@ -169,6 +169,9 @@
         } catch(error) {showError('avatarMessage',error);}
         finally {avatarButtons.forEach(button=>{button.disabled=false;});byId('resetAvatarBtn').disabled=!currentUser?.avatar_url;byId('avatarFile').value='';}
     }
+    document.querySelectorAll('[data-avatar-preset]').forEach(button => {
+        button.addEventListener('click', () => updateAvatar({method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({preset:button.dataset.avatarPreset})}));
+    });
     byId('avatarFile').addEventListener('change',()=>{
         const file = byId('avatarFile').files[0]; if(!file) return;
         if (file.size > 2*1024*1024) {message('avatarMessage','头像不能超过 2 MB','error');byId('avatarFile').value='';return;}

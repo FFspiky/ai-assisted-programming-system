@@ -92,3 +92,13 @@ body.ocean-theme {
   .ocean-theme.admin-page .problem-row {grid-template-columns:minmax(0,1fr) auto auto}
 }
 @media(prefers-reduced-motion:reduce){.ocean-theme *, .ocean-theme *:before,.ocean-theme *:after {animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* Shared brand assets and built-in avatar choices. */
+.codelab-brand-mark {display:block;width:44px;height:44px;object-fit:contain;transform:scale(1.3)}
+.avatar-presets {display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin:20px 0}
+.avatar-preset {display:flex;flex-direction:column;align-items:center;gap:9px;padding:12px 6px;border:1px solid #476184;border-radius:16px;background:#213650;color:#e7f1ff;cursor:pointer;font:inherit;font-size:12px}
+.avatar-preset img {width:64px;height:64px;border-radius:50%;object-fit:cover}
+.avatar-preset:hover {background:#304e73;border-color:#8db7ff}
+.avatar-preset:focus-visible {outline:3px solid #8db7ff;outline-offset:3px}
+.avatar-preset:disabled {opacity:.5;cursor:wait}
+@media(max-width:700px){.avatar-presets{grid-template-columns:repeat(3,minmax(0,1fr))}}

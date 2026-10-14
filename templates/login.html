@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/brand-v1/logo.png') }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>登录</title>
@@ -35,6 +36,7 @@
     <p>还没有账户？ <a href="/register.html">立即注册</a></p>
 </div>
 <script src="{{ url_for('static', filename='js/ui-feedback.js') }}"></script>
+<script src="{{ url_for('static', filename='js/user-session.js') }}"></script>
 <script>
     const form = document.getElementById('loginForm');
     const messageBox = document.getElementById('formMessage');
@@ -78,9 +80,7 @@
             const result = await response.json();
             if (result.success) {
                 showMessage('success', '登录成功，正在跳转...');
-                const next = new URL(new URLSearchParams(location.search).get('next') || '/', location.origin);
-                window.location.href = next.origin === location.origin && !['/login.html', '/register.html'].includes(next.pathname)
-                    ? next.pathname + next.search + next.hash : '/';
+                window.location.href = UserSession.returnPath();
                 return;
             }
             showMessage('error', UIFeedback.apiErrorMessage(result, '登录失败'));

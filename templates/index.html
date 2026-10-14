@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="zh-CN"><head>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/brand-v1/logo.png') }}"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>智练 CodeLab · 程序设计辅助训练系统</title>
 <meta name="description" content="练习 Python 与 C++，看懂运行反馈，按需获得 AI 帮助。和达菲郁一起，把一道题变成自己的理解。">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -7,7 +8,7 @@
 </head><body><div id="cl-ocean" data-page="home" data-motion="on">
 <main>
     <div class="oc-ocean">
-      <div class="oc-wrap"><header class="og-header"><a class="og-logo" href="/index.html"><span class="og-logo-icon"><i class="fas fa-users" aria-hidden="true"></i></span><span class="og-logo-text">智练 CodeLab</span></a><nav aria-label="主导航"><ul><li><a href="/index.html" aria-current="page">首页</a></li><li><a href="/problem_selector.html">刷题</a></li><li><a href="/learn-analytics.html">学习分析</a></li></ul></nav><div class="user-info"><div class="user-details"><div class="username">访客</div><div class="user-stats"><a href="/login.html">登录</a><a href="/register.html">注册</a></div></div></div></header></div>
+      <div class="oc-wrap"><header class="og-header"><a class="og-logo" href="/index.html"><span class="og-logo-icon"><img class="codelab-brand-mark" src="/static/images/brand-v1/logo.png" alt="" width="44" height="44"></span><span class="og-logo-text">智练 CodeLab</span></a><nav aria-label="主导航"><ul><li><a href="/index.html" aria-current="page">首页</a></li><li><a href="/problem_selector.html">刷题</a></li><li><a href="/learn-analytics.html">学习分析</a></li></ul></nav><div class="user-info"><div class="user-details"><div class="username">访客</div><div class="user-stats"><a href="/login.html">登录</a><a href="/register.html">注册</a></div></div></div></header></div>
       <div class="oc-hero">
         <div class="oc-eyebrow oc-line-reveal">智练 CodeLab · 程序设计辅助训练系统</div>
         <h1 class="oc-line-reveal">写下代码。<span class="oc-line-reveal oc-delay">让每一步，都更明白。</span></h1>
@@ -51,9 +52,34 @@
         <div class="oc-help-bottom"><span class="oc-caption">点击四个帮助按钮，查看同一道题的不同帮助程度。</span><a type="button" class="oc-link" href="/problem_selector.html">进入练习 <i class="fas fa-arrow-right" aria-hidden="true"></i></a></div>
       </div>
     </section>
+    <section class="oc-diff-section" id="oc-diff-section" aria-labelledby="oc-diff-title">
+      <div class="oc-story-wrap">
+        <div class="oc-diff-heading oc-reveal"><div class="oc-copy"><div class="oc-eyebrow">代码修改对比 · Diff</div><h2 id="oc-diff-title">改了哪里，先看清。<br>是否采纳，由你决定。</h2><p>把 AI 建议和原代码逐行对照。采纳后，再用实际提交验证；需要时，也可以撤销采纳，回到原来的思路。</p></div><a class="oc-link" href="/problem_selector.html">在练习中试试 <i class="fas fa-arrow-right" aria-hidden="true"></i></a></div>
+        <div class="oc-product-window oc-reveal" id="oc-diff-demo">
+          <div class="oc-window-bar"><i class="fas fa-code-compare" aria-hidden="true"></i><span>局部修改 · 查看修改差异</span><small>交互演示</small></div>
+          <div class="oc-diff-layout">
+            <div class="oc-diff-review"><p class="oc-caption">1 到 n 求和：range 的右端点不会被包含。</p><pre class="oc-diff-code" aria-label="修改差异：删除 range(1, n)，增加 range(1, n + 1)"><span class="oc-diff-context">  total = 0</span><span class="oc-diff-remove">− for i in range(1, n):</span><span class="oc-diff-add">+ for i in range(1, n + 1):</span><span class="oc-diff-context">      total += i</span><span class="oc-diff-context">  print(total)</span></pre>
+              <details><summary>建议依据的原代码</summary><pre class="oc-tiny-code">n = int(input())
+total = 0
+for i in range(1, n):
+    total += i
+print(total)</pre></details>
+              <details><summary>候选代码</summary><pre class="oc-tiny-code">n = int(input())
+total = 0
+for i in range(1, n + 1):
+    total += i
+print(total)</pre></details>
+              <p class="oc-diff-status" data-diff-status role="status">尚未采纳</p>
+              <div class="og-diagnosis-actions"><button type="button" class="og-button og-run" data-diff-action="accept">采纳修改</button><button type="button" class="og-evidence-button" data-diff-action="reject">拒绝</button><button type="button" class="og-evidence-button" data-diff-action="undo" hidden>撤销采纳</button><button type="button" class="og-button og-submit" data-diff-action="retest" hidden>重新提交验证</button></div>
+            </div>
+            <div class="oc-diff-editor"><div class="oc-record-heading"><strong>当前代码</strong><span data-diff-version>原代码</span></div><pre class="oc-tiny-code" data-diff-editor></pre><div class="oc-diff-result" data-diff-result><span class="oc-caption">上次提交 · 输入 3</span><p>预期 6，实际 3 <span class="oc-fail">未通过</span></p></div><p class="oc-caption oc-diff-disclaimer">此处用预置代码演示采纳与复测流程；实际练习以判题结果为准。</p><button type="button" class="oc-link" data-diff-action="reset">重置演示 <i class="fas fa-rotate-left" aria-hidden="true"></i></button></div>
+          </div>
+        </div>
+      </div>
+    </section>
     <section class="oc-companion" aria-label="达菲郁编程助手">
       <div class="oc-story-wrap oc-companion-grid">
-        <div><div class="oc-copy oc-reveal"><div class="oc-eyebrow">和达菲郁一起</div><h2>卡住的那一刻，<br>有人陪你理清思路。</h2><p>主动附带当前练习，把题目、代码和运行结果一起带进对话。少解释一遍背景，多讨论一点问题。</p></div><div class="oc-companion-art"><img src="{{ url_for('static', filename='images/dafeiyu/portrait.png') }}" alt="达菲郁，蓝白色编程学习伙伴" width="260" height="260" loading="lazy"><div class="oc-companion-caption">熟悉的伙伴，一直在。</div></div></div>
+        <div><div class="oc-copy oc-reveal"><div class="oc-eyebrow">和达菲郁一起</div><h2>卡住的那一刻，<br>有人陪你理清思路。</h2><p>直接提问，自由讨论思路、代码与完整解法。需要时主动附带当前练习，把题目、代码和最近提交结果带进对话。</p></div><div class="oc-companion-art"><img src="{{ url_for('static', filename='images/dafeiyu/portrait.png') }}" alt="达菲郁，蓝白色编程学习伙伴" width="260" height="260" loading="lazy"><div class="oc-companion-caption">熟悉的伙伴，一直在。</div></div></div>
         <div class="oc-chat oc-reveal" id="oc-home-chat"></div>
       </div>
     </section>
@@ -98,5 +124,5 @@
     </div>
   </div></div>
 </template>
-<template id="oc-chat-template"><div class="og-ai-header"><img class="og-ai-avatar" src="{{ url_for('static', filename='images/dafeiyu/portrait.png') }}" alt="" width="44" height="44"><div><div class="og-ai-title">达菲郁</div><div class="og-ai-status">编程学习伙伴 · 交互演示</div></div></div><div class="og-chat-container"><div class="oc-context-tag" data-context hidden>已附带：3的幂 · Python 代码 · 输入 45 · 输出 true</div><div class="og-message og-user-message"><div class="og-message-bubble">为什么 45 不是 3 的幂？</div></div><div class="og-message"><div class="og-message-bubble"><div class="og-message-header">达菲郁 · 示例回复</div><div data-reply>45 = 3 × 3 × 5。<br>除了 3，还剩下一个 5。你能想出一种方法，检查最后是否还剩下其他因子吗？</div></div></div></div><div class="og-chat-help-controls"><label>辅助方式 <select aria-label="聊天辅助方式"><option>学习模式</option><option>自由辅助</option></select></label><label>帮助程度 <select aria-label="聊天帮助程度"><option>概念线索</option><option>定位与解释</option><option>局部修改</option><option>完整参考</option></select></label></div><div class="og-chat-context"><button type="button" class="og-evidence-button" data-attach>附带当前练习</button><span data-context-status>由你决定分享哪些上下文</span></div><div class="og-chat-input"><input type="text" aria-label="给达菲郁的消息" placeholder="输入消息，体验对话演示…" data-chat-input><button type="button" data-chat-send aria-label="发送示例消息"><i class="fas fa-paper-plane" aria-hidden="true"></i></button></div></template>
+<template id="oc-chat-template"><div class="og-ai-header"><img class="og-ai-avatar" src="{{ url_for('static', filename='images/dafeiyu/portrait.png') }}" alt="" width="44" height="44"><div><div class="og-ai-title">达菲郁</div><div class="og-ai-status">编程学习伙伴 · 交互演示</div></div></div><div class="og-chat-container" role="log" aria-label="对话演示记录"><div class="og-message og-user-message"><div class="og-message-bubble">为什么 45 不是 3 的幂？</div></div><div class="og-message"><div class="og-message-bubble"><div class="og-message-header">达菲郁 · 示例回复</div><div data-reply>45 = 3 × 3 × 5。<br>除了 3，还剩下一个 5。所以它不是 3 的幂。可以反复除以 3，最后判断是否剩下 1；也别忘了检查 0、负数和 1。</div></div></div></div><div class="oc-chat-examples" aria-label="试试这些问题"><button type="button" class="og-evidence-button" data-chat-example="为什么 45 不是 3 的幂？">为什么 45 不符合？</button><button type="button" class="og-evidence-button" data-chat-example="给我完整的 Python 解法">看看完整解法</button></div><p class="oc-caption">独立对话，按你的问题回答。此处演示使用预置回复。</p><div class="og-chat-context"><button type="button" class="og-evidence-button" data-attach aria-pressed="false">附带当前练习</button><span data-context-status aria-live="polite"></span></div><div class="og-chat-input"><input type="text" aria-label="给达菲郁的消息" placeholder="输入消息，体验对话演示…" data-chat-input><button type="button" data-chat-send aria-label="发送示例消息"><i class="fas fa-paper-plane" aria-hidden="true"></i></button><button type="button" data-chat-stop class="og-evidence-button" hidden>停止生成</button></div><p class="oc-caption" data-chat-status role="status"></p></template>
 </div><script src="{{ url_for('static', filename='js/user-session.js') }}"></script><script src="{{ url_for('static', filename='js/index.js') }}"></script></body></html>
