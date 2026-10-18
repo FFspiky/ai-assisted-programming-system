@@ -39,7 +39,7 @@ CORS_ORIGINS = [
 
 SUPPORTED_LANGUAGES = {
     item.strip().lower()
-    for item in os.getenv("SUPPORTED_LANGUAGES", "python,cpp").split(",")
+    for item in os.getenv("SUPPORTED_LANGUAGES", "python,cpp,java").split(",")
     if item.strip()
 }
 

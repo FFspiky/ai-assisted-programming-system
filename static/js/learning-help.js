@@ -6,11 +6,12 @@
     const modes = [...document.querySelectorAll('[data-help-mode]')];
     const levels = [...document.querySelectorAll('[data-help-select]')];
     const status = document.getElementById('helpSettingsStatus');
+    const blocked = () => Boolean(window.PracticeTransfer?.blocksAI);
 
     function sync() {
-        modes.forEach(select => { select.value = state.mode; select.disabled = !user || !state.ready; });
-        levels.forEach(select => { select.value = String(state.mode === 'free' ? 4 : state.level); select.disabled = !state.ready || state.mode === 'free'; });
-        document.getElementById('completionStatus').textContent = state.mode === 'free' && state.ready
+        modes.forEach(select => { select.value = state.mode; select.disabled = blocked() || !user || !state.ready; });
+        levels.forEach(select => { select.value = String(state.mode === 'free' ? 4 : state.level); select.disabled = blocked() || !state.ready || state.mode === 'free'; });
+        document.getElementById('completionStatus').textContent = blocked() ? '本轮收起 AI 补全' : state.mode === 'free' && state.ready
             ? '自动补全已开启 · Tab 接受' : '自动补全已关闭';
     }
     function notify(type = 'practice:help-settings') {
@@ -40,6 +41,7 @@
         } finally { loading = false; }
     }
     modes.forEach(select => select.addEventListener('change', async () => {
+        if (blocked()) { sync(); window.PracticeTransfer.notifyBlocked?.(); return; }
         const mode = select.value;
         state.ready = false;
         loading = true;
@@ -73,6 +75,7 @@
     window.addEventListener('auth:required', () => { user = null; state.ready = false; notify(); });
     window.addEventListener('focus', load);
     window.addEventListener('storage', event => { if (event.key === 'codelab:help-mode') load(); });
+    window.addEventListener('practice:transfer-mode', () => notify());
 
     async function acknowledge(id) {
         if (!id || acknowledged.has(Number(id))) return;
@@ -90,8 +93,10 @@
     function render(record, target, focusEvidence) {
         const result = record.result;
         const card = element('article', '', 'finding-card help-result');
+        card.dataset.helpStatus = result.status;
         if (result.status === 'insufficient_evidence') card.append(element('span', '公开证据不足', 'hypothesis-tag'));
         else if (record.level === 2) card.append(element('span', '可能原因', 'hypothesis-tag'));
+        else card.append(element('span', record.level === 1 ? 'AI 线索 · 自主思考' : 'AI 建议 · 待验证', 'hypothesis-tag'));
         card.append(element('p', result.summary, 'diagnosis-summary'));
         if (result.explanation) card.append(element('p', result.explanation));
         if (focusEvidence && result.evidence_ids?.length) {
@@ -100,13 +105,13 @@
             link.addEventListener('click', () => focusEvidence(result.evidence_ids, result.lines));
             card.append(link);
         }
-        if (result.code) {
+        if (result.code && !record.proposal) {
             card.append(element('pre', result.code, 'help-code'));
             card.append(element('p', '建议尚未运行，修改后请重新提交验证。', 'panel-note'));
         }
         window.PracticeReview?.attach(record, card);
         target.append(card);
     }
-    window.LearningHelpUI = {get: () => ({...state}), labels, render, acknowledge};
+    window.LearningHelpUI = {get: () => ({...state, ready: state.ready && !blocked()}), labels, render, acknowledge};
     sync();
 })();

@@ -59,6 +59,12 @@
                 <input type="text" id="editProblemId" disabled>
                 <input type="text" id="editTitle" placeholder="标题" required>
                 <input type="text" id="editDifficulty" placeholder="难度" required>
+                <label for="editCategory">主分类</label>
+                <select id="editCategory"></select>
+                <label for="editTags">知识点标签（逗号分隔，最多8个）</label>
+                <input type="text" id="editTags" maxlength="199">
+                <label for="editSource">来源说明</label>
+                <input type="text" id="editSource" maxlength="200">
                 <label for="editJudgeMode">判题方式</label>
                 <select id="editJudgeMode">
                     <option value="text">文本精确比较（忽略行尾空白）</option>
@@ -91,6 +97,7 @@
     const editTestCases = document.getElementById('editTestCases');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
     let loadedProblems = [];
+    let categoryNames = {};
 
     function escapeHtml(value) {
         return String(value ?? '').replace(/[&<>"']/g, (char) => ({
@@ -145,7 +152,7 @@
             <div class="problem-row">
                 <div>
                     <div class="problem-title">${escapeHtml(problem.id)} - ${escapeHtml(problem.title)}</div>
-                    <div class="problem-meta">${escapeHtml(problem.difficulty)} · 测试用例 ${escapeHtml(problem.test_case_count)} 个</div>
+                    <div class="problem-meta">${escapeHtml(categoryNames[problem.category] || '未分类')} · ${escapeHtml(problem.difficulty)} · 测试用例 ${escapeHtml(problem.test_case_count)} 个</div>
                 </div>
                 <button type="button" class="secondary-btn" data-edit="${escapeHtml(problem.id)}">编辑</button>
                 <button type="button" class="danger-btn" data-delete="${escapeHtml(problem.id)}">删除</button>
@@ -159,6 +166,9 @@
         editProblemId.value = problem.id;
         editTitle.value = problem.title || '';
         editDifficulty.value = problem.difficulty || '简单';
+        document.getElementById('editCategory').value = problem.category || 'uncategorized';
+        document.getElementById('editTags').value = (problem.tags || []).join(', ');
+        document.getElementById('editSource').value = problem.source || '';
         document.getElementById('editJudgeMode').value = problem.judge_mode || 'text';
         editDescription.value = problem.description || '';
         editTestCases.value = JSON.stringify((problem.test_cases || []).map((item) => ({
@@ -179,6 +189,12 @@
                 problemList.innerHTML = `<p class="result-error">${escapeHtml(UserSession.apiErrorMessage(result, '加载失败'))}</p>`;
                 return;
             }
+            const categories = document.getElementById('editCategory');
+            categoryNames = result.data.categories || {};
+            categories.replaceChildren();
+            Object.entries(result.data.categories || {}).forEach(([id, name]) => {
+                const option = document.createElement('option'); option.value = id; option.textContent = name; categories.append(option);
+            });
             renderProblemList(result.data.problems || result.problems || []);
         } catch (error) {
             problemList.innerHTML = `<p class="result-error">网络错误：${escapeHtml(error.message)}</p>`;
@@ -274,6 +290,9 @@
             body: JSON.stringify({
                 title: editTitle.value,
                 difficulty: editDifficulty.value,
+                category: document.getElementById('editCategory').value,
+                tags: document.getElementById('editTags').value.replaceAll('，', ',').split(',').map(t => t.trim()).filter(Boolean),
+                source: document.getElementById('editSource').value,
                 judge_mode: document.getElementById('editJudgeMode').value,
                 description: editDescription.value,
                 test_cases: testCases

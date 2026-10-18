@@ -34,10 +34,25 @@
     ['让检查继续下去。','反复除以 3，直到不能继续整除。最后检查剩下的是不是 1。','while n > 1 and n % 3 == 0:\n    n //= 3\nreturn n == 1'],
     ['完整参考 · 再自己验证一次。','这个写法也处理了 0、负数和 1。可以分别试试 27、45 与 1，验证边界。',codeRight]
   ];
+  const languageCode = {
+    cpp: {
+      wrong: '#include <iostream>\nint main() { long long n; std::cin >> n; std::cout << ((n > 0 && n % 3 == 0) ? "true" : "false"); }',
+      right: '#include <iostream>\nint main() { long long n; std::cin >> n; while (n > 1 && n % 3 == 0) n /= 3; std::cout << (n == 1 ? "true" : "false"); }',
+      part: 'while (n > 1 && n % 3 == 0) n /= 3;\nreturn n == 1;'
+    },
+    java: {
+      wrong: 'import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        long n = new Scanner(System.in).nextLong();\n        System.out.println(n > 0 && n % 3 == 0);\n    }\n}',
+      right: 'import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        long n = new Scanner(System.in).nextLong();\n        while (n > 1 && n % 3 == 0) n /= 3;\n        System.out.println(n == 1);\n    }\n}',
+      part: 'while (n > 1 && n % 3 == 0) n /= 3;\nreturn n == 1;'
+    }
+  };
+  function demoCode(correct) { const entry = languageCode[q('[data-language]',demo).value]; return entry ? entry[correct?'right':'wrong'] : correct?codeRight:codeWrong; }
+  q('[data-language]',demo).disabled = false;
+  q('[data-language]',demo).addEventListener('change',()=>{renderDemo();renderHelp(state.help);helpContent(q('[data-help-panel]',demo) || q('#oc-help-content'),state.help);});
   function textNode(tag,text,cls){const e=document.createElement(tag);e.textContent=text;if(cls)e.className=cls;return e;}
-  function renderDemo(){const step=state.step;qa('[data-demo-step]').forEach(b=>b.setAttribute('aria-pressed',Number(b.dataset.demoStep)===step));q('[data-code]',demo).value=step===3?codeRight:codeWrong;const out=q('[data-output]',demo);out.replaceChildren();if(step===0)out.append(textNode('span','代码输出将显示在此处...'));if(step===1){out.append(textNode('span','true','oc-fail'),textNode('p','示例运行：输入 45，输出 true。对照题目预期 false，判断条件还需要检查。','oc-caption'));}if(step===2){out.append(textNode('span','true','oc-fail'),textNode('p','概念线索：一个数能被 3 整除，就一定是 3 的幂吗？试着比较 27 和 45。','og-diagnosis-content'));}if(step===3){out.append(textNode('span','false','oc-pass'),textNode('p','修改后示例：反复除以 3，最后检查是否剩下 1。输入 45，得到 false。','oc-caption'));}out.classList.remove('oc-animate-change');requestAnimationFrame(()=>out.classList.add('oc-animate-change'));const captions=['从题目开始，在熟悉的编辑器里写下思路。','运行后，对照输入和输出，发现值得检查的地方。','先获得一点概念线索，把推理过程留给自己。','修改判断，再次验证。让这一次错误成为下一次理解。'];q('#oc-demo-caption').textContent=captions[step];}
+  function renderDemo(){const step=state.step;qa('[data-demo-step]').forEach(b=>b.setAttribute('aria-pressed',Number(b.dataset.demoStep)===step));q('[data-code]',demo).value=demoCode(step===3);const out=q('[data-output]',demo);out.replaceChildren();if(step===0)out.append(textNode('span','代码输出将显示在此处...'));if(step===1){out.append(textNode('span','true','oc-fail'),textNode('p','示例运行：输入 45，输出 true。对照题目预期 false，判断条件还需要检查。','oc-caption'));}if(step===2){out.append(textNode('span','true','oc-fail'),textNode('p','概念线索：一个数能被 3 整除，就一定是 3 的幂吗？试着比较 27 和 45。','og-diagnosis-content'));}if(step===3){out.append(textNode('span','false','oc-pass'),textNode('p','修改后示例：反复除以 3，最后检查是否剩下 1。输入 45，得到 false。','oc-caption'));}out.classList.remove('oc-animate-change');requestAnimationFrame(()=>out.classList.add('oc-animate-change'));const captions=['从题目开始，在熟悉的编辑器里写下思路。','运行后，对照输入和输出，发现值得检查的地方。','先获得一点概念线索，把推理过程留给自己。','修改判断，再次验证。让这一次错误成为下一次理解。'];q('#oc-demo-caption').textContent=captions[step];}
   function renderHelp(level){state.help=level;q('#oc-help-number').textContent='0'+level;q('#oc-help-name').textContent=helpNames[level-1];q('#oc-help-explain').textContent=helpExplanations[level-1];qa('[data-help-level]').forEach(b=>b.setAttribute('aria-pressed',Number(b.dataset.helpLevel)===level));helpContent(q('#oc-help-content'),level);}
-  function helpContent(target,level){const parts=[...helpTexts[level-1]];target.replaceChildren(textNode('h3',parts[0]),textNode('p',parts[1]),textNode(level>=3?'pre':'p',parts[2]));target.classList.remove('oc-animate-change');requestAnimationFrame(()=>target.classList.add('oc-animate-change'));}
+  function helpContent(target,level){const parts=[...helpTexts[level-1]];if(level===4)parts[2]=demoCode(true);if(level===3&&languageCode[q('[data-language]',demo).value])parts[2]=languageCode[q('[data-language]',demo).value].part;target.replaceChildren(textNode('h3',parts[0]),textNode('p',parts[1]),textNode(level>=3?'pre':'p',parts[2]));target.classList.remove('oc-animate-change');requestAnimationFrame(()=>target.classList.add('oc-animate-change'));}
   function selectCase(value){const fail=value==='45';qa('[data-case]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.case===value));const cards=qa('.oc-evidence-original .og-case-card');cards[0].classList.toggle('is-highlight',!fail);cards[1].classList.toggle('is-highlight',fail);q('#oc-evidence-note').textContent=fail?'45 可以被 3 整除，但它不是 3 的幂。':'27 = 3 × 3 × 3，这个用例通过了。';}
 
   function renderMotion() {

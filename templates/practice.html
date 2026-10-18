@@ -13,9 +13,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/practice.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/evidence.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/ocean-theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/practice-transfer.css') }}">
 </head>
 
-<body class="ocean-theme">
+<body class="ocean-theme practice-page">
     <div class="container">
         <div class="glowing glowing-1"></div>
         <div class="glowing glowing-2"></div>
@@ -30,10 +31,11 @@
                 </div>
             </div>
 
-            <nav>
+            <nav aria-label="主导航">
                 <ul>
                     <li><a href="./index.html">首页</a></li>
-                    <li><a href="./problem_selector.html">刷题</a></li>
+                    <li><a href="/problem_selector.html" class="active" aria-current="page">刷题</a></li>
+                    <li><a href="/co-create.html">AI 共创</a></li><li><a href="/task-room.html">实战任务室</a></li>
                     <li><a href="./learn-analytics.html">学习分析</a></li>
                 </ul>
             </nav>
@@ -54,8 +56,21 @@
 
         <div class="problem-container">
             <div class="problem-section">
+                <section id="practiceTransfer" class="practice-transfer" aria-labelledby="transferHeading" hidden>
+                    <div class="practice-transfer-heading">
+                        <img src="{{ url_for('static', filename='images/dafeiyu/portrait.png') }}" alt="" width="40" height="40">
+                        <div><span class="practice-transfer-eyebrow">达菲郁陪你 · 独立练习</span><h2 id="transferHeading">这一次，按你的理解来</h2></div><span id="transferPhase" class="transfer-phase">正在确认</span>
+                    </div>
+                    <p id="transferPending">正在确认本人的关联练习，代码与草稿保持可用。</p>
+                    <div id="transferActiveContent" hidden>
+                        <p class="practice-transfer-context"><span id="transferSource"></span><span aria-hidden="true">→</span><strong id="transferTarget"></strong><span id="transferLanguage"></span><span id="transferPriorBadge" hidden>已有草稿或历史，本轮非全新起点</span></p>
+                        <div class="transfer-toolbar"><span>本页 AI 入口暂时收起 · 帮助情况由本人自述</span><div class="practice-transfer-actions"><a id="transferRecap" href="/co-create.html">共创复盘 ↗</a><button type="button" id="transferExit">回到普通练习</button></div></div>
+                        <details class="transfer-guidance"><summary>练习说明与已有起点</summary><p>按自己的理解编写，再用“提交解答”完成真实判题。正式提交后可填写帮助情况，关联失败可重试。</p><p class="practice-transfer-boundary">收起本页 AI 入口不证明站外没有帮助；关联题并非等难度测试，一次完成不证明已掌握。</p><p id="transferPriorWork" class="practice-transfer-warning" hidden></p></details>
+                    </div>
+                    <p id="transferStatus" role="status" aria-live="polite"></p>
+                </section>
                 <div class="problem-nav">
-                    <a href="./problem_selector.html" class="back-to-home-btn">
+                    <a href="./problem_selector.html" class="back-to-home-btn" id="backProblemList">
                         <i class="fas fa-list"></i> 选择题目
                     </a>
                     <a href="#" class="back-to-home-btn" id="prevProblemBtn" title="">
@@ -74,6 +89,7 @@
 
                 <div class="problem-header">
                     <h2 class="problem-title">题目区域</h2>
+                    <p id="problemKnowledge" class="panel-note"></p>
                 </div>
 
                 <div class="problem-content">
@@ -88,9 +104,10 @@
                         <div class="editor-header">
 
                             <div class="editor-actions">
-	                                <select id="languageSelector">
+	                                <select id="languageSelector" aria-label="代码语言">
 	                                    <option value="python">Python</option>
 	                                    <option value="cpp">C++</option>
+	                                    <option value="java">Java</option>
 	                                </select>
                                 <button class="btn btn-ai" id="optimizeBtn">
                                     <i class="fas fa-wand-magic-sparkles"></i>
@@ -104,6 +121,7 @@
                                     <i class="fas fa-paper-plane"></i>
                                     提交解答
                                 </button>
+                                <button type="button" class="btn btn-ai" id="coCreateBtn">用这题共创</button>
                             </div>
                         </div>
                     </div>
@@ -149,27 +167,60 @@
                             <p>代码输出将显示在此处...</p>
                         </div>
 
-                        <section id="submissionResults" class="submission-results" hidden>
-                            <p id="evidenceSummary" class="result-summary"></p>
+                        <section id="submissionResults" class="submission-results" aria-label="提交证据与 AI 帮助" hidden>
+                            <header class="submission-heading">
+                                <div>
+                                    <span class="section-eyebrow">本次提交</span>
+                                    <h3 id="submissionVerdict" class="submission-verdict"></h3>
+                                </div>
+                                <span id="submissionVersion" class="submission-version"></span>
+                            </header>
+                            <p id="evidenceSummary" class="result-summary" role="status" aria-live="polite"></p>
+                            <p id="submissionComparison" class="submission-comparison" hidden></p>
                             <p id="evidenceStale" class="stale-note" hidden>代码已修改，以下是上次提交的结果。</p>
+                            <div class="evidence-section-heading">
+                                <h4>执行证据</h4>
+                                <span>对照输入与输出，先看实际发生了什么</span>
+                            </div>
                             <div id="evidenceCases" class="case-list"></div>
                             <details id="submissionCodePanel" hidden>
-                                <summary>本次提交的代码</summary>
+                                <summary>查看本次提交的代码快照</summary>
                                 <div id="submissionCode" class="snapshot-code"></div>
                             </details>
+                            <section id="helpWorkspace" class="help-workspace" aria-labelledby="helpWorkspaceTitle">
+                            <div class="help-workspace-heading">
+                                <div>
+                                    <span class="section-eyebrow">按需获得帮助</span>
+                                    <h4 id="helpWorkspaceTitle">下一步，由你选择</h4>
+                                </div>
+                                <span id="helpSelection" class="help-selection">尚未选择</span>
+                            </div>
+                            <p class="help-introduction">可以先看一点线索，也可以直接选择需要的帮助程度。</p>
                             <div class="diagnosis-actions" id="helpActions" aria-label="选择本次提交的帮助程度">
-                                <button type="button" id="diagnoseBtn" data-help-level="1" class="evidence-button" disabled>概念线索</button>
-                                <button type="button" data-help-level="2" class="evidence-button" disabled>定位与解释</button>
-                                <button type="button" data-help-level="3" class="evidence-button" disabled>局部修改</button>
-                                <button type="button" data-help-level="4" class="evidence-button" disabled>完整参考</button>
+                                <button type="button" id="diagnoseBtn" data-help-level="1" aria-label="概念线索" aria-pressed="false" class="evidence-button help-choice" disabled><span class="help-choice-number" aria-hidden="true">01</span><strong>概念线索</strong><small>从概念与自查问题出发</small></button>
+                                <button type="button" data-help-level="2" aria-label="定位与解释" aria-pressed="false" class="evidence-button help-choice" disabled><span class="help-choice-number" aria-hidden="true">02</span><strong>定位与解释</strong><small>结合执行证据核对原因</small></button>
+                                <button type="button" data-help-level="3" aria-label="局部修改" aria-pressed="false" class="evidence-button help-choice" disabled><span class="help-choice-number" aria-hidden="true">03</span><strong>局部修改</strong><small>查看建议与精确代码差异</small></button>
+                                <button type="button" data-help-level="4" aria-label="完整参考" aria-pressed="false" class="evidence-button help-choice" disabled><span class="help-choice-number" aria-hidden="true">04</span><strong>完整参考</strong><small>获取候选实现，自主验证</small></button>
+                            </div>
+                            <div class="help-status-row">
+                                <p id="diagnosisStatus" role="status" aria-live="polite"></p>
                                 <button type="button" id="cancelDiagnosisBtn" class="evidence-button" hidden>取消</button>
                             </div>
-                            <p id="diagnosisStatus" role="status" aria-live="polite"></p>
                             <div id="diagnosisContent"></div>
+                            </section>
+                        </section>
+
+                        <section id="transferFollowup" class="transfer-followup" aria-labelledby="transferFollowupTitle" hidden>
+                            <span class="practice-transfer-eyebrow">独立练习 · 提交后复盘</span><h4 id="transferFollowupTitle">留下一次真实尝试</h4>
+                            <p id="transferSubmissionSummary"></p>
+                            <div class="practice-transfer-help"><label for="transferHelpUsage">这次提交使用了什么帮助？</label><select id="transferHelpUsage"><option value="unspecified">尚未填写</option><option value="none">未使用帮助（本人自述）</option><option value="hint">线索或局部帮助（本人自述）</option><option value="full">看过完整参考（本人自述）</option></select></div>
+                            <p class="practice-transfer-boundary">帮助情况由本人填写，可稍后补记；与实际判题分别保存。</p>
+                            <div class="practice-transfer-actions"><button type="button" id="transferLinkSubmission" disabled>保存帮助情况 / 重新关联</button></div>
+                            <p id="transferFollowupStatus" role="status" aria-live="polite"></p>
                         </section>
 
                         <details id="practiceReview" class="help-history" hidden>
-                            <summary>练习过程</summary>
+                            <summary><span>练习过程</span><span class="review-summary-note">回看提交、帮助与修改</span></summary>
                             <p id="reviewStatus" role="status" aria-live="polite"></p>
                             <button type="button" id="reviewReload" class="evidence-button">刷新记录</button>
                             <div id="practiceTimeline"></div>
@@ -242,6 +293,8 @@
     <script src="{{ url_for('static', filename='js/practice.js') }}"></script>
     <script src="{{ url_for('static', filename='js/practice-review.js') }}"></script>
     <script src="{{ url_for('static', filename='js/evidence.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/practice-co-create.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/practice-transfer.js') }}"></script>
 </body>
 
 </html>

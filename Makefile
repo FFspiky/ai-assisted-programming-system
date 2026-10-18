@@ -3,13 +3,13 @@
 PYTHON ?= python3
 
 compile:
-	$(PYTHON) -m compileall -q app.py models.py config.py routes services tests migrations
+	$(PYTHON) -m compileall -q app.py models.py config.py routes services modules tests migrations
 
 test:
 	$(PYTHON) -m unittest discover -s tests
 
 js-check:
-	@for f in static/js/*.js; do \
+	@for f in static/js/*.js modules/task_room/static/*.js modules/co_create/static/*.js; do \
 		node --check "$$f"; \
 	done
 

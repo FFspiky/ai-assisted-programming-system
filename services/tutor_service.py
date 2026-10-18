@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from config import MODEL_NAME
 from services.ai_client import AIClientError, chat_completion
 
-PROMPT_VERSION = "evidence-diagnosis-v4"
+PROMPT_VERSION = "evidence-diagnosis-v5-multilingual"
 
 
 def public_snapshot(snapshot):
@@ -186,6 +186,9 @@ def diagnose_submission(submission):
 有依据的疑似发现返回status为supported。只返回JSON，不使用Markdown围栏，结构：
 {"status":"supported","summary":"简短诊断摘要", "findings":[{"title":"疑似问题","explanation":"解释证据与原因的关系",
 "lines":[3],"evidence_ids":["case-1"],"next_check":"建议学生下一步检查什么"}]}"""
+    from services.language_support import language_prompt
+
+    system += language_prompt(submission.language)
     payload = {
         "model": MODEL_NAME,
         "messages": [

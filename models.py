@@ -46,6 +46,11 @@ class Problem(db.Model):
     description = db.Column(db.Text, nullable=False)
     difficulty = db.Column(db.String(20), default="简单")
     judge_mode = db.Column(db.String(20), nullable=False, default="text", server_default="text")
+    category = db.Column(
+        db.String(40), nullable=False, default="uncategorized", server_default="uncategorized"
+    )
+    tags = db.Column(db.JSON, nullable=False, default=list, server_default="[]")
+    source = db.Column(db.String(200), nullable=False, default="", server_default="")
     test_cases = db.relationship(
         "TestCase", backref="problem", lazy="dynamic", cascade="all, delete-orphan"
     )
@@ -98,16 +103,24 @@ class CodeProposal(db.Model):
     """Immutable candidate attached to one explicitly requested help response."""
 
     id = db.Column(db.Integer, primary_key=True)
-    help_id = db.Column(db.Integer, db.ForeignKey("learning_help.id"), nullable=False, unique=True)
+    help_id = db.Column(db.Integer, db.ForeignKey("learning_help.id"), nullable=True, unique=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
-    submission_id = db.Column(
-        db.Integer, db.ForeignKey("submission.id"), nullable=False, index=True
-    )
+    submission_id = db.Column(db.Integer, db.ForeignKey("submission.id"), nullable=True, index=True)
     base_code = db.Column(db.Text, nullable=False)
     candidate_code = db.Column(db.Text, nullable=False)
     edits = db.Column(db.JSON, nullable=False)
     state = db.Column(db.String(20), nullable=False, default="pending")
     revision = db.Column(db.Integer, nullable=False, default=0)
+    problem_id = db.Column(db.String(50), nullable=True, index=True)
+    language = db.Column(db.String(16), nullable=True)
+    source = db.Column(db.String(20), nullable=False, default="panel", server_default="panel")
+    co_create_session_id = db.Column(db.String(32), nullable=True)
+    co_create_candidate_id = db.Column(db.String(100), nullable=True)
+    __table_args__ = (
+        db.UniqueConstraint(
+            "co_create_session_id", "co_create_candidate_id", name="uq_proposal_co_create"
+        ),
+    )
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
 
@@ -125,4 +138,65 @@ class PracticeEvent(db.Model):
     kind = db.Column(db.String(30), nullable=False)
     payload = db.Column(db.JSON, nullable=False)
     operation_id = db.Column(db.String(64), nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+
+
+class LearningAssessment(db.Model):
+    """Latest self-report and a stable, resumable sequence of task-room projects."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, unique=True)
+    answers = db.Column(db.JSON, nullable=False)
+    recommended_ids = db.Column(db.JSON, nullable=False, default=list)
+    revision = db.Column(db.Integer, nullable=False, default=1)
+    version = db.Column(db.Integer, nullable=False, default=1)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+
+
+class WorkshopSuggestion(db.Model):
+    """Retired feature history; retained with its migration to preserve existing data."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    scene = db.Column(db.String(20), nullable=False)
+    prompt = db.Column(db.Text, nullable=False)
+    base_fingerprint = db.Column(db.String(64), nullable=False)
+    result = db.Column(db.JSON, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+
+
+class WorkshopRun(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    scene = db.Column(db.String(20), nullable=False)
+    title = db.Column(db.String(80), nullable=False)
+    code = db.Column(db.Text, nullable=False)
+    params = db.Column(db.JSON, nullable=False)
+    trace = db.Column(db.JSON, nullable=False)
+    execution = db.Column(db.JSON, nullable=False)
+    provenance = db.Column(db.JSON, nullable=False)
+    fingerprint = db.Column(db.String(64), nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+
+
+class WorkshopProject(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    title = db.Column(db.String(80), nullable=False)
+    scene = db.Column(db.String(20), nullable=False)
+    revision = db.Column(db.Integer, nullable=False, default=0)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+
+
+class WorkshopVersion(db.Model):
+    __table_args__ = (db.UniqueConstraint("project_id", "number", name="uq_workshop_version"),)
+    id = db.Column(db.Integer, primary_key=True)
+    project_id = db.Column(
+        db.Integer, db.ForeignKey("workshop_project.id"), nullable=False, index=True
+    )
+    run_id = db.Column(db.Integer, db.ForeignKey("workshop_run.id"), nullable=False)
+    number = db.Column(db.Integer, nullable=False)
+    palette = db.Column(db.String(20), nullable=False, default="lagoon")
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)

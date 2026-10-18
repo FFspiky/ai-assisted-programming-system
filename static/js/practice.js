@@ -13,7 +13,11 @@ document.addEventListener('DOMContentLoaded', function () {
         visibleStudySeconds = 0;
         lastStudyTick = document.visibilityState === 'visible' ? Date.now() : null;
         window.dispatchEvent(new CustomEvent('practice:user', {detail: user}));
+        problemListCache = null;
+        updateProblemNavigationState();
     });
+    const backParams = new URLSearchParams(location.search);backParams.delete('problem');
+    document.getElementById('backProblemList').href = '/problem_selector.html'+(backParams.size?'?'+backParams:'');
     loadProblem();
 
 
@@ -25,17 +29,30 @@ function getCurrentProblemId() {
 }
 
 let problemListCache = null;
+function libraryFilter() {
+    const source=new URLSearchParams(location.search),result=new URLSearchParams();
+    for(const key of ['q','category','difficulty','state'])if(source.get(key))result.set(key,source.get(key));
+    return result;
+}
+function practiceListURL(id) {
+    const params=new URLSearchParams(location.search);params.set('problem',id);return '/practice.html?'+params;
+}
 
 async function getProblemList() {
     if (problemListCache) {
         return problemListCache;
     }
-    const response = await fetch('/api/problems');
+    const filter=libraryFilter();let snapshot=null;
+    try {
+        const saved=JSON.parse(sessionStorage.getItem('codelab:problem-list')||'null');
+        if(saved?.filter===filter.toString()&&saved.owner===(practiceUser?.id||null)&&saved.ids.includes(getCurrentProblemId()))snapshot=saved;
+    } catch(_){/* Fall back to the filters retained in the URL. */}
+    const response = await fetch('/api/problems'+(snapshot?'':'?'+filter));
     const result = await response.json();
     if (!result.success || !result.problems) {
         return [];
     }
-    problemListCache = result.problems;
+    problemListCache = snapshot ? snapshot.ids.map(id=>result.problems.find(p=>p.id===id)).filter(Boolean) : result.problems;
     return problemListCache;
 }
 
@@ -108,6 +125,7 @@ async function loadProblem() {
                 </div>
             `;
             problemContentEl.innerHTML = problem.description || '<p>该题目没有描述信息。</p>';
+            document.getElementById('problemKnowledge').textContent = [problem.category_name,...(problem.tags||[])].filter(Boolean).join(' · ');
             window.dispatchEvent(new CustomEvent('practice:problem', {detail: problem}));
         } else {
             problemTitleEl.textContent = '加载失败';
@@ -196,6 +214,7 @@ function cancelInlineCompletion() {
 
 function scheduleInlineCompletion(force = false) {
     clearTimeout(inlineDebounceTimer);
+    if (window.PracticeTransfer?.blocksAI) { cancelInlineCompletion(); return; }
     if (!LearningHelpUI.get().ready || LearningHelpUI.get().mode !== 'free' || !codeInput || !practiceUser || inlineComposing || document.activeElement !== codeInput
         || Date.now() < inlineRetryAfter) return;
     const requestId = ++inlineRequestId;
@@ -204,6 +223,7 @@ function scheduleInlineCompletion(force = false) {
 }
 
 async function requestInlineCompletion(requestId) {
+    if (window.PracticeTransfer?.blocksAI) { cancelInlineCompletion(); return; }
     if (!LearningHelpUI.get().ready || LearningHelpUI.get().mode !== 'free' || !practiceUser || inlineComposing || document.activeElement !== codeInput) return;
     const { prefix, suffix, start, end } = getCursorContext();
     if (start !== end || prefix.trim().length < 3) { clearInlineSuggestion(); return; }
@@ -215,6 +235,7 @@ async function requestInlineCompletion(requestId) {
     inlineActiveContext = {code, start, language};
     const cacheKey = JSON.stringify([language, prefix, suffix]);
     const isCurrent = () => !requestController.signal.aborted && requestId === inlineRequestId
+        && !window.PracticeTransfer?.blocksAI
         && codeInput.value === code && codeInput.selectionStart === start && codeInput.selectionEnd === end
         && document.getElementById('languageSelector').value === language
         && document.activeElement === codeInput && !inlineComposing && !!practiceUser
@@ -271,6 +292,7 @@ async function requestInlineCompletion(requestId) {
 }
 
 function acceptInlineSuggestion() {
+    if (window.PracticeTransfer?.blocksAI) { cancelInlineCompletion(); return; }
     if (!LearningHelpUI.get().ready || LearningHelpUI.get().mode !== 'free') { cancelInlineCompletion(); return; }
     if (!inlineSuggestion) {
         return;
@@ -347,7 +369,7 @@ async function goToRelativeProblem(offset) {
     if (!targetId) {
         return;
     }
-    window.location.href = `/practice.html?problem=${encodeURIComponent(targetId)}`;
+    window.location.href = practiceListURL(targetId);
 }
 
 if (prevProblemBtn) {
@@ -516,6 +538,7 @@ async function runCode() {
 
 // 优化代码
 async function optimizeCode() {
+    if (window.PracticeTransfer?.blocksAI) { window.PracticeTransfer.notifyBlocked?.(); return; }
     const help = LearningHelpUI.get();
     const contextRevision = aiContextRevision;
     document.getElementById('optimizationResult').hidden = false;
@@ -728,6 +751,7 @@ document.getElementById('attachPracticeContext').addEventListener('click', () =>
 });
 
 async function sendMessage() {
+    if (window.PracticeTransfer?.blocksAI) { window.PracticeTransfer.notifyBlocked?.(); return; }
     if (chatBusy) return;
     const contextRevision = chatContextRevision;
     const message = messageInput.value.trim();
@@ -904,6 +928,15 @@ function resetChatContext() {
 window.addEventListener('auth:required', resetChatContext);
 window.addEventListener('practice:help-settings', resetHelpOutputs);
 window.addEventListener('practice:help-level', resetHelpOutputs);
+window.addEventListener('practice:transfer-mode', () => {
+    if (!window.PracticeTransfer?.blocksAI) return;
+    cancelInlineCompletion();
+    optimizeController?.abort();
+    chatAbortController?.abort();
+    aiContextRevision += 1;
+    chatContextRevision += 1;
+    if (!aiFloatingWindow.classList.contains('hidden')) setChatWindowOpen(false);
+});
 document.getElementById('languageSelector').addEventListener('change', () => {
     resetHelpOutputs();
     resetChatContext();
@@ -1002,6 +1035,7 @@ function toggleChatMaximized() {
 }
 
 function setChatWindowOpen(open) {
+    if (open && window.PracticeTransfer?.blocksAI) { window.PracticeTransfer.notifyBlocked?.(); return; }
     aiFloatingWindow.classList.toggle('hidden', !open);
     aiToggleBtn.setAttribute('aria-expanded', String(open));
     aiToggleBtn.setAttribute('aria-label', `${open ? '收起' : '打开'}达菲郁编程助手`);

@@ -1,0 +1,55 @@
+import {expect,test} from '@playwright/test';
+import fs from 'node:fs';
+const baseURL=process.env.SMOKE_BASE_URL||'http://127.0.0.1:5005';
+
+test('真实题库分类、组合搜索、分页与筛选题单导航',async({page})=>{
+    const errors=[];page.on('pageerror',e=>errors.push(e.message));
+    await page.setViewportSize({width:1440,height:1000});
+    await page.goto(baseURL+'/problem_selector.html');
+    await expect(page.locator('.problem-card')).toHaveCount(12);
+    await expect(page.locator('#libraryTotal')).toContainText('63');
+    await page.locator('#nextPage').click();
+    await expect(page.locator('#pagePosition')).toContainText('第 2 /');
+    await page.locator('#categoryFilter').selectOption('arrays');
+    await expect(page.locator('.problem-card')).toHaveCount(6);
+    await expect(page.locator('#resultCount')).toContainText('6');
+    await page.locator('.btn-select').first().click();
+    await expect(page.locator('#problemProgress')).toHaveText('题目 1/6');
+    await expect(page.locator('#problemKnowledge')).toContainText('数组与哈希');
+    await page.locator('#nextProblemBtn').click();
+    await expect(page.locator('#problemProgress')).toHaveText('题目 2/6');
+    await page.locator('#backProblemList').click();
+    await expect(page.locator('#categoryFilter')).toHaveValue('arrays');
+    await expect(page.locator('.problem-card')).toHaveCount(6);
+    await page.locator('#categoryFilter').selectOption('search');
+    await page.locator('#difficultyFilter').selectOption('困难');
+    await expect(page.locator('.problem-card')).toHaveCount(1);
+    await expect(page.locator('.card-title')).toHaveText('逆序对计数');
+    await page.locator('#clearFilters').click();
+    await page.locator('#searchInput').fill('单词');
+    await page.locator('#librarySearch button').click();
+    await expect(page.locator('.problem-card')).toHaveCount(2);
+    await page.locator('#searchInput').fill('不存在的题目');
+    await page.locator('#librarySearch button').click();
+    await expect(page.locator('#libraryEmpty')).toBeVisible();
+    await page.locator('#emptyClear').click();
+    await expect(page.locator('.problem-card')).toHaveCount(12);
+    fs.mkdirSync('tmp/library-check',{recursive:true});
+    await page.screenshot({path:'tmp/library-check/desktop.png'});
+    await page.setViewportSize({width:390,height:844});
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+    await page.screenshot({path:'tmp/library-check/mobile.png'});
+    expect(errors).toEqual([]);
+});
+
+test('题库网络错误可重试，访客状态筛选禁用',async({page})=>{
+    let fail=true;
+    await page.route('**/api/problems?*',route=>fail?route.fulfill({status:503,json:{success:false,error:{message:'测试网络失败'}}}):route.continue());
+    await page.goto(baseURL+'/problem_selector.html');
+    await expect(page.locator('#libraryError')).toContainText('测试网络失败');
+    await expect(page.locator('#stateFilter')).toBeDisabled();
+    fail=false;
+    await page.locator('#retryLibrary').click();
+    await expect(page.locator('.problem-card')).toHaveCount(12);
+    await expect(page.locator('#libraryError')).toBeHidden();
+});

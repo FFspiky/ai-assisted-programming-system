@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#0d1b2d">
+  <title>达菲郁学习共创 · 智练 CodeLab</title>
+  <link rel="icon" href="/static/images/brand-v1/logo.png">
+  <link rel="stylesheet" href="/static/css/ocean-theme.css">
+  <link rel="stylesheet" href="/co-create-assets/co-create.css">
+  <link rel="stylesheet" href="/co-create-assets/problem-create.css">
+  <script src="/co-create-assets/problem-create.js" defer></script>
+</head>
+<body class="ocean-theme co-create-page problem-create-page">
+  <a class="skip-link" href="#main-content">跳转到主要内容</a>
+  <header class="site-header">
+    <a class="brand" href="/"><img class="codelab-brand-mark" src="/static/images/brand-v1/logo.png" alt="" width="44" height="44"><span class="logo-text">智练 CodeLab</span></a>
+    <nav aria-label="主导航"><a href="/">首页</a><a href="/problem_selector.html">刷题</a><a href="/co-create.html" class="active" aria-current="page">AI 共创</a><a href="/task-room.html">实战任务室</a><a href="/learn-analytics.html">学习分析</a></nav>
+    <a id="account-link" class="account-link" href="/login.html?next=%2Fco-create.html">登录后保存记录 ↗</a>
+  </header>
+  <main id="main-content" class="page-shell">
+    <div class="page-heading"><div><p class="eyebrow">CODELAB / PROBLEM CO-CREATE</p><h1>和达菲郁一起，<span>从验证走向独立完成。</span></h1><p class="subtitle">从一道题开始，留下自己的判断与实际验证。</p></div><span id="ai-status" class="status-badge">正在读取配置</span></div>
+    <div class="learning-journey" role="tablist" aria-label="学习阶段">
+      <button id="stage-tab-verify" type="button" role="tab" aria-controls="stage-verify" aria-selected="true" data-stage="verify"><span class="stage-number">01</span><span><b>验证 AI 代码</b><small>用题意与测试作判断</small></span><span id="stage-verify-state" class="stage-state">可开始</span></button>
+      <button id="stage-tab-explain" type="button" role="tab" aria-controls="stage-explain" aria-selected="false" data-stage="explain"><span class="stage-number">02</span><span><b>解释修改</b><small>留下你自己的理由</small></span><span id="stage-explain-state" class="stage-state">可跳过</span></button>
+      <button id="stage-tab-transfer" type="button" role="tab" aria-controls="stage-transfer" aria-selected="false" data-stage="transfer"><span class="stage-number">03</span><span><b>独立再做一次</b><small>换一道题，试试理解</small></span><span id="stage-transfer-state" class="stage-state">可稍后</span></button>
+    </div>
+    <div class="learning-toolbar"><p>阶段可以自由返回或跳过。填写解释与预测均为可选。</p><button id="open-recap" class="text-button" type="button">查看共创复盘卡 ↗</button></div>
+    <div class="workspace-state"><p id="workspace-save-status" role="status" aria-live="polite" aria-atomic="true">选择一道题开始，登录后可保存到账户。</p><p id="learning-status" class="helper-text"></p><details id="draft-recovery" hidden><summary>对照账户当前内容，本机输入仍保留</summary><pre id="draft-server-content"></pre></details></div>
+    <details id="mobile-companion" class="mobile-companion">
+      <summary><img src="/static/images/dafeiyu/portrait.png" alt="" width="40" height="40"><span><b>达菲郁陪你一起</b><span id="mobile-pet-preview">先读题意，再用一个输入检验想法。</span></span><span class="companion-expand" aria-hidden="true">＋</span></summary>
+      <div class="mobile-companion-content"><p id="mobile-pet-message" aria-live="polite">先读题意，再用一个输入检验想法。</p><div class="pet-actions"><button id="mobile-pet-encourage" type="button">给我一点鼓励</button><button id="mobile-pet-hint" type="button">提醒我怎么测</button></div><small>本地陪伴提醒，不调用 AI。</small></div>
+    </details>
+    <div id="notice" class="notice" role="alert" hidden></div>
+    <div id="busy-status" class="busy-status" role="status" hidden><span class="busy-dot" aria-hidden="true"></span><span id="busy-message"></span><small>输入已保留，完成后可继续操作。</small></div>
+    <section class="panel topic-picker" aria-labelledby="topic-title">
+      <h2 id="topic-title" class="visually-hidden">当前题目与语言</h2>
+      <details id="topic-disclosure">
+        <summary class="topic-summary"><span class="topic-identity"><span class="eyebrow">本次练习</span><strong id="topic-summary-title">正在读取题目…</strong><span id="topic-summary-lang" class="topic-language">Python</span></span><span class="topic-switch">选题 / 新建 <span aria-hidden="true">⌄</span></span></summary>
+        <div class="topic-config">
+      <form id="problem-search" class="search-fields"><label for="problem-query">搜索题目<input id="problem-query" type="search" maxlength="100" placeholder="题号或题目名称"></label><label for="problem-category">题目分类<select id="problem-category"><option value="">全部分类</option></select></label><button class="button button-outline" type="submit">查找题目</button></form>
+      <div class="topic-fields"><label for="problem-select">本次题目<select id="problem-select"><option value="">正在读取题库…</option></select></label><label for="language-select">编程语言<select id="language-select"><option value="python">Python</option><option value="cpp">C++</option><option value="java">Java</option></select></label><button id="new-session" class="button button-primary" type="button">新建题目共创 →</button></div>
+      <div class="picker-footer"><span id="problem-page-label" role="status"></span><div><button id="problem-prev" class="text-button" type="button">上一页</button><button id="problem-next" class="text-button" type="button">下一页</button></div></div>
+        </div>
+      </details>
+      <div class="topic-reading"><a id="back-practice" class="text-button" href="/problem_selector.html">返回刷题 ↗</a></div>
+      <details id="problem-details"><summary id="problem-heading">查看本次题意与输入输出要求</summary><div id="problem-description" class="problem-description"></div></details>
+      <p id="context-note" class="helper-text">可以从刷题页带入草稿，也可以在这里选题开始。</p>
+    </section>
+    <div class="workspace-layout">
+      <div class="main-column">
+        <section id="stage-verify" class="learning-stage" role="tabpanel" aria-labelledby="stage-tab-verify">
+        <div class="mode-tabs" role="tablist" aria-label="共创方式"><button id="tab-examples" type="button" role="tab" aria-controls="examples-panel" aria-selected="true" data-mode="examples"><span><b>用例驱动共创</b><small>补充测试，比较不同实现</small></span></button><button id="tab-review" type="button" role="tab" aria-controls="review-panel" aria-selected="false" data-mode="review"><span><b>AI 代码质检</b><small>检查当前代码，修改后再测</small></span></button></div>
+        <div class="session-context"><span id="session-label">选择题目与语言，新建或恢复共创</span><span id="revision-label">按账号、题目和语言保存</span></div>
+        <section id="legacy-panel" class="panel" hidden><h2>旧场景记录 · 保留回看</h2><p class="panel-intro">原始例子、代码与运行依据完整保留。新的共创请从具体题目开始。</p><details><summary>展开历史记录</summary><pre id="legacy-content"></pre></details></section>
+        <section id="examples-panel" role="tabpanel" aria-labelledby="tab-examples">
+          <section class="panel"><div class="panel-heading"><div><p class="eyebrow">测试与题意</p><h2>从公开样例到自己的测试</h2></div><span id="example-count" class="quiet-badge">0 个用例</span></div><p class="panel-intro">题意是共同依据。你可以补充边界测试；自己的期望输出会单独标记，不会改写题目标准答案。</p><div id="example-list"></div><details id="example-compose" class="example-compose"><summary>补充自己的测试 <span>可选</span></summary><form id="example-form" class="example-form"><div class="form-heading"><h3 id="example-form-title">补充测试用例</h3><button id="cancel-edit" class="text-button" type="button" hidden>取消编辑</button></div><div class="field-pair"><label for="example-input">标准输入<textarea id="example-input" rows="3" maxlength="10000" spellcheck="false" placeholder="直接填写题目要求的输入文本"></textarea></label><label for="example-expected">你的期望输出（可选）<textarea id="example-expected" rows="3" maxlength="20000" spellcheck="false" placeholder="不确定答案时可以留空"></textarea></label></div><div class="form-footer"><small>与正式做题使用同一种输入格式，无需包装成 JSON。</small><button id="save-example" class="button button-outline" type="submit">保存用例</button></div></form></details></section>
+          <section class="panel"><div class="panel-heading"><div><p class="eyebrow">候选实现</p><h2>同一道题，看看不同实现</h2></div><span id="generation-source" class="quiet-badge">尚未生成</span></div><div class="action-row"><button id="generate-ai" class="button button-primary" type="button">用 AI 生成候选</button><span class="helper-text">真实调用当前模型 · 先按现有用例运行检查</span></div><div id="candidate-grid" class="candidate-grid"></div><p id="selection-result" class="selection-result" hidden></p><div id="candidate-verification" aria-live="polite"></div></section>
+          <section class="panel"><div class="panel-heading"><div><p class="eyebrow">执行与对照</p><h2>同一输入，并排看结果</h2></div><span class="quiet-badge">Docker 实际执行</span></div><form id="compare-form"><div class="field-pair"><label for="compare-input">标准输入<textarea id="compare-input" rows="4" maxlength="10000" spellcheck="false"></textarea></label><label for="compare-expected">你的期望输出（可选）<textarea id="compare-expected" rows="4" maxlength="20000" spellcheck="false"></textarea></label></div><label class="reference-option" id="compare-reference-label" hidden><input id="compare-reference" type="checkbox">我确认输入符合题目范围，使用内置参考程序对照</label><div class="form-footer"><small>没有可核验答案时，只比较实际输出，不判定正确性。</small><button id="run-compare" class="button button-primary" type="submit">运行并对比</button></div></form><div id="compare-results" aria-live="polite"></div></section>
+        </section>
+        <section id="review-panel" role="tabpanel" aria-labelledby="tab-review" hidden>
+          <section class="panel"><div class="panel-heading"><div><p class="eyebrow">代码与判断</p><h2>把当前代码交给测试检验</h2></div><span id="review-source" class="quiet-badge">等待带入代码</span></div><div class="action-row"><button id="review-generate" class="button button-outline" type="button">用 AI 生成待检实现</button><span id="review-code-status" class="helper-text"></span></div><label for="review-code" class="editor-label">待检代码 <span id="review-language"></span></label><textarea id="review-code" class="review-code" rows="14" maxlength="20000" spellcheck="false"></textarea><fieldset class="judgment-options"><legend>你的初步判断（可选）</legend><label><input type="radio" name="judgment" value="correct">可能符合题意</label><label><input type="radio" name="judgment" value="incorrect">我怀疑有问题</label><label><input type="radio" name="judgment" value="unsure">还不确定</label></fieldset><div class="field-pair"><label for="review-input">要检验的标准输入<textarea id="review-input" rows="3" maxlength="10000" spellcheck="false"></textarea></label><label for="review-prediction">你预测它会输出（可选）<textarea id="review-prediction" rows="3" maxlength="20000" spellcheck="false"></textarea></label></div><label for="review-expected">你认为正确的输出（可选）<textarea id="review-expected" rows="2" maxlength="20000" spellcheck="false"></textarea></label><label class="reference-option" id="review-reference-label" hidden><input id="review-reference" type="checkbox">我确认输入符合题目范围，使用内置参考程序对照</label><details class="reflection"><summary>记下判断依据与复盘</summary><label for="review-reflection">什么输入发现了问题？为什么这样修改？</label><textarea id="review-reflection" rows="3" maxlength="2000"></textarea></details><div class="action-row"><button id="save-review" class="button button-outline" type="button">保存代码与判断</button><button id="run-review" class="button button-primary" type="button">保存并运行此输入</button><button id="verify-review" class="button button-outline" type="button">检验题库用例</button><button id="return-review" class="button button-outline" type="button">查看差异并带回刷题 ↗</button></div><p id="review-save-status" class="helper-text" role="status"></p></section>
+          <section class="panel"><div class="panel-heading"><h2>本次结果与历史依据</h2><span class="quiet-badge">只对应当次代码版本</span></div><div id="review-results" aria-live="polite"></div></section>
+        </section>
+        <div class="stage-actions"><button id="verify-next" type="button" class="button button-outline" data-go-stage="explain">带着证据，解释我的修改 →</button></div>
+        </section>
+        <section id="stage-explain" class="learning-stage panel" role="tabpanel" aria-labelledby="stage-tab-explain" hidden>
+          <p class="eyebrow">留下自己的解释</p><h2>代码怎么改，理由由你说。</h2><p class="panel-intro">这里不会让 AI 代写你的理解。可以只写一项，也可以暂时留空；保存时会绑定当前代码和已有运行依据。</p>
+          <form id="reflection-form"><div class="reflection-layout"><div class="reflection-reference">
+            <label for="reflection-target">我在解释哪份实现？<select id="reflection-target"><option value="review">当前待检代码</option></select></label>
+            <div id="reflection-binding" class="binding-note" role="status"></div>
+            <details class="reflection-code"><summary>对照这份代码与运行依据</summary><pre id="reflection-code"></pre><div id="reflection-evidence"></div></details>
+            </div><div class="reflection-writing"><label for="reflection-reason">我改了哪里，为什么这样改？<textarea id="reflection-reason" rows="4" maxlength="2000" placeholder="例如：把分钟的计算改为先取余，避免把已计入小时的分钟重复计算。可以留空。"></textarea></label>
+            <label for="reflection-boundary">哪些边界情况值得检查？<textarea id="reflection-boundary" rows="3" maxlength="2000" placeholder="写下你认为容易遗漏的输入，以及它为什么重要。可以留空。"></textarea></label>
+            <label for="reflection-next-check">下一次，我会如何验证？<textarea id="reflection-next-check" rows="3" maxlength="2000" placeholder="写一个具体检查办法；没有想法时可以先跳过。"></textarea></label>
+            </div></div><div id="reflection-saved-status" class="reflection-status" role="status"></div>
+            <div class="action-row"><button id="save-learning-reflection" type="submit" class="button button-primary">保存我的解释</button><button id="explain-next" type="button" class="button button-outline" data-go-stage="transfer">独立再做一次 →</button><button id="explain-back" type="button" class="text-button" data-go-stage="verify">返回验证</button></div>
+          </form>
+        </section>
+        <section id="stage-transfer" class="learning-stage panel" role="tabpanel" aria-labelledby="stage-tab-transfer" hidden>
+          <p class="eyebrow">换一道题，试一试</p><h2>换一道题，看看理解能否用起来。</h2><p class="panel-intro">关联题由人工配置并核对题库。开始后进入原刷题页，不带入这份答案。是否使用提示或完整答案由你自述，正式提交结果单独记录。</p>
+          <div id="transfer-related" class="related-grid"></div>
+          <div class="panel-heading transfer-heading"><h3>已开始的独立练习</h3><button id="refresh-learning" class="text-button" type="button">刷新实际记录</button></div><div id="transfer-attempts"></div>
+          <div class="stage-actions"><button id="transfer-back" type="button" class="text-button" data-go-stage="explain">返回解释</button><button id="transfer-recap" type="button" class="button button-outline" data-go-stage="recap">回看共创复盘卡 →</button></div>
+        </section>
+        <section id="stage-recap" class="learning-stage panel recap-panel" aria-labelledby="recap-title" hidden>
+          <div class="panel-heading"><div><p class="eyebrow">YOUR LEARNING, WITH EVIDENCE</p><h2 id="recap-title">共创复盘卡</h2></div><span class="quiet-badge">只呈现实际记录</span></div><p class="panel-intro">这是一次学习过程的记录，不是掌握能力的评分。没有填写、没有运行或没有正式提交的内容会明确留空。</p>
+          <div id="recap-overview" class="recap-overview"></div><div class="recap-next-row"><p id="recap-next-note"></p><button id="recap-next" class="button button-primary" type="button">继续验证</button></div><div id="recap-content"></div><div class="action-row"><button id="refresh-recap" type="button" class="button button-outline">刷新复盘卡</button><button id="download-recap-json" type="button" class="button button-outline">下载复盘卡 JSON</button><button id="download-recap-md" type="button" class="button button-outline">下载可打印 Markdown</button><button id="recap-back" type="button" class="text-button" data-go-stage="verify">返回验证</button></div>
+        </section>
+      </div>
+      <aside class="companion-column">
+        <section class="panel companion-panel"><span class="eyebrow">YOUR LITTLE COMPANION</span><div class="pet-stage"><div class="pet-orbit" aria-hidden="true"></div><img id="companion-image" src="/static/images/dafeiyu/portrait.png" alt="陪伴宠物达菲郁" width="190" height="190"></div><h2>达菲郁，陪你想明白。</h2><span id="pet-stage-label" class="quiet-badge">本地引导 · 验证</span><p id="pet-message" class="pet-message" aria-live="polite">先看清题意，再试一个你最有把握的输入。本鱼陪你一起验证。</p><div class="pet-actions"><button id="pet-encourage" type="button">给我一点鼓励</button><button id="pet-hint" type="button">提醒我怎么测</button></div><small class="pet-disclaimer">陪伴提示为本地内容，不调用 AI。</small></section>
+        <section class="panel saved-panel"><div class="panel-heading"><h2>继续上次的探索</h2><button id="refresh-sessions" class="text-button" type="button">刷新</button></div><div id="session-list" class="session-list"></div></section>
+        <section class="panel evidence-panel"><div class="panel-heading"><h2>留住验证过程</h2><span id="evidence-count" class="quiet-badge">0 次运行</span></div><p class="panel-intro">代码来源、运行依据、你的解释与独立练习逐步组成复盘卡；隐藏用例输入和答案不会导出。</p><button id="export-session" class="button button-outline full-width" type="button">导出共创记录 ↗</button><details class="run-history"><summary>回看运行记录</summary><div id="run-history"></div></details></section>
+      </aside>
+    </div>
+    <footer class="page-footer"><span>选择依据来自题意与测试。已有用例通过，仍值得继续检查边界。</span><span>智练 CodeLab / 题目共创</span></footer>
+  </main><div id="toast" class="toast" role="status" hidden></div>
+</body></html>

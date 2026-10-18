@@ -1,7 +1,7 @@
 (() => {
     const byId = id => document.getElementById(id);
     let currentUser = null;
-    const languageNames = {python: 'Python', cpp: 'C++'};
+    const languageNames = {python: 'Python', cpp: 'C++', java: 'Java'};
     const statusNames = {'Accepted':'通过', 'Wrong Answer':'答案错误', 'Runtime Error':'运行错误', 'Compile Error':'编译错误', 'Time Limit Exceeded':'运行超时', 'Environment Error':'执行环境不可用', 'Output Limit Exceeded':'输出超限', 'Resource Limit Exceeded':'资源超限', 'Busy':'执行繁忙'};
     const tabs = [...document.querySelectorAll('[data-tab]')];
 

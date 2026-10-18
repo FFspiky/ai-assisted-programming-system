@@ -1,0 +1,487 @@
+{
+  "version": 1,
+  "kind": "curated-related-practice",
+  "notice": "由项目人工编排的关联练习；题目相关不代表等难度，完成不证明能力迁移。",
+  "pairs": [
+    {
+      "source_id": "CL-BASICS-01",
+      "target_id": "CL-BASICS-02",
+      "source_title": "秒数换算",
+      "target_title": "数位之和",
+      "reason": "分别练习时间单位与十进制数位拆分，比较整除、取余、零值及输入范围。",
+      "concept": "整除与取余"
+    },
+    {
+      "source_id": "CL-BASICS-02",
+      "target_id": "CL-BASICS-01",
+      "source_title": "数位之和",
+      "target_title": "秒数换算",
+      "reason": "分别练习时间单位与十进制数位拆分，比较整除、取余、零值及输入范围。",
+      "concept": "整除与取余"
+    },
+    {
+      "source_id": "CL-BASICS-03",
+      "target_id": "CL-BASICS-04",
+      "source_title": "平均分取整",
+      "target_title": "矩形围栏",
+      "reason": "同为直接整数运算，需要分别确认表达式、取整规则和最大输入。",
+      "concept": "整数表达式与数据范围"
+    },
+    {
+      "source_id": "CL-BASICS-04",
+      "target_id": "CL-BASICS-03",
+      "source_title": "矩形围栏",
+      "target_title": "平均分取整",
+      "reason": "同为直接整数运算，需要分别确认表达式、取整规则和最大输入。",
+      "concept": "整数表达式与数据范围"
+    },
+    {
+      "source_id": "CL-BASICS-05",
+      "target_id": "CL-BASICS-06",
+      "source_title": "公约数与公倍数",
+      "target_title": "分数加法",
+      "reason": "公约数计算与分数约分相关，需留意零值与中间结果范围。",
+      "concept": "公约数与约分"
+    },
+    {
+      "source_id": "CL-BASICS-06",
+      "target_id": "CL-BASICS-05",
+      "source_title": "分数加法",
+      "target_title": "公约数与公倍数",
+      "reason": "公约数计算与分数约分相关，需留意零值与中间结果范围。",
+      "concept": "公约数与约分"
+    },
+    {
+      "source_id": "CL-CONTROL-01",
+      "target_id": "CL-CONTROL-02",
+      "source_title": "区间奇数计数",
+      "target_title": "闰年判断",
+      "reason": "分别练习区间端点与多条件判断，说明边界及条件组合。",
+      "concept": "条件分支与边界"
+    },
+    {
+      "source_id": "CL-CONTROL-02",
+      "target_id": "CL-CONTROL-01",
+      "source_title": "闰年判断",
+      "target_title": "区间奇数计数",
+      "reason": "分别练习区间端点与多条件判断，说明边界及条件组合。",
+      "concept": "条件分支与边界"
+    },
+    {
+      "source_id": "CL-CONTROL-03",
+      "target_id": "CL-CONTROL-05",
+      "source_title": "整数因子计数",
+      "target_title": "区间素数",
+      "reason": "单数因子枚举与区间素数相关，难度有所变化，不能照搬循环策略。",
+      "concept": "因子、素数与循环"
+    },
+    {
+      "source_id": "CL-CONTROL-05",
+      "target_id": "CL-CONTROL-03",
+      "source_title": "区间素数",
+      "target_title": "整数因子计数",
+      "reason": "单数因子枚举与区间素数相关，难度有所变化，不能照搬循环策略。",
+      "concept": "因子、素数与循环"
+    },
+    {
+      "source_id": "CL-CONTROL-04",
+      "target_id": "CL-CONTROL-06",
+      "source_title": "数字反转",
+      "target_title": "最小达标天数",
+      "reason": "分别练习数位循环与逐日累计，比较终止条件；两题算法不同。",
+      "concept": "循环模拟与终止条件"
+    },
+    {
+      "source_id": "CL-CONTROL-06",
+      "target_id": "CL-CONTROL-04",
+      "source_title": "最小达标天数",
+      "target_title": "数字反转",
+      "reason": "分别练习数位循环与逐日累计，比较终止条件；两题算法不同。",
+      "concept": "循环模拟与终止条件"
+    },
+    {
+      "source_id": "CL-ARRAYS-01",
+      "target_id": "CL-ARRAYS-04",
+      "source_title": "数组总和",
+      "target_title": "区间和查询",
+      "reason": "一次总和与多次区间查询相关，需要分别定义下标端点及累计量。",
+      "concept": "累加与区间和"
+    },
+    {
+      "source_id": "CL-ARRAYS-04",
+      "target_id": "CL-ARRAYS-01",
+      "source_title": "区间和查询",
+      "target_title": "数组总和",
+      "reason": "一次总和与多次区间查询相关，需要分别定义下标端点及累计量。",
+      "concept": "累加与区间和"
+    },
+    {
+      "source_id": "CL-ARRAYS-02",
+      "target_id": "CL-ARRAYS-06",
+      "source_title": "第二大不同值",
+      "target_title": "最长连续整数链",
+      "reason": "不同值筛选与连续整数集合都涉及去重，比较重复元素及顺序的影响。",
+      "concept": "去重与集合"
+    },
+    {
+      "source_id": "CL-ARRAYS-06",
+      "target_id": "CL-ARRAYS-02",
+      "source_title": "最长连续整数链",
+      "target_title": "第二大不同值",
+      "reason": "不同值筛选与连续整数集合都涉及去重，比较重复元素及顺序的影响。",
+      "concept": "去重与集合"
+    },
+    {
+      "source_id": "CL-ARRAYS-03",
+      "target_id": "CL-ARRAYS-05",
+      "source_title": "频次冠军",
+      "target_title": "和为目标的连续段",
+      "reason": "频次表与前缀状态计数都使用映射，需要分别定义键与计数含义。",
+      "concept": "哈希统计与累计状态"
+    },
+    {
+      "source_id": "CL-ARRAYS-05",
+      "target_id": "CL-ARRAYS-03",
+      "source_title": "和为目标的连续段",
+      "target_title": "频次冠军",
+      "reason": "频次表与前缀状态计数都使用映射，需要分别定义键与计数含义。",
+      "concept": "哈希统计与累计状态"
+    },
+    {
+      "source_id": "CL-STRINGS-01",
+      "target_id": "CL-STRINGS-04",
+      "source_title": "单词倒序",
+      "target_title": "最长单词长度",
+      "reason": "都需要识别单词边界，再分别处理顺序和长度。",
+      "concept": "分词与遍历"
+    },
+    {
+      "source_id": "CL-STRINGS-04",
+      "target_id": "CL-STRINGS-01",
+      "source_title": "最长单词长度",
+      "target_title": "单词倒序",
+      "reason": "都需要识别单词边界，再分别处理顺序和长度。",
+      "concept": "分词与遍历"
+    },
+    {
+      "source_id": "CL-STRINGS-02",
+      "target_id": "CL-STRINGS-03",
+      "source_title": "清洗后回文",
+      "target_title": "连续字符压缩",
+      "reason": "两题都遍历字符，但清洗后的对称与连续分组条件不同，需重新梳理规则。",
+      "concept": "字符预处理与连续性"
+    },
+    {
+      "source_id": "CL-STRINGS-03",
+      "target_id": "CL-STRINGS-02",
+      "source_title": "连续字符压缩",
+      "target_title": "清洗后回文",
+      "reason": "两题都遍历字符，但清洗后的对称与连续分组条件不同，需重新梳理规则。",
+      "concept": "字符预处理与连续性"
+    },
+    {
+      "source_id": "CL-STRINGS-05",
+      "target_id": "CL-STRINGS-06",
+      "source_title": "版本号比较",
+      "target_title": "超长非负整数相加",
+      "reason": "同为字符串数字处理，比较分段、前导零、进位与数值范围。",
+      "concept": "分段数字与进位"
+    },
+    {
+      "source_id": "CL-STRINGS-06",
+      "target_id": "CL-STRINGS-05",
+      "source_title": "超长非负整数相加",
+      "target_title": "版本号比较",
+      "reason": "同为字符串数字处理，比较分段、前导零、进位与数值范围。",
+      "concept": "分段数字与进位"
+    },
+    {
+      "source_id": "CL-SEARCH-01",
+      "target_id": "CL-SEARCH-03",
+      "source_title": "排序去重",
+      "target_title": "第k大元素",
+      "reason": "有序去重与按名次取值相关，需要分别确认重复值是否占位置。",
+      "concept": "排序与选择"
+    },
+    {
+      "source_id": "CL-SEARCH-03",
+      "target_id": "CL-SEARCH-01",
+      "source_title": "第k大元素",
+      "target_title": "排序去重",
+      "reason": "有序去重与按名次取值相关，需要分别确认重复值是否占位置。",
+      "concept": "排序与选择"
+    },
+    {
+      "source_id": "CL-SEARCH-02",
+      "target_id": "CL-SEARCH-04",
+      "source_title": "有序插入位置",
+      "target_title": "旋转有序数组定位",
+      "reason": "普通有序区间与旋转有序区间都使用查找，需要分别说明有序性及区间缩小依据。",
+      "concept": "二分查找的边界"
+    },
+    {
+      "source_id": "CL-SEARCH-04",
+      "target_id": "CL-SEARCH-02",
+      "source_title": "旋转有序数组定位",
+      "target_title": "有序插入位置",
+      "reason": "普通有序区间与旋转有序区间都使用查找，需要分别说明有序性及区间缩小依据。",
+      "concept": "二分查找的边界"
+    },
+    {
+      "source_id": "CL-SEARCH-05",
+      "target_id": "CL-SEARCH-06",
+      "source_title": "按序运输的最小容量",
+      "target_title": "逆序对计数",
+      "reason": "分别练习二分答案与分治计数，关联在有序结构与规模限制，并非同一算法模板。",
+      "concept": "有序结构与复杂度"
+    },
+    {
+      "source_id": "CL-SEARCH-06",
+      "target_id": "CL-SEARCH-05",
+      "source_title": "逆序对计数",
+      "target_title": "按序运输的最小容量",
+      "reason": "分别练习二分答案与分治计数，关联在有序结构与规模限制，并非同一算法模板。",
+      "concept": "有序结构与复杂度"
+    },
+    {
+      "source_id": "CL-WINDOWS-01",
+      "target_id": "CL-WINDOWS-02",
+      "source_title": "合并有序数组",
+      "target_title": "配对和计数",
+      "reason": "分别练习合并序列与成对计数，留意重复值、计数和指针用途的差异。",
+      "concept": "有序遍历与配对"
+    },
+    {
+      "source_id": "CL-WINDOWS-02",
+      "target_id": "CL-WINDOWS-01",
+      "source_title": "配对和计数",
+      "target_title": "合并有序数组",
+      "reason": "分别练习合并序列与成对计数，留意重复值、计数和指针用途的差异。",
+      "concept": "有序遍历与配对"
+    },
+    {
+      "source_id": "CL-WINDOWS-03",
+      "target_id": "CL-WINDOWS-06",
+      "source_title": "最长不重复片段",
+      "target_title": "最短覆盖片段",
+      "reason": "无重复窗口与覆盖窗口相关，需要分别定义满足条件及何时收缩。",
+      "concept": "字符窗口与频次"
+    },
+    {
+      "source_id": "CL-WINDOWS-06",
+      "target_id": "CL-WINDOWS-03",
+      "source_title": "最短覆盖片段",
+      "target_title": "最长不重复片段",
+      "reason": "无重复窗口与覆盖窗口相关，需要分别定义满足条件及何时收缩。",
+      "concept": "字符窗口与频次"
+    },
+    {
+      "source_id": "CL-WINDOWS-04",
+      "target_id": "CL-WINDOWS-05",
+      "source_title": "最短达标连续段",
+      "target_title": "翻转后的连续1",
+      "reason": "正数和阈值与零的个数约束都可练习窗口，解释各自扩张、收缩的条件。",
+      "concept": "可收缩窗口"
+    },
+    {
+      "source_id": "CL-WINDOWS-05",
+      "target_id": "CL-WINDOWS-04",
+      "source_title": "翻转后的连续1",
+      "target_title": "最短达标连续段",
+      "reason": "正数和阈值与零的个数约束都可练习窗口，解释各自扩张、收缩的条件。",
+      "concept": "可收缩窗口"
+    },
+    {
+      "source_id": "CL-STACKS-01",
+      "target_id": "CL-STACKS-04",
+      "source_title": "括号匹配",
+      "target_title": "后缀表达式计算",
+      "reason": "符号匹配与表达式求值都使用栈，需要分别确认弹栈顺序与非法边界。",
+      "concept": "栈的后进先出"
+    },
+    {
+      "source_id": "CL-STACKS-04",
+      "target_id": "CL-STACKS-01",
+      "source_title": "后缀表达式计算",
+      "target_title": "括号匹配",
+      "reason": "符号匹配与表达式求值都使用栈，需要分别确认弹栈顺序与非法边界。",
+      "concept": "栈的后进先出"
+    },
+    {
+      "source_id": "CL-STACKS-02",
+      "target_id": "CL-STACKS-06",
+      "source_title": "队列操作日志",
+      "target_title": "柱状图最大矩形",
+      "reason": "队列模拟与单调栈面积题算法差异较大，作为同类数据结构拓展而非直接变式。",
+      "concept": "数据结构选择与模拟"
+    },
+    {
+      "source_id": "CL-STACKS-06",
+      "target_id": "CL-STACKS-02",
+      "source_title": "柱状图最大矩形",
+      "target_title": "队列操作日志",
+      "reason": "队列模拟与单调栈面积题算法差异较大，作为同类数据结构拓展而非直接变式。",
+      "concept": "数据结构选择与模拟"
+    },
+    {
+      "source_id": "CL-STACKS-03",
+      "target_id": "CL-STACKS-05",
+      "source_title": "右侧首个更大值的位置",
+      "target_title": "等待升温",
+      "reason": "同一单调栈思路分别输出位置与距离，核对相等值及不存在时的结果。",
+      "concept": "右侧首个更大值"
+    },
+    {
+      "source_id": "CL-STACKS-05",
+      "target_id": "CL-STACKS-03",
+      "source_title": "等待升温",
+      "target_title": "右侧首个更大值的位置",
+      "reason": "同一单调栈思路分别输出位置与距离，核对相等值及不存在时的结果。",
+      "concept": "右侧首个更大值"
+    },
+    {
+      "source_id": "CL-RECURSION-01",
+      "target_id": "CL-RECURSION-02",
+      "source_title": "递归求平方和",
+      "target_title": "二进制串枚举",
+      "reason": "递归累计与分支枚举相关，需要分别解释终止条件及展开或输出顺序。",
+      "concept": "递归终止与展开"
+    },
+    {
+      "source_id": "CL-RECURSION-02",
+      "target_id": "CL-RECURSION-01",
+      "source_title": "二进制串枚举",
+      "target_title": "递归求平方和",
+      "reason": "递归累计与分支枚举相关，需要分别解释终止条件及展开或输出顺序。",
+      "concept": "递归终止与展开"
+    },
+    {
+      "source_id": "CL-RECURSION-03",
+      "target_id": "CL-RECURSION-05",
+      "source_title": "目标和子集数",
+      "target_title": "选人组合数",
+      "reason": "受目标和约束的子集与固定人数的组合相关，需要分别定义状态及计数边界。",
+      "concept": "选择与计数"
+    },
+    {
+      "source_id": "CL-RECURSION-05",
+      "target_id": "CL-RECURSION-03",
+      "source_title": "选人组合数",
+      "target_title": "目标和子集数",
+      "reason": "受目标和约束的子集与固定人数的组合相关，需要分别定义状态及计数边界。",
+      "concept": "选择与计数"
+    },
+    {
+      "source_id": "CL-RECURSION-04",
+      "target_id": "CL-RECURSION-06",
+      "source_title": "皇后摆放计数",
+      "target_title": "经过所有点的路径数",
+      "reason": "皇后约束与路径状态均涉及受限搜索，比较已使用位置记录与剪枝；难度不同。",
+      "concept": "约束搜索与状态"
+    },
+    {
+      "source_id": "CL-RECURSION-06",
+      "target_id": "CL-RECURSION-04",
+      "source_title": "经过所有点的路径数",
+      "target_title": "皇后摆放计数",
+      "reason": "皇后约束与路径状态均涉及受限搜索，比较已使用位置记录与剪枝；难度不同。",
+      "concept": "约束搜索与状态"
+    },
+    {
+      "source_id": "CL-GRAPHS-01",
+      "target_id": "CL-GRAPHS-02",
+      "source_title": "无向图的度数",
+      "target_title": "有根树的叶子数",
+      "reason": "无向图度数与有根树叶子都涉及邻接关系，留意根节点及父子方向。",
+      "concept": "图与树的邻接关系"
+    },
+    {
+      "source_id": "CL-GRAPHS-02",
+      "target_id": "CL-GRAPHS-01",
+      "source_title": "有根树的叶子数",
+      "target_title": "无向图的度数",
+      "reason": "无向图度数与有根树叶子都涉及邻接关系，留意根节点及父子方向。",
+      "concept": "图与树的邻接关系"
+    },
+    {
+      "source_id": "CL-GRAPHS-03",
+      "target_id": "CL-GRAPHS-04",
+      "source_title": "连通块数量",
+      "target_title": "网格岛屿数量",
+      "reason": "图连通块与网格岛屿可关联练习，需要分别定义邻接及访问标记。",
+      "concept": "连通分量与遍历"
+    },
+    {
+      "source_id": "CL-GRAPHS-04",
+      "target_id": "CL-GRAPHS-03",
+      "source_title": "网格岛屿数量",
+      "target_title": "连通块数量",
+      "reason": "图连通块与网格岛屿可关联练习，需要分别定义邻接及访问标记。",
+      "concept": "连通分量与遍历"
+    },
+    {
+      "source_id": "CL-GRAPHS-05",
+      "target_id": "CL-GRAPHS-06",
+      "source_title": "最少经过几条边",
+      "target_title": "带权路线最短距离",
+      "reason": "无权与带权最短路相关，需要解释边权为何影响队列策略。",
+      "concept": "最短路与边权"
+    },
+    {
+      "source_id": "CL-GRAPHS-06",
+      "target_id": "CL-GRAPHS-05",
+      "source_title": "带权路线最短距离",
+      "target_title": "最少经过几条边",
+      "reason": "无权与带权最短路相关，需要解释边权为何影响队列策略。",
+      "concept": "最短路与边权"
+    },
+    {
+      "source_id": "CL-DP-01",
+      "target_id": "CL-DP-02",
+      "source_title": "台阶走法",
+      "target_title": "不相邻奖励",
+      "reason": "台阶数量与相邻选择约束都涉及前缀状态，需要分别定义状态及可接续的前一状态。",
+      "concept": "前缀状态与转移"
+    },
+    {
+      "source_id": "CL-DP-02",
+      "target_id": "CL-DP-01",
+      "source_title": "不相邻奖励",
+      "target_title": "台阶走法",
+      "reason": "台阶数量与相邻选择约束都涉及前缀状态，需要分别定义状态及可接续的前一状态。",
+      "concept": "前缀状态与转移"
+    },
+    {
+      "source_id": "CL-DP-03",
+      "target_id": "CL-DP-04",
+      "source_title": "最大连续段和",
+      "target_title": "最少硬币数",
+      "reason": "连续段最大值与硬币最少数量分别使用最优值状态，初值及不可达状态处理不同。",
+      "concept": "最优值状态与初值"
+    },
+    {
+      "source_id": "CL-DP-04",
+      "target_id": "CL-DP-03",
+      "source_title": "最少硬币数",
+      "target_title": "最大连续段和",
+      "reason": "连续段最大值与硬币最少数量分别使用最优值状态，初值及不可达状态处理不同。",
+      "concept": "最优值状态与初值"
+    },
+    {
+      "source_id": "CL-DP-05",
+      "target_id": "CL-DP-06",
+      "source_title": "避障网格路径",
+      "target_title": "文本编辑距离",
+      "reason": "网格路径计数与文本编辑代价均涉及二维状态，需要分别定义两维含义、边界及转移。",
+      "concept": "二维状态与边界"
+    },
+    {
+      "source_id": "CL-DP-06",
+      "target_id": "CL-DP-05",
+      "source_title": "文本编辑距离",
+      "target_title": "避障网格路径",
+      "reason": "网格路径计数与文本编辑代价均涉及二维状态，需要分别定义两维含义、边界及转移。",
+      "concept": "二维状态与边界"
+    }
+  ]
+}

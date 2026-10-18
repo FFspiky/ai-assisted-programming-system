@@ -9,3 +9,4 @@ beautifulsoup4==4.13.4
 lxml==6.1.0
 redis==5.2.1
 Pillow==12.3.0
+tzdata; sys_platform == "win32"

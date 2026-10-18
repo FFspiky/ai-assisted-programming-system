@@ -7,6 +7,7 @@ from flask_login import current_user
 
 from models import Problem, TestCase, db
 from routes.api_response import api_error, api_success
+from services.problem_metadata import CATEGORIES, validate_metadata
 
 admin_blueprint = Blueprint("admin", __name__)
 
@@ -85,6 +86,9 @@ def _problem_payload(problem):
         "difficulty": problem.difficulty,
         "judge_mode": problem.judge_mode,
         "description": problem.description,
+        "category": problem.category,
+        "tags": problem.tags or [],
+        "source": problem.source,
         "test_case_count": len(test_cases),
         "test_cases": [
             {
@@ -112,7 +116,10 @@ def admin_required(f):
 @admin_required
 def list_problems():
     problems = Problem.query.order_by(Problem.id.asc()).all()
-    data = {"problems": [_problem_payload(problem) for problem in problems]}
+    data = {
+        "problems": [_problem_payload(problem) for problem in problems],
+        "categories": CATEGORIES,
+    }
     return api_success(data, problems=data["problems"])
 
 
@@ -128,6 +135,14 @@ def update_problem(problem_id):
     difficulty = (data.get("difficulty") or "简单").strip()
     description = (data.get("description") or "").strip()
     test_cases = data.get("test_cases")
+    try:
+        category, tags, source = validate_metadata(
+            data.get("category", problem.category),
+            data.get("tags", problem.tags or []),
+            data.get("source", problem.source or ""),
+        )
+    except ValueError as exc:
+        return api_error("INVALID_METADATA", str(exc), 400)
 
     if not title or not description:
         return api_error("VALIDATION_ERROR", "标题和题目描述不能为空", 400)
@@ -143,6 +158,7 @@ def update_problem(problem_id):
     problem.judge_mode = judge_mode
     problem.title = title
     problem.difficulty = difficulty or "简单"
+    problem.category, problem.tags, problem.source = category, tags, source
     description_soup = BeautifulSoup(f"<div>{description}</div>", "lxml")
     problem.description = sanitize_description(description_soup.div)
 
@@ -156,7 +172,7 @@ def update_problem(problem_id):
             return api_error("VALIDATION_ERROR", f"第 {index} 个测试用例 output 不能为空", 400)
         db.session.add(
             TestCase(
-                input_data=input_data.strip(),
+                input_data=input_data,
                 expected_output=expected_output.strip(),
                 problem_id=problem_id,
                 is_public=case.get("is_public", True),
@@ -246,9 +262,37 @@ def upload_problems():
             if not problem:
                 problem = Problem(id=prob_id)
 
+            category_tag, tags_tag, source_tag = (
+                item.find(class_="category"),
+                item.find(class_="tags"),
+                item.find(class_="source"),
+            )
+            try:
+                category, tags, source = validate_metadata(
+                    (
+                        _text_or_none(category_tag)
+                        if category_tag
+                        else problem.category or "uncategorized"
+                    ),
+                    (
+                        [
+                            t.strip()
+                            for t in tags_tag.get_text().replace("，", ",").split(",")
+                            if t.strip()
+                        ]
+                        if tags_tag
+                        else problem.tags or []
+                    ),
+                    source_tag.get_text().strip() if source_tag else problem.source or "",
+                )
+            except ValueError as exc:
+                skipped.append({"index": index, "id": prob_id, "title": title, "reason": str(exc)})
+                continue
+
             problem.title = title
             problem.difficulty = difficulty
             problem.description = description
+            problem.category, problem.tags, problem.source = category, tags, source
             db.session.merge(problem)
 
             TestCase.query.filter_by(problem_id=prob_id).delete()
@@ -269,7 +313,7 @@ def upload_problems():
                     )
                     continue
 
-                input_data = input_tag.get_text().strip()
+                input_data = input_tag.get_text()
                 output_data = output_tag.get_text().strip()
                 if not output_data:
                     parse_errors.append(

@@ -3,7 +3,7 @@ import re
 import warnings
 from pathlib import Path
 
-from flask import current_app, Blueprint, request, send_file, session
+from flask import Blueprint, current_app, request, send_file, session
 from flask_login import current_user, login_required, logout_user
 from PIL import Image, ImageOps, UnidentifiedImageError
 from sqlalchemy.exc import IntegrityError
@@ -117,9 +117,18 @@ def upload_avatar():
     if request.is_json:
         data = request.get_json(silent=True)
         preset = data.get("preset") if isinstance(data, dict) else None
-        if not isinstance(preset, str) or preset not in {"whale", "seal", "penguin", "otter", "octopus", "robot"}:
+        if not isinstance(preset, str) or preset not in {
+            "whale",
+            "seal",
+            "penguin",
+            "otter",
+            "octopus",
+            "robot",
+        }:
             return api_error("INVALID_AVATAR", "请选择有效的默认头像", 400)
-        raw = (Path(current_app.static_folder) / "images" / "brand-v1" / "avatars" / f"{preset}.png").read_bytes()
+        raw = (
+            Path(current_app.static_folder) / "images" / "brand-v1" / "avatars" / f"{preset}.png"
+        ).read_bytes()
     else:
         if not upload:
             return api_error("AVATAR_MISSING", "请选择头像图片", 400)

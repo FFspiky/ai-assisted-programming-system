@@ -21,6 +21,9 @@ except Exception:
 # 1. 先从 models.py 导入 db 对象
 from config import ADMIN_EMAIL, ADMIN_PASSWORD, ADMIN_USERNAME, CORS_ORIGINS
 from models import User, db
+from modules.co_create import models as co_create_models  # noqa: F401
+from modules.task_room import models as task_room_models  # noqa: F401
+from modules.task_room import register_task_room
 from routes.api_response import api_error, api_success
 
 # 2. 创建并配置 Flask 应用实例
@@ -101,6 +104,15 @@ def seed_demo():
     click.echo("新增演示题：" + ", ".join(seed_demo_problems()))
 
 
+@app.cli.command("seed-library")
+def seed_library_command():
+    """Import the built-in 60 problems, preserving all existing IDs."""
+    from services.problem_library import seed_library
+
+    result = seed_library()
+    click.echo(f"新增 {len(result['added'])} 题；已有 {len(result['skipped'])} 题已跳过。")
+
+
 @app.before_request
 def disable_remember_auto_login():
     # 如果用户是通过 remember cookie 自动恢复的非 fresh 会话，强制退出，
@@ -114,6 +126,10 @@ def disable_remember_auto_login():
 
 @app.before_request
 def validate_json_request():
+    if request.path.startswith("/api/learning-plan"):
+        request.max_content_length = 32 * 1024
+    if request.path.startswith("/api/task-room/"):
+        request.max_content_length = 160 * 1024
     if request.path == "/api/profile/avatar":
         request.max_content_length = 3 * 1024 * 1024
     if request.path.startswith("/api/") and request.is_json:
@@ -194,6 +210,10 @@ app.register_blueprint(profile_blueprint, url_prefix="/api")
 from routes.practice_history import practice_history_blueprint
 
 app.register_blueprint(practice_history_blueprint, url_prefix="/api")
+register_task_room(app)
+from modules.co_create.routes import blueprint as co_create_blueprint
+
+app.register_blueprint(co_create_blueprint)
 
 
 # 页面路由
