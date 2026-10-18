@@ -1,8 +1,10 @@
-from flask import Blueprint
+from bs4 import BeautifulSoup
+from flask import Blueprint, request
 from flask_login import current_user, login_required
 
 from models import Problem, Submission, db
 from routes.api_response import api_error, api_success
+from services.problem_metadata import CATEGORIES
 
 problems_blueprint = Blueprint("problems", __name__)
 
@@ -10,7 +12,9 @@ problems_blueprint = Blueprint("problems", __name__)
 @problems_blueprint.route("/problems", methods=["GET"])
 def get_all_problems():
     problems = Problem.query.order_by(Problem.id.asc()).all()
-    accepted_problem_ids = set()
+    category_order = {key: index for index, key in enumerate(CATEGORIES)}
+    problems.sort(key=lambda p: (category_order.get(p.category, len(CATEGORIES)), p.id))
+    accepted_problem_ids, attempted_problem_ids = set(), set()
     if current_user.is_authenticated:
         accepted_problem_ids = {
             row.problem_id
@@ -19,21 +23,91 @@ def get_all_problems():
             .distinct()
             .all()
         }
+        attempted_problem_ids = {
+            row.problem_id
+            for row in Submission.query.with_entities(Submission.problem_id)
+            .filter_by(user_id=current_user.id)
+            .distinct()
+        }
+
+    categories = [
+        {"id": key, "name": name, "count": sum(p.category == key for p in problems)}
+        for key, name in CATEGORIES.items()
+    ]
+    selected = request.args.get("category", "")
+    difficulty = request.args.get("difficulty", "")
+    state = request.args.get("state", "")
+    query = request.args.get("q", "").strip().casefold()[:100]
+    if selected and selected not in CATEGORIES:
+        return api_error("INVALID_FILTER", "无效的分类", 400)
+    if difficulty and difficulty not in {"简单", "中等", "困难"}:
+        return api_error("INVALID_FILTER", "无效的难度", 400)
+    if state and state not in {"unattempted", "attempted", "accepted"}:
+        return api_error("INVALID_FILTER", "无效的练习状态", 400)
+    if state and not current_user.is_authenticated:
+        return api_error("AUTH_REQUIRED", "登录后可按练习状态筛选", 401)
+    problems = [
+        p
+        for p in problems
+        if (not selected or p.category == selected)
+        and (not difficulty or p.difficulty == difficulty)
+        and (not query or query in (p.id + " " + p.title).casefold())
+        and (
+            not state
+            or (state == "accepted" and p.id in accepted_problem_ids)
+            or (
+                state == "attempted"
+                and p.id in attempted_problem_ids
+                and p.id not in accepted_problem_ids
+            )
+            or (state == "unattempted" and p.id not in attempted_problem_ids)
+        )
+    ]
+    total = len(problems)
+    ids = [p.id for p in problems]
+    pagination = {}
+    # The original unpaginated contract is retained for existing integrations.
+    if "page" in request.args:
+        try:
+            page, size = max(1, int(request.args["page"])), min(
+                50, max(1, int(request.args.get("page_size", 12)))
+            )
+        except ValueError:
+            return api_error("INVALID_PAGE", "页码须为整数", 400)
+        pages = max(1, (total + size - 1) // size)
+        page = min(page, pages)
+        problems = problems[(page - 1) * size : page * size]
+        pagination = {"page": page, "page_size": size, "pages": pages}
 
     problems_list = [
         {
             "id": p.id,
             "title": p.title,
             # 返回简短描述，可以在模型中增加一个short_description字段
-            "description": (
-                p.description[:100] + "..." if len(p.description) > 100 else p.description
-            ),
+            "description": BeautifulSoup(p.description, "html.parser").get_text(" ", strip=True)[
+                :120
+            ],
             "difficulty": p.difficulty,
+            "category": p.category,
+            "category_name": CATEGORIES.get(p.category, "未分类"),
+            "tags": p.tags or [],
             "accepted": p.id in accepted_problem_ids,
+            "practice_state": (
+                "accepted"
+                if p.id in accepted_problem_ids
+                else "attempted" if p.id in attempted_problem_ids else "unattempted"
+            ),
         }
         for p in problems
     ]
-    return api_success({"problems": problems_list}, problems=problems_list)
+    data = {
+        "problems": problems_list,
+        "ids": ids,
+        "total": total,
+        "categories": categories,
+        **pagination,
+    }
+    return api_success(data, problems=problems_list)
 
 
 @problems_blueprint.route("/problems/<problem_id>", methods=["GET"])
@@ -47,6 +121,10 @@ def get_problem_details(problem_id):
         "title": problem.title,
         "description": problem.description,
         "difficulty": problem.difficulty,
+        "category": problem.category,
+        "category_name": CATEGORIES.get(problem.category, "未分类"),
+        "tags": problem.tags or [],
+        "source": problem.source,
     }
     return api_success({"problem": problem_data}, problem=problem_data)
 

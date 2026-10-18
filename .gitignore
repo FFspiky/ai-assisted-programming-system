@@ -18,3 +18,14 @@ tmp/
 tmp/backups/
 tmp/evidence-demo/
 tmp/profile-check/
+
+# Local settings, credentials, generated databases and diagnostics
+.env.*
+!.env.example
+instance/
+*.db
+*.sqlite
+*.sqlite3
+*.log
+.ruff_cache/
+.agents/

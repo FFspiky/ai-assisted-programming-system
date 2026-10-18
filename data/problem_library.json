@@ -1,0 +1,2702 @@
+[
+  {
+    "id": "CL-BASICS-01",
+    "title": "秒数换算",
+    "description": "<p>将一段持续时间换算为小时、分钟和秒。小时数可以超过24。</p><h3>输入格式</h3><p>一个非负整数 t。</p><h3>输出格式</h3><p>依次输出小时、分钟、秒，用空格分隔。</p><h3>数据范围</h3><p>0 ≤ t ≤ 10^9。</p><h3>示例 1</h3><pre>输入：\n3661\n输出：\n1 1 1</pre><h3>示例 2</h3><pre>输入：\n59\n输出：\n0 0 59</pre>",
+    "category": "basics",
+    "tags": [
+      "整除",
+      "取余"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "3661\n",
+        "output": "1 1 1",
+        "public": true
+      },
+      {
+        "input": "59\n",
+        "output": "0 0 59",
+        "public": true
+      },
+      {
+        "input": "0\n",
+        "output": "0 0 0",
+        "public": false
+      },
+      {
+        "input": "3600\n",
+        "output": "1 0 0",
+        "public": false
+      },
+      {
+        "input": "86400\n",
+        "output": "24 0 0",
+        "public": false
+      },
+      {
+        "input": "1000000000\n",
+        "output": "277777 46 40",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-BASICS-02",
+    "title": "数位之和",
+    "description": "<p>计算整数绝对值的所有十进制数位之和。</p><h3>输入格式</h3><p>一个整数 n。</p><h3>输出格式</h3><p>输出数位之和。</p><h3>数据范围</h3><p>-10^18 ≤ n ≤ 10^18。</p><h3>示例 1</h3><pre>输入：\n203\n输出：\n5</pre><h3>示例 2</h3><pre>输入：\n-91\n输出：\n10</pre>",
+    "category": "basics",
+    "tags": [
+      "数位",
+      "取余"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "203\n",
+        "output": "5",
+        "public": true
+      },
+      {
+        "input": "-91\n",
+        "output": "10",
+        "public": true
+      },
+      {
+        "input": "0\n",
+        "output": "0",
+        "public": false
+      },
+      {
+        "input": "1000000000000000000\n",
+        "output": "1",
+        "public": false
+      },
+      {
+        "input": "999999999999999999\n",
+        "output": "162",
+        "public": false
+      },
+      {
+        "input": "7\n",
+        "output": "7",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-BASICS-03",
+    "title": "平均分取整",
+    "description": "<p>三次测评的权重分别为2、3、5，计算加权平均分并向下取整。</p><h3>输入格式</h3><p>一行三个整数 a b c。</p><h3>输出格式</h3><p>输出一个整数分数。</p><h3>数据范围</h3><p>0 ≤ a,b,c ≤ 100。</p><h3>示例 1</h3><pre>输入：\n80 90 100\n输出：\n93</pre><h3>示例 2</h3><pre>输入：\n0 0 0\n输出：\n0</pre>",
+    "category": "basics",
+    "tags": [
+      "算术表达式",
+      "整除"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "80 90 100\n",
+        "output": "93",
+        "public": true
+      },
+      {
+        "input": "0 0 0\n",
+        "output": "0",
+        "public": true
+      },
+      {
+        "input": "100 100 100\n",
+        "output": "100",
+        "public": false
+      },
+      {
+        "input": "1 0 0\n",
+        "output": "0",
+        "public": false
+      },
+      {
+        "input": "0 1 1\n",
+        "output": "0",
+        "public": false
+      },
+      {
+        "input": "99 1 50\n",
+        "output": "45",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-BASICS-04",
+    "title": "矩形围栏",
+    "description": "<p>已知矩形的长和宽，计算周长与面积。</p><h3>输入格式</h3><p>一行两个正整数 a b。</p><h3>输出格式</h3><p>输出周长和面积，以空格分隔。</p><h3>数据范围</h3><p>1 ≤ a,b ≤ 10^9，使用可容纳结果的整数类型。</p><h3>示例 1</h3><pre>输入：\n3 4\n输出：\n14 12</pre><h3>示例 2</h3><pre>输入：\n1 1\n输出：\n4 1</pre>",
+    "category": "basics",
+    "tags": [
+      "整数运算",
+      "数据范围"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "3 4\n",
+        "output": "14 12",
+        "public": true
+      },
+      {
+        "input": "1 1\n",
+        "output": "4 1",
+        "public": true
+      },
+      {
+        "input": "1000000000 1000000000\n",
+        "output": "4000000000 1000000000000000000",
+        "public": false
+      },
+      {
+        "input": "2 9\n",
+        "output": "22 18",
+        "public": false
+      },
+      {
+        "input": "17 11\n",
+        "output": "56 187",
+        "public": false
+      },
+      {
+        "input": "1 1000000000\n",
+        "output": "2000000002 1000000000",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-BASICS-05",
+    "title": "公约数与公倍数",
+    "description": "<p>求两个正整数的最大公约数和最小公倍数。</p><h3>输入格式</h3><p>一行两个正整数 a b。</p><h3>输出格式</h3><p>输出最大公约数、最小公倍数。</p><h3>数据范围</h3><p>1 ≤ a,b ≤ 10^9。</p><h3>示例 1</h3><pre>输入：\n12 18\n输出：\n6 36</pre><h3>示例 2</h3><pre>输入：\n7 13\n输出：\n1 91</pre>",
+    "category": "basics",
+    "tags": [
+      "欧几里得算法",
+      "整数运算"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "12 18\n",
+        "output": "6 36",
+        "public": true
+      },
+      {
+        "input": "7 13\n",
+        "output": "1 91",
+        "public": true
+      },
+      {
+        "input": "1 1\n",
+        "output": "1 1",
+        "public": false
+      },
+      {
+        "input": "1000000000 1000000000\n",
+        "output": "1000000000 1000000000",
+        "public": false
+      },
+      {
+        "input": "24 8\n",
+        "output": "8 24",
+        "public": false
+      },
+      {
+        "input": "35 49\n",
+        "output": "7 245",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-BASICS-06",
+    "title": "分数加法",
+    "description": "<p>将两个分数相加，结果约分为最简分数；分母始终为正，零写为0/1。</p><h3>输入格式</h3><p>一行四个整数 a b c d，表示 a/b 和 c/d。</p><h3>输出格式</h3><p>输出分子和分母，以空格分隔。</p><h3>数据范围</h3><p>-10^6 ≤ a,c ≤ 10^6，1 ≤ b,d ≤ 10^6。</p><h3>示例 1</h3><pre>输入：\n1 2 1 3\n输出：\n5 6</pre><h3>示例 2</h3><pre>输入：\n-1 2 1 2\n输出：\n0 1</pre>",
+    "category": "basics",
+    "tags": [
+      "分数",
+      "约分"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "1 2 1 3\n",
+        "output": "5 6",
+        "public": true
+      },
+      {
+        "input": "-1 2 1 2\n",
+        "output": "0 1",
+        "public": true
+      },
+      {
+        "input": "0 7 0 9\n",
+        "output": "0 1",
+        "public": false
+      },
+      {
+        "input": "-3 4 -1 4\n",
+        "output": "-1 1",
+        "public": false
+      },
+      {
+        "input": "5 6 7 6\n",
+        "output": "2 1",
+        "public": false
+      },
+      {
+        "input": "1000000 1 1 1000000\n",
+        "output": "1000000000001 1000000",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-CONTROL-01",
+    "title": "区间奇数计数",
+    "description": "<p>统计闭区间内奇数的数量。</p><h3>输入格式</h3><p>一行两个整数 l r。</p><h3>输出格式</h3><p>输出数量。</p><h3>数据范围</h3><p>0 ≤ l ≤ r ≤ 10^9。</p><h3>示例 1</h3><pre>输入：\n1 9\n输出：\n5</pre><h3>示例 2</h3><pre>输入：\n2 2\n输出：\n0</pre>",
+    "category": "control",
+    "tags": [
+      "分支",
+      "边界条件"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "1 9\n",
+        "output": "5",
+        "public": true
+      },
+      {
+        "input": "2 2\n",
+        "output": "0",
+        "public": true
+      },
+      {
+        "input": "0 0\n",
+        "output": "0",
+        "public": false
+      },
+      {
+        "input": "0 1000000000\n",
+        "output": "500000000",
+        "public": false
+      },
+      {
+        "input": "7 7\n",
+        "output": "1",
+        "public": false
+      },
+      {
+        "input": "10 20\n",
+        "output": "5",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-CONTROL-02",
+    "title": "闰年判断",
+    "description": "<p>按公历规则判断年份是否为闰年。</p><h3>输入格式</h3><p>一个年份 y。</p><h3>输出格式</h3><p>闰年输出 YES，否则输出 NO。</p><h3>数据范围</h3><p>1 ≤ y ≤ 9999。</p><h3>示例 1</h3><pre>输入：\n2000\n输出：\nYES</pre><h3>示例 2</h3><pre>输入：\n1900\n输出：\nNO</pre>",
+    "category": "control",
+    "tags": [
+      "条件判断",
+      "逻辑运算"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "2000\n",
+        "output": "YES",
+        "public": true
+      },
+      {
+        "input": "1900\n",
+        "output": "NO",
+        "public": true
+      },
+      {
+        "input": "2024\n",
+        "output": "YES",
+        "public": false
+      },
+      {
+        "input": "2023\n",
+        "output": "NO",
+        "public": false
+      },
+      {
+        "input": "1\n",
+        "output": "NO",
+        "public": false
+      },
+      {
+        "input": "2400\n",
+        "output": "YES",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-CONTROL-03",
+    "title": "整数因子计数",
+    "description": "<p>统计正整数有多少个正因子。</p><h3>输入格式</h3><p>一个正整数 n。</p><h3>输出格式</h3><p>输出因子数量。</p><h3>数据范围</h3><p>1 ≤ n ≤ 10^6。</p><h3>示例 1</h3><pre>输入：\n12\n输出：\n6</pre><h3>示例 2</h3><pre>输入：\n1\n输出：\n1</pre>",
+    "category": "control",
+    "tags": [
+      "循环",
+      "因子枚举"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "12\n",
+        "output": "6",
+        "public": true
+      },
+      {
+        "input": "1\n",
+        "output": "1",
+        "public": true
+      },
+      {
+        "input": "49\n",
+        "output": "3",
+        "public": false
+      },
+      {
+        "input": "97\n",
+        "output": "2",
+        "public": false
+      },
+      {
+        "input": "1000000\n",
+        "output": "49",
+        "public": false
+      },
+      {
+        "input": "36\n",
+        "output": "9",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-CONTROL-04",
+    "title": "数字反转",
+    "description": "<p>反转整数的十进制数位，去除结果的前导零并保留负号。</p><h3>输入格式</h3><p>一个整数 n。</p><h3>输出格式</h3><p>输出反转后的整数。</p><h3>数据范围</h3><p>-10^9 ≤ n ≤ 10^9。</p><h3>示例 1</h3><pre>输入：\n120\n输出：\n21</pre><h3>示例 2</h3><pre>输入：\n-305\n输出：\n-503</pre>",
+    "category": "control",
+    "tags": [
+      "循环",
+      "数位"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "120\n",
+        "output": "21",
+        "public": true
+      },
+      {
+        "input": "-305\n",
+        "output": "-503",
+        "public": true
+      },
+      {
+        "input": "0\n",
+        "output": "0",
+        "public": false
+      },
+      {
+        "input": "7\n",
+        "output": "7",
+        "public": false
+      },
+      {
+        "input": "1000000000\n",
+        "output": "1",
+        "public": false
+      },
+      {
+        "input": "999999999\n",
+        "output": "999999999",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-CONTROL-05",
+    "title": "区间素数",
+    "description": "<p>统计闭区间内素数数量，1不是素数。</p><h3>输入格式</h3><p>一行两个整数 l r。</p><h3>输出格式</h3><p>输出数量。</p><h3>数据范围</h3><p>1 ≤ l ≤ r ≤ 10000。</p><h3>示例 1</h3><pre>输入：\n1 10\n输出：\n4</pre><h3>示例 2</h3><pre>输入：\n1 1\n输出：\n0</pre>",
+    "category": "control",
+    "tags": [
+      "筛法",
+      "循环"
+    ],
+    "difficulty": "中等",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "1 10\n",
+        "output": "4",
+        "public": true
+      },
+      {
+        "input": "1 1\n",
+        "output": "0",
+        "public": true
+      },
+      {
+        "input": "2 2\n",
+        "output": "1",
+        "public": false
+      },
+      {
+        "input": "90 110\n",
+        "output": "5",
+        "public": false
+      },
+      {
+        "input": "100 200\n",
+        "output": "21",
+        "public": false
+      },
+      {
+        "input": "1 10000\n",
+        "output": "1229",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-CONTROL-06",
+    "title": "最小达标天数",
+    "description": "<p>第一天存入 a 元，以后每天比前一天多存 d 元，求累计金额至少为 t 的最少天数。</p><h3>输入格式</h3><p>一行三个整数 a d t。</p><h3>输出格式</h3><p>输出最少天数。</p><h3>数据范围</h3><p>1 ≤ a,t ≤ 10^6，0 ≤ d ≤ 1000。</p><h3>示例 1</h3><pre>输入：\n2 1 9\n输出：\n3</pre><h3>示例 2</h3><pre>输入：\n5 0 20\n输出：\n4</pre>",
+    "category": "control",
+    "tags": [
+      "模拟",
+      "二分答案"
+    ],
+    "difficulty": "中等",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "2 1 9\n",
+        "output": "3",
+        "public": true
+      },
+      {
+        "input": "5 0 20\n",
+        "output": "4",
+        "public": true
+      },
+      {
+        "input": "1 0 1\n",
+        "output": "1",
+        "public": false
+      },
+      {
+        "input": "1 0 1000000\n",
+        "output": "1000000",
+        "public": false
+      },
+      {
+        "input": "3 7 100\n",
+        "output": "6",
+        "public": false
+      },
+      {
+        "input": "100 0 1\n",
+        "output": "1",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-ARRAYS-01",
+    "title": "数组总和",
+    "description": "<p>计算数组中所有整数之和。</p><h3>输入格式</h3><p>第一行 n，第二行 n 个整数。</p><h3>输出格式</h3><p>输出总和。</p><h3>数据范围</h3><p>1 ≤ n ≤ 10000，元素绝对值不超过10^6。</p><h3>示例 1</h3><pre>输入：\n3\n2 5 1\n输出：\n8</pre><h3>示例 2</h3><pre>输入：\n1\n0\n输出：\n0</pre>",
+    "category": "arrays",
+    "tags": [
+      "数组",
+      "遍历"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "3\n2 5 1\n",
+        "output": "8",
+        "public": true
+      },
+      {
+        "input": "1\n0\n",
+        "output": "0",
+        "public": true
+      },
+      {
+        "input": "3\n-5 -2 -3\n",
+        "output": "-10",
+        "public": false
+      },
+      {
+        "input": "4\n3 3 1 2\n",
+        "output": "9",
+        "public": false
+      },
+      {
+        "input": "5\n1 2 3 4 5\n",
+        "output": "15",
+        "public": false
+      },
+      {
+        "input": "3\n1000000 -1000000 7\n",
+        "output": "7",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-ARRAYS-02",
+    "title": "第二大不同值",
+    "description": "<p>找出数组中第二大的不同整数；不足两个不同值时输出 NONE。</p><h3>输入格式</h3><p>第一行 n，第二行 n 个整数。</p><h3>输出格式</h3><p>输出第二大不同值或 NONE。</p><h3>数据范围</h3><p>1 ≤ n ≤ 10000，元素绝对值不超过10^9。</p><h3>示例 1</h3><pre>输入：\n3\n2 5 1\n输出：\n2</pre><h3>示例 2</h3><pre>输入：\n1\n0\n输出：\nNONE</pre>",
+    "category": "arrays",
+    "tags": [
+      "数组",
+      "去重"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "3\n2 5 1\n",
+        "output": "2",
+        "public": true
+      },
+      {
+        "input": "1\n0\n",
+        "output": "NONE",
+        "public": true
+      },
+      {
+        "input": "3\n-5 -2 -3\n",
+        "output": "-3",
+        "public": false
+      },
+      {
+        "input": "4\n3 3 1 2\n",
+        "output": "2",
+        "public": false
+      },
+      {
+        "input": "5\n1 2 3 4 5\n",
+        "output": "4",
+        "public": false
+      },
+      {
+        "input": "3\n1000000 -1000000 7\n",
+        "output": "7",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-ARRAYS-03",
+    "title": "频次冠军",
+    "description": "<p>输出出现次数最多的整数；次数相同选数值最小的。</p><h3>输入格式</h3><p>第一行 n，第二行 n 个整数。</p><h3>输出格式</h3><p>输出该整数及其出现次数。</p><h3>数据范围</h3><p>1 ≤ n ≤ 10000，元素绝对值不超过10^6。</p><h3>示例 1</h3><pre>输入：\n3\n2 5 1\n输出：\n1 1</pre><h3>示例 2</h3><pre>输入：\n1\n0\n输出：\n0 1</pre>",
+    "category": "arrays",
+    "tags": [
+      "哈希表",
+      "频次统计"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "3\n2 5 1\n",
+        "output": "1 1",
+        "public": true
+      },
+      {
+        "input": "1\n0\n",
+        "output": "0 1",
+        "public": true
+      },
+      {
+        "input": "3\n-5 -2 -3\n",
+        "output": "-5 1",
+        "public": false
+      },
+      {
+        "input": "4\n3 3 1 2\n",
+        "output": "3 2",
+        "public": false
+      },
+      {
+        "input": "5\n1 2 3 4 5\n",
+        "output": "1 1",
+        "public": false
+      },
+      {
+        "input": "3\n1000000 -1000000 7\n",
+        "output": "-1000000 1",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-ARRAYS-04",
+    "title": "区间和查询",
+    "description": "<p>多次查询数组闭区间的元素之和，下标从1开始。</p><h3>输入格式</h3><p>首行 n q，次行 n 个整数，随后 q 行 l r。</p><h3>输出格式</h3><p>每个查询输出一行区间和。</p><h3>数据范围</h3><p>1 ≤ n ≤ 10000，1 ≤ q ≤ 1000，1 ≤ l ≤ r ≤ n，元素绝对值≤10^6。</p><h3>示例 1</h3><pre>输入：\n3 2\n1 2 3\n1 3\n2 2\n输出：\n6\n2</pre><h3>示例 2</h3><pre>输入：\n1 1\n-9\n1 1\n输出：\n-9</pre>",
+    "category": "arrays",
+    "tags": [
+      "前缀和",
+      "区间查询"
+    ],
+    "difficulty": "中等",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "3 2\n1 2 3\n1 3\n2 2\n",
+        "output": "6\n2",
+        "public": true
+      },
+      {
+        "input": "1 1\n-9\n1 1\n",
+        "output": "-9",
+        "public": true
+      },
+      {
+        "input": "4 2\n0 0 0 0\n1 4\n3 4\n",
+        "output": "0\n0",
+        "public": false
+      },
+      {
+        "input": "3 2\n-1 2 -3\n1 2\n2 3\n",
+        "output": "1\n-1",
+        "public": false
+      },
+      {
+        "input": "5 1\n5 4 3 2 1\n2 5\n",
+        "output": "10",
+        "public": false
+      },
+      {
+        "input": "2 2\n1000000 1000000\n1 2\n1 1\n",
+        "output": "2000000\n1000000",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-ARRAYS-05",
+    "title": "和为目标的连续段",
+    "description": "<p>统计和恰好为 k 的非空连续子数组数量。</p><h3>输入格式</h3><p>首行 n k，次行 n 个整数。</p><h3>输出格式</h3><p>输出数量。</p><h3>数据范围</h3><p>1 ≤ n ≤ 10000，|k|、元素绝对值≤10^6。</p><h3>示例 1</h3><pre>输入：\n3 2\n1 1 1\n输出：\n2</pre><h3>示例 2</h3><pre>输入：\n1 0\n0\n输出：\n1</pre>",
+    "category": "arrays",
+    "tags": [
+      "前缀和",
+      "哈希表"
+    ],
+    "difficulty": "中等",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "3 2\n1 1 1\n",
+        "output": "2",
+        "public": true
+      },
+      {
+        "input": "1 0\n0\n",
+        "output": "1",
+        "public": true
+      },
+      {
+        "input": "4 0\n0 0 0 0\n",
+        "output": "10",
+        "public": false
+      },
+      {
+        "input": "4 0\n1 -1 1 -1\n",
+        "output": "4",
+        "public": false
+      },
+      {
+        "input": "3 99\n1 2 3\n",
+        "output": "0",
+        "public": false
+      },
+      {
+        "input": "5 3\n1 2 0 3 -3\n",
+        "output": "5",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-ARRAYS-06",
+    "title": "最长连续整数链",
+    "description": "<p>数组次序可以忽略，求其中由不同整数构成的最长连续序列长度。</p><h3>输入格式</h3><p>第一行 n，第二行 n 个整数。</p><h3>输出格式</h3><p>输出长度。</p><h3>数据范围</h3><p>1 ≤ n ≤ 10000，元素绝对值≤10^9。</p><h3>示例 1</h3><pre>输入：\n3\n2 5 1\n输出：\n2</pre><h3>示例 2</h3><pre>输入：\n1\n0\n输出：\n1</pre>",
+    "category": "arrays",
+    "tags": [
+      "集合",
+      "连续序列"
+    ],
+    "difficulty": "中等",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "3\n2 5 1\n",
+        "output": "2",
+        "public": true
+      },
+      {
+        "input": "1\n0\n",
+        "output": "1",
+        "public": true
+      },
+      {
+        "input": "3\n-5 -2 -3\n",
+        "output": "2",
+        "public": false
+      },
+      {
+        "input": "4\n3 3 1 2\n",
+        "output": "3",
+        "public": false
+      },
+      {
+        "input": "5\n1 2 3 4 5\n",
+        "output": "5",
+        "public": false
+      },
+      {
+        "input": "3\n1000000 -1000000 7\n",
+        "output": "1",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-STRINGS-01",
+    "title": "单词倒序",
+    "description": "<p>反转一行文本的单词顺序，单词间输出一个空格。</p><h3>输入格式</h3><p>一行由英文、数字和空格组成的文本，至少含一个单词。</p><h3>输出格式</h3><p>输出倒序后的单词。</p><h3>数据范围</h3><p>文本长度1至1000。</p><h3>示例 1</h3><pre>输入：\ncode lab\n输出：\nlab code</pre><h3>示例 2</h3><pre>输入：\na\n输出：\na</pre>",
+    "category": "strings",
+    "tags": [
+      "字符串",
+      "分词"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "code lab\n",
+        "output": "lab code",
+        "public": true
+      },
+      {
+        "input": "a\n",
+        "output": "a",
+        "public": true
+      },
+      {
+        "input": "  blue   sea  \n",
+        "output": "sea blue",
+        "public": false
+      },
+      {
+        "input": "a a a\n",
+        "output": "a a a",
+        "public": false
+      },
+      {
+        "input": "hello world again\n",
+        "output": "again world hello",
+        "public": false
+      },
+      {
+        "input": "123 xyz\n",
+        "output": "xyz 123",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-STRINGS-02",
+    "title": "清洗后回文",
+    "description": "<p>忽略大小写与非英文字母数字字符，判断剩余文本是否回文；空串视为回文。</p><h3>输入格式</h3><p>一行ASCII文本。</p><h3>输出格式</h3><p>输出 YES 或 NO。</p><h3>数据范围</h3><p>文本长度0至1000。</p><h3>示例 1</h3><pre>输入：\nA man, a plan, a canal: Panama\n输出：\nYES</pre><h3>示例 2</h3><pre>输入：\nrace a car\n输出：\nNO</pre>",
+    "category": "strings",
+    "tags": [
+      "字符串",
+      "回文"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "A man, a plan, a canal: Panama\n",
+        "output": "YES",
+        "public": true
+      },
+      {
+        "input": "race a car\n",
+        "output": "NO",
+        "public": true
+      },
+      {
+        "input": "\n",
+        "output": "YES",
+        "public": false
+      },
+      {
+        "input": "!!!\n",
+        "output": "YES",
+        "public": false
+      },
+      {
+        "input": "0P\n",
+        "output": "NO",
+        "public": false
+      },
+      {
+        "input": "Abba\n",
+        "output": "YES",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-STRINGS-03",
+    "title": "连续字符压缩",
+    "description": "<p>将每段连续相同字母写为字母和次数，包括次数为1的段。</p><h3>输入格式</h3><p>一行非空小写英文字母串。</p><h3>输出格式</h3><p>输出压缩结果，例如 aaabb 输出 a3b2。</p><h3>数据范围</h3><p>长度1至1000。</p><h3>示例 1</h3><pre>输入：\naaabb\n输出：\na3b2</pre><h3>示例 2</h3><pre>输入：\na\n输出：\na1</pre>",
+    "category": "strings",
+    "tags": [
+      "字符串",
+      "游程编码"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "aaabb\n",
+        "output": "a3b2",
+        "public": true
+      },
+      {
+        "input": "a\n",
+        "output": "a1",
+        "public": true
+      },
+      {
+        "input": "abc\n",
+        "output": "a1b1c1",
+        "public": false
+      },
+      {
+        "input": "aaaaaa\n",
+        "output": "a6",
+        "public": false
+      },
+      {
+        "input": "aabbaa\n",
+        "output": "a2b2a2",
+        "public": false
+      },
+      {
+        "input": "zzxyyy\n",
+        "output": "z2x1y3",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-STRINGS-04",
+    "title": "最长单词长度",
+    "description": "<p>计算文本中最长单词的长度，单词以空格分隔。</p><h3>输入格式</h3><p>一行英文单词和空格，至少含一个单词。</p><h3>输出格式</h3><p>输出最大长度。</p><h3>数据范围</h3><p>文本长度1至1000。</p><h3>示例 1</h3><pre>输入：\ncode lab\n输出：\n4</pre><h3>示例 2</h3><pre>输入：\na\n输出：\n1</pre>",
+    "category": "strings",
+    "tags": [
+      "字符串",
+      "遍历"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "code lab\n",
+        "output": "4",
+        "public": true
+      },
+      {
+        "input": "a\n",
+        "output": "1",
+        "public": true
+      },
+      {
+        "input": "  blue   sea  \n",
+        "output": "4",
+        "public": false
+      },
+      {
+        "input": "a a a\n",
+        "output": "1",
+        "public": false
+      },
+      {
+        "input": "hello world again\n",
+        "output": "5",
+        "public": false
+      },
+      {
+        "input": "123 xyz\n",
+        "output": "3",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-STRINGS-05",
+    "title": "版本号比较",
+    "description": "<p>比较由非负整数段组成的版本号，缺失的末尾段按0处理，允许段内前导零。</p><h3>输入格式</h3><p>两行版本号，每段用英文句点分隔。</p><h3>输出格式</h3><p>第一版本较小输出 -1，相等输出 0，较大输出 1。</p><h3>数据范围</h3><p>每个版本1至20段，每段数值≤10^9。</p><h3>示例 1</h3><pre>输入：\n1.2\n1.10\n输出：\n-1</pre><h3>示例 2</h3><pre>输入：\n1.0\n1\n输出：\n0</pre>",
+    "category": "strings",
+    "tags": [
+      "字符串",
+      "分段比较"
+    ],
+    "difficulty": "中等",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "1.2\n1.10\n",
+        "output": "-1",
+        "public": true
+      },
+      {
+        "input": "1.0\n1\n",
+        "output": "0",
+        "public": true
+      },
+      {
+        "input": "01.002\n1.2.0\n",
+        "output": "0",
+        "public": false
+      },
+      {
+        "input": "2\n1.999\n",
+        "output": "1",
+        "public": false
+      },
+      {
+        "input": "0\n0.0\n",
+        "output": "0",
+        "public": false
+      },
+      {
+        "input": "1.0.1\n1\n",
+        "output": "1",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-STRINGS-06",
+    "title": "超长非负整数相加",
+    "description": "<p>计算两个非负十进制整数之和，输出中去除前导零。</p><h3>输入格式</h3><p>两行数字串。</p><h3>输出格式</h3><p>输出和。</p><h3>数据范围</h3><p>每串1至1000位，可有前导零；用逐位计算方法完成。</p><h3>示例 1</h3><pre>输入：\n999\n1\n输出：\n1000</pre><h3>示例 2</h3><pre>输入：\n0\n0\n输出：\n0</pre>",
+    "category": "strings",
+    "tags": [
+      "字符串",
+      "模拟加法"
+    ],
+    "difficulty": "中等",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "999\n1\n",
+        "output": "1000",
+        "public": true
+      },
+      {
+        "input": "0\n0\n",
+        "output": "0",
+        "public": true
+      },
+      {
+        "input": "0012\n0008\n",
+        "output": "20",
+        "public": false
+      },
+      {
+        "input": "12345\n98765\n",
+        "output": "111110",
+        "public": false
+      },
+      {
+        "input": "9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n1\n",
+        "output": "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "public": false
+      },
+      {
+        "input": "123\n7\n",
+        "output": "130",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-SEARCH-01",
+    "title": "排序去重",
+    "description": "<p>将数组去重后按升序输出。</p><h3>输入格式</h3><p>第一行 n，第二行 n 个整数。</p><h3>输出格式</h3><p>输出不同整数，空格分隔。</p><h3>数据范围</h3><p>1 ≤ n ≤ 1000，元素绝对值≤10^9。</p><h3>示例 1</h3><pre>输入：\n3\n2 5 1\n输出：\n1 2 5</pre><h3>示例 2</h3><pre>输入：\n1\n0\n输出：\n0</pre>",
+    "category": "search",
+    "tags": [
+      "排序",
+      "去重"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "3\n2 5 1\n",
+        "output": "1 2 5",
+        "public": true
+      },
+      {
+        "input": "1\n0\n",
+        "output": "0",
+        "public": true
+      },
+      {
+        "input": "3\n-5 -2 -3\n",
+        "output": "-5 -3 -2",
+        "public": false
+      },
+      {
+        "input": "4\n3 3 1 2\n",
+        "output": "1 2 3",
+        "public": false
+      },
+      {
+        "input": "5\n1 2 3 4 5\n",
+        "output": "1 2 3 4 5",
+        "public": false
+      },
+      {
+        "input": "3\n1000000 -1000000 7\n",
+        "output": "-1000000 7 1000000",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-SEARCH-02",
+    "title": "有序插入位置",
+    "description": "<p>在非递减数组中找到第一个大于或等于 x 的位置；不存在时返回 n。下标从0开始。</p><h3>输入格式</h3><p>首行 n x，次行 n 个有序整数。</p><h3>输出格式</h3><p>输出位置。</p><h3>数据范围</h3><p>1 ≤ n ≤ 10000，整数绝对值≤10^9。</p><h3>示例 1</h3><pre>输入：\n4 3\n1 3 3 5\n输出：\n1</pre><h3>示例 2</h3><pre>输入：\n1 0\n2\n输出：\n0</pre>",
+    "category": "search",
+    "tags": [
+      "二分查找",
+      "边界条件"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "4 3\n1 3 3 5\n",
+        "output": "1",
+        "public": true
+      },
+      {
+        "input": "1 0\n2\n",
+        "output": "0",
+        "public": true
+      },
+      {
+        "input": "1 9\n2\n",
+        "output": "1",
+        "public": false
+      },
+      {
+        "input": "3 2\n2 2 2\n",
+        "output": "0",
+        "public": false
+      },
+      {
+        "input": "3 -4\n-3 0 7\n",
+        "output": "0",
+        "public": false
+      },
+      {
+        "input": "4 4\n1 2 3 5\n",
+        "output": "3",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-SEARCH-03",
+    "title": "第k大元素",
+    "description": "<p>按包含重复值的降序次序找出第 k 个元素。</p><h3>输入格式</h3><p>首行 n k，次行 n 个整数。</p><h3>输出格式</h3><p>输出第 k 大的元素。</p><h3>数据范围</h3><p>1 ≤ k ≤ n ≤ 10000，整数绝对值≤10^9。</p><h3>示例 1</h3><pre>输入：\n5 2\n3 1 5 5 2\n输出：\n5</pre><h3>示例 2</h3><pre>输入：\n1 1\n-7\n输出：\n-7</pre>",
+    "category": "search",
+    "tags": [
+      "排序",
+      "堆"
+    ],
+    "difficulty": "中等",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "5 2\n3 1 5 5 2\n",
+        "output": "5",
+        "public": true
+      },
+      {
+        "input": "1 1\n-7\n",
+        "output": "-7",
+        "public": true
+      },
+      {
+        "input": "3 3\n1 2 3\n",
+        "output": "1",
+        "public": false
+      },
+      {
+        "input": "4 1\n0 0 0 0\n",
+        "output": "0",
+        "public": false
+      },
+      {
+        "input": "5 4\n-2 -9 -1 0 7\n",
+        "output": "-2",
+        "public": false
+      },
+      {
+        "input": "6 3\n8 7 6 5 4 3\n",
+        "output": "6",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-SEARCH-04",
+    "title": "旋转有序数组定位",
+    "description": "<p>一个严格递增数组经过循环旋转，求 x 的下标，不存在则输出 -1。</p><h3>输入格式</h3><p>首行 n x，次行 n 个整数。</p><h3>输出格式</h3><p>输出从0开始的下标或 -1。</p><h3>数据范围</h3><p>1 ≤ n ≤ 10000，数组元素互不相同且绝对值≤10^9。</p><h3>示例 1</h3><pre>输入：\n5 1\n4 5 1 2 3\n输出：\n2</pre><h3>示例 2</h3><pre>输入：\n1 2\n2\n输出：\n0</pre>",
+    "category": "search",
+    "tags": [
+      "二分查找",
+      "旋转数组"
+    ],
+    "difficulty": "中等",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "5 1\n4 5 1 2 3\n",
+        "output": "2",
+        "public": true
+      },
+      {
+        "input": "1 2\n2\n",
+        "output": "0",
+        "public": true
+      },
+      {
+        "input": "1 3\n2\n",
+        "output": "-1",
+        "public": false
+      },
+      {
+        "input": "4 4\n1 2 3 4\n",
+        "output": "3",
+        "public": false
+      },
+      {
+        "input": "5 9\n4 5 1 2 3\n",
+        "output": "-1",
+        "public": false
+      },
+      {
+        "input": "5 -2\n0 1 2 -3 -2\n",
+        "output": "4",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-SEARCH-05",
+    "title": "按序运输的最小容量",
+    "description": "<p>货物按给定顺序装运，每天装一个连续段且不可拆分单件，求 d 天内运完的最小日容量。</p><h3>输入格式</h3><p>首行 n d，次行 n 个正重量。</p><h3>输出格式</h3><p>输出最小容量。</p><h3>数据范围</h3><p>1 ≤ d ≤ n ≤ 10000，每件重量1至1000。</p><h3>示例 1</h3><pre>输入：\n5 3\n1 2 3 4 5\n输出：\n6</pre><h3>示例 2</h3><pre>输入：\n1 1\n7\n输出：\n7</pre>",
+    "category": "search",
+    "tags": [
+      "二分答案",
+      "贪心"
+    ],
+    "difficulty": "中等",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "5 3\n1 2 3 4 5\n",
+        "output": "6",
+        "public": true
+      },
+      {
+        "input": "1 1\n7\n",
+        "output": "7",
+        "public": true
+      },
+      {
+        "input": "4 4\n9 2 3 1\n",
+        "output": "9",
+        "public": false
+      },
+      {
+        "input": "4 1\n9 2 3 1\n",
+        "output": "15",
+        "public": false
+      },
+      {
+        "input": "5 2\n3 2 2 4 1\n",
+        "output": "7",
+        "public": false
+      },
+      {
+        "input": "3 2\n1000 1000 1000\n",
+        "output": "2000",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-SEARCH-06",
+    "title": "逆序对计数",
+    "description": "<p>统计满足 i &lt; j 且 a[i] &gt; a[j] 的下标对数量，相等元素不计入。</p><h3>输入格式</h3><p>第一行 n，第二行 n 个整数。</p><h3>输出格式</h3><p>输出数量。</p><h3>数据范围</h3><p>1 ≤ n ≤ 100000，元素绝对值≤10^9。</p><h3>示例 1</h3><pre>输入：\n3\n2 5 1\n输出：\n2</pre><h3>示例 2</h3><pre>输入：\n1\n0\n输出：\n0</pre>",
+    "category": "search",
+    "tags": [
+      "归并排序",
+      "分治"
+    ],
+    "difficulty": "困难",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "3\n2 5 1\n",
+        "output": "2",
+        "public": true
+      },
+      {
+        "input": "1\n0\n",
+        "output": "0",
+        "public": true
+      },
+      {
+        "input": "3\n-5 -2 -3\n",
+        "output": "1",
+        "public": false
+      },
+      {
+        "input": "4\n3 3 1 2\n",
+        "output": "4",
+        "public": false
+      },
+      {
+        "input": "5\n1 2 3 4 5\n",
+        "output": "0",
+        "public": false
+      },
+      {
+        "input": "3\n1000000 -1000000 7\n",
+        "output": "2",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-WINDOWS-01",
+    "title": "合并有序数组",
+    "description": "<p>将两个非递减数组合并为一个非递减数组。</p><h3>输入格式</h3><p>首行 n m，第二、三行分别为两个数组；长度为0时该行为空。</p><h3>输出格式</h3><p>输出合并结果，空格分隔；空数组输出 EMPTY。</p><h3>数据范围</h3><p>0 ≤ n,m ≤ 1000，n+m ≤ 1000，元素绝对值≤10^9。</p><h3>示例 1</h3><pre>输入：\n3 2\n1 3 5\n2 4\n输出：\n1 2 3 4 5</pre><h3>示例 2</h3><pre>输入：\n0 1\n\n7\n输出：\n7</pre>",
+    "category": "windows",
+    "tags": [
+      "双指针",
+      "有序合并"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "3 2\n1 3 5\n2 4\n",
+        "output": "1 2 3 4 5",
+        "public": true
+      },
+      {
+        "input": "0 1\n\n7\n",
+        "output": "7",
+        "public": true
+      },
+      {
+        "input": "1 0\n-2\n\n",
+        "output": "-2",
+        "public": false
+      },
+      {
+        "input": "2 2\n1 1\n1 1\n",
+        "output": "1 1 1 1",
+        "public": false
+      },
+      {
+        "input": "2 3\n-5 0\n-4 0 8\n",
+        "output": "-5 -4 0 0 8",
+        "public": false
+      },
+      {
+        "input": "0 0\n\n\n",
+        "output": "EMPTY",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-WINDOWS-02",
+    "title": "配对和计数",
+    "description": "<p>统计数组中满足 i &lt; j 且 a[i]+a[j]=k 的下标对数量。</p><h3>输入格式</h3><p>首行 n k，次行 n 个整数。</p><h3>输出格式</h3><p>输出数量；重复值在不同下标时分别计数。</p><h3>数据范围</h3><p>1 ≤ n ≤ 10000，元素和k的绝对值≤10^9。</p><h3>示例 1</h3><pre>输入：\n4 5\n1 4 2 3\n输出：\n2</pre><h3>示例 2</h3><pre>输入：\n1 2\n1\n输出：\n0</pre>",
+    "category": "windows",
+    "tags": [
+      "配对",
+      "哈希表"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "4 5\n1 4 2 3\n",
+        "output": "2",
+        "public": true
+      },
+      {
+        "input": "1 2\n1\n",
+        "output": "0",
+        "public": true
+      },
+      {
+        "input": "4 2\n1 1 1 1\n",
+        "output": "6",
+        "public": false
+      },
+      {
+        "input": "4 0\n-1 1 -1 1\n",
+        "output": "4",
+        "public": false
+      },
+      {
+        "input": "3 99\n1 2 3\n",
+        "output": "0",
+        "public": false
+      },
+      {
+        "input": "5 4\n2 2 1 3 0\n",
+        "output": "2",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-WINDOWS-03",
+    "title": "最长不重复片段",
+    "description": "<p>求字符串中不含重复字符的最长连续片段长度。</p><h3>输入格式</h3><p>一行小写字母串，允许为空。</p><h3>输出格式</h3><p>输出长度。</p><h3>数据范围</h3><p>长度0至100000。</p><h3>示例 1</h3><pre>输入：\nabcabcbb\n输出：\n3</pre><h3>示例 2</h3><pre>输入：\n\n输出：\n0</pre>",
+    "category": "windows",
+    "tags": [
+      "滑动窗口",
+      "字符串"
+    ],
+    "difficulty": "中等",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "abcabcbb\n",
+        "output": "3",
+        "public": true
+      },
+      {
+        "input": "\n",
+        "output": "0",
+        "public": true
+      },
+      {
+        "input": "aaaa\n",
+        "output": "1",
+        "public": false
+      },
+      {
+        "input": "abba\n",
+        "output": "2",
+        "public": false
+      },
+      {
+        "input": "pwwkew\n",
+        "output": "3",
+        "public": false
+      },
+      {
+        "input": "abcdef\n",
+        "output": "6",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-WINDOWS-04",
+    "title": "最短达标连续段",
+    "description": "<p>在正整数数组中找出和至少为 t 的最短非空连续段。</p><h3>输入格式</h3><p>首行 n t，次行 n 个正整数。</p><h3>输出格式</h3><p>输出最短长度，不存在则输出0。</p><h3>数据范围</h3><p>1 ≤ n ≤ 100000，1 ≤ t ≤ 10^9，元素1至10000。</p><h3>示例 1</h3><pre>输入：\n6 7\n2 3 1 2 4 3\n输出：\n2</pre><h3>示例 2</h3><pre>输入：\n1 5\n5\n输出：\n1</pre>",
+    "category": "windows",
+    "tags": [
+      "滑动窗口",
+      "正数数组"
+    ],
+    "difficulty": "中等",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "6 7\n2 3 1 2 4 3\n",
+        "output": "2",
+        "public": true
+      },
+      {
+        "input": "1 5\n5\n",
+        "output": "1",
+        "public": true
+      },
+      {
+        "input": "3 99\n1 2 3\n",
+        "output": "0",
+        "public": false
+      },
+      {
+        "input": "4 4\n1 1 1 1\n",
+        "output": "4",
+        "public": false
+      },
+      {
+        "input": "5 10\n10 1 1 1 1\n",
+        "output": "1",
+        "public": false
+      },
+      {
+        "input": "3 3\n1 1 1\n",
+        "output": "3",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-WINDOWS-05",
+    "title": "翻转后的连续1",
+    "description": "<p>最多将 k 个0变成1，求可得到的最长全1连续段长度。</p><h3>输入格式</h3><p>首行 n k，次行 n 个0或1。</p><h3>输出格式</h3><p>输出最大长度。</p><h3>数据范围</h3><p>1 ≤ n ≤ 100000，0 ≤ k ≤ n。</p><h3>示例 1</h3><pre>输入：\n6 1\n1 0 1 1 0 1\n输出：\n4</pre><h3>示例 2</h3><pre>输入：\n1 0\n0\n输出：\n0</pre>",
+    "category": "windows",
+    "tags": [
+      "滑动窗口",
+      "双指针"
+    ],
+    "difficulty": "中等",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "6 1\n1 0 1 1 0 1\n",
+        "output": "4",
+        "public": true
+      },
+      {
+        "input": "1 0\n0\n",
+        "output": "0",
+        "public": true
+      },
+      {
+        "input": "3 3\n0 0 0\n",
+        "output": "3",
+        "public": false
+      },
+      {
+        "input": "4 0\n1 1 1 1\n",
+        "output": "4",
+        "public": false
+      },
+      {
+        "input": "5 0\n1 0 1 0 1\n",
+        "output": "1",
+        "public": false
+      },
+      {
+        "input": "5 2\n0 1 0 1 0\n",
+        "output": "4",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-WINDOWS-06",
+    "title": "最短覆盖片段",
+    "description": "<p>在 s 中寻找包含 t 所有字母及其重复次数的最短连续片段。</p><h3>输入格式</h3><p>两行非空英文字母串 s 和 t，区分大小写。</p><h3>输出格式</h3><p>输出最短长度；不存在则输出0。</p><h3>数据范围</h3><p>1 ≤ |s|,|t| ≤ 100000。</p><h3>示例 1</h3><pre>输入：\nADOBECODEBANC\nABC\n输出：\n4</pre><h3>示例 2</h3><pre>输入：\na\na\n输出：\n1</pre>",
+    "category": "windows",
+    "tags": [
+      "滑动窗口",
+      "频次统计"
+    ],
+    "difficulty": "困难",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "ADOBECODEBANC\nABC\n",
+        "output": "4",
+        "public": true
+      },
+      {
+        "input": "a\na\n",
+        "output": "1",
+        "public": true
+      },
+      {
+        "input": "a\naa\n",
+        "output": "0",
+        "public": false
+      },
+      {
+        "input": "aaab\naab\n",
+        "output": "3",
+        "public": false
+      },
+      {
+        "input": "xyz\nA\n",
+        "output": "0",
+        "public": false
+      },
+      {
+        "input": "abbbcaa\naa\n",
+        "output": "2",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-STACKS-01",
+    "title": "括号匹配",
+    "description": "<p>检查三种括号是否正确嵌套和配对。空串合法。</p><h3>输入格式</h3><p>一行仅含 ()[]{} 的字符串。</p><h3>输出格式</h3><p>输出 YES 或 NO。</p><h3>数据范围</h3><p>长度0至100000。</p><h3>示例 1</h3><pre>输入：\n([])\n输出：\nYES</pre><h3>示例 2</h3><pre>输入：\n([)]\n输出：\nNO</pre>",
+    "category": "stacks",
+    "tags": [
+      "栈",
+      "括号"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "([])\n",
+        "output": "YES",
+        "public": true
+      },
+      {
+        "input": "([)]\n",
+        "output": "NO",
+        "public": true
+      },
+      {
+        "input": "\n",
+        "output": "YES",
+        "public": false
+      },
+      {
+        "input": "((\n",
+        "output": "NO",
+        "public": false
+      },
+      {
+        "input": "]\n",
+        "output": "NO",
+        "public": false
+      },
+      {
+        "input": "{}[()]\n",
+        "output": "YES",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-STACKS-02",
+    "title": "队列操作日志",
+    "description": "<p>模拟初始为空的队列。PUSH入队；POP出队并输出该值；FRONT只查看队首。空队列的POP/FRONT输出EMPTY。</p><h3>输入格式</h3><p>首行 q，随后 q 行 PUSH x、POP 或 FRONT；至少有一次POP或FRONT。</p><h3>输出格式</h3><p>每次POP或FRONT各输出一行。</p><h3>数据范围</h3><p>1 ≤ q ≤ 1000，|x|≤10^9。</p><h3>示例 1</h3><pre>输入：\n5\nPUSH 2\nPUSH 3\nFRONT\nPOP\nFRONT\n输出：\n2\n2\n3</pre><h3>示例 2</h3><pre>输入：\n1\nFRONT\n输出：\nEMPTY</pre>",
+    "category": "stacks",
+    "tags": [
+      "队列",
+      "模拟"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "5\nPUSH 2\nPUSH 3\nFRONT\nPOP\nFRONT\n",
+        "output": "2\n2\n3",
+        "public": true
+      },
+      {
+        "input": "1\nFRONT\n",
+        "output": "EMPTY",
+        "public": true
+      },
+      {
+        "input": "2\nPUSH -1\nPOP\n",
+        "output": "-1",
+        "public": false
+      },
+      {
+        "input": "3\nPOP\nPUSH 9\nFRONT\n",
+        "output": "EMPTY\n9",
+        "public": false
+      },
+      {
+        "input": "4\nPUSH 0\nPUSH 1\nPOP\nPOP\n",
+        "output": "0\n1",
+        "public": false
+      },
+      {
+        "input": "6\nPUSH 2\nPOP\nPOP\nPUSH 4\nFRONT\nPOP\n",
+        "output": "2\nEMPTY\n4\n4",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-STACKS-03",
+    "title": "右侧首个更大值的位置",
+    "description": "<p>对每个元素，找右侧第一个严格更大元素的下标。</p><h3>输入格式</h3><p>第一行 n，第二行 n 个整数。</p><h3>输出格式</h3><p>输出 n 个位置，下标从1开始；不存在输出0。</p><h3>数据范围</h3><p>1 ≤ n ≤ 1000，元素绝对值≤10^9。</p><h3>示例 1</h3><pre>输入：\n3\n2 1 3\n输出：\n3 3 0</pre><h3>示例 2</h3><pre>输入：\n1\n7\n输出：\n0</pre>",
+    "category": "stacks",
+    "tags": [
+      "单调栈",
+      "数组"
+    ],
+    "difficulty": "中等",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "3\n2 1 3\n",
+        "output": "3 3 0",
+        "public": true
+      },
+      {
+        "input": "1\n7\n",
+        "output": "0",
+        "public": true
+      },
+      {
+        "input": "3\n3 3 3\n",
+        "output": "0 0 0",
+        "public": false
+      },
+      {
+        "input": "5\n5 4 3 2 1\n",
+        "output": "0 0 0 0 0",
+        "public": false
+      },
+      {
+        "input": "5\n1 2 3 4 5\n",
+        "output": "2 3 4 5 0",
+        "public": false
+      },
+      {
+        "input": "4\n-2 0 -1 8\n",
+        "output": "2 4 4 0",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-STACKS-04",
+    "title": "后缀表达式计算",
+    "description": "<p>计算合法后缀表达式。除法向零截断，保证除数不为0。</p><h3>输入格式</h3><p>一行用空格分隔的整数或 + - * /。</p><h3>输出格式</h3><p>输出结果。</p><h3>数据范围</h3><p>1至1000个记号，中间整数绝对值≤10^9。</p><h3>示例 1</h3><pre>输入：\n2 3 +\n输出：\n5</pre><h3>示例 2</h3><pre>输入：\n4 2 /\n输出：\n2</pre>",
+    "category": "stacks",
+    "tags": [
+      "栈",
+      "表达式"
+    ],
+    "difficulty": "中等",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "2 3 +\n",
+        "output": "5",
+        "public": true
+      },
+      {
+        "input": "4 2 /\n",
+        "output": "2",
+        "public": true
+      },
+      {
+        "input": "-7 3 /\n",
+        "output": "-2",
+        "public": false
+      },
+      {
+        "input": "3 4 + 2 *\n",
+        "output": "14",
+        "public": false
+      },
+      {
+        "input": "9 2 - 3 /\n",
+        "output": "2",
+        "public": false
+      },
+      {
+        "input": "5 1 2 + 4 * + 3 -\n",
+        "output": "14",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-STACKS-05",
+    "title": "等待升温",
+    "description": "<p>每天的温度已知，计算从当天起还需等待几天才出现更高温度。</p><h3>输入格式</h3><p>第一行 n，第二行 n 个温度。</p><h3>输出格式</h3><p>输出 n 个等待天数；以后没有更高温度则为0。</p><h3>数据范围</h3><p>1 ≤ n ≤ 1000，-100 ≤ 温度 ≤ 100。</p><h3>示例 1</h3><pre>输入：\n3\n2 1 3\n输出：\n2 1 0</pre><h3>示例 2</h3><pre>输入：\n1\n7\n输出：\n0</pre>",
+    "category": "stacks",
+    "tags": [
+      "单调栈",
+      "距离计算"
+    ],
+    "difficulty": "中等",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "3\n2 1 3\n",
+        "output": "2 1 0",
+        "public": true
+      },
+      {
+        "input": "1\n7\n",
+        "output": "0",
+        "public": true
+      },
+      {
+        "input": "3\n3 3 3\n",
+        "output": "0 0 0",
+        "public": false
+      },
+      {
+        "input": "5\n5 4 3 2 1\n",
+        "output": "0 0 0 0 0",
+        "public": false
+      },
+      {
+        "input": "5\n1 2 3 4 5\n",
+        "output": "1 1 1 1 0",
+        "public": false
+      },
+      {
+        "input": "4\n-2 0 -1 8\n",
+        "output": "1 2 1 0",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-STACKS-06",
+    "title": "柱状图最大矩形",
+    "description": "<p>每个柱子宽为1，求柱状图内能容纳的最大矩形面积。</p><h3>输入格式</h3><p>第一行 n，第二行 n 个非负高度。</p><h3>输出格式</h3><p>输出最大面积。</p><h3>数据范围</h3><p>1 ≤ n ≤ 100000，0 ≤ 高度 ≤ 10^6。</p><h3>示例 1</h3><pre>输入：\n6\n2 1 5 6 2 3\n输出：\n10</pre><h3>示例 2</h3><pre>输入：\n1\n0\n输出：\n0</pre>",
+    "category": "stacks",
+    "tags": [
+      "单调栈",
+      "最大矩形"
+    ],
+    "difficulty": "困难",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "6\n2 1 5 6 2 3\n",
+        "output": "10",
+        "public": true
+      },
+      {
+        "input": "1\n0\n",
+        "output": "0",
+        "public": true
+      },
+      {
+        "input": "1\n5\n",
+        "output": "5",
+        "public": false
+      },
+      {
+        "input": "3\n3 3 3\n",
+        "output": "9",
+        "public": false
+      },
+      {
+        "input": "4\n1 2 3 4\n",
+        "output": "6",
+        "public": false
+      },
+      {
+        "input": "4\n4 3 2 1\n",
+        "output": "6",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-RECURSION-01",
+    "title": "递归求平方和",
+    "description": "<p>计算从1到n的平方和，n为0时结果为0。尝试用递归表达子问题。</p><h3>输入格式</h3><p>一个整数 n。</p><h3>输出格式</h3><p>输出平方和。</p><h3>数据范围</h3><p>0 ≤ n ≤ 200。</p><h3>示例 1</h3><pre>输入：\n0\n输出：\n0</pre><h3>示例 2</h3><pre>输入：\n1\n输出：\n1</pre>",
+    "category": "recursion",
+    "tags": [
+      "递归",
+      "终止条件"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "0\n",
+        "output": "0",
+        "public": true
+      },
+      {
+        "input": "1\n",
+        "output": "1",
+        "public": true
+      },
+      {
+        "input": "2\n",
+        "output": "5",
+        "public": false
+      },
+      {
+        "input": "5\n",
+        "output": "55",
+        "public": false
+      },
+      {
+        "input": "20\n",
+        "output": "2870",
+        "public": false
+      },
+      {
+        "input": "200\n",
+        "output": "2686700",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-RECURSION-02",
+    "title": "二进制串枚举",
+    "description": "<p>按字典序输出所有长度为n的二进制串。n为0时只输出EMPTY。</p><h3>输入格式</h3><p>一个整数 n。</p><h3>输出格式</h3><p>每个二进制串一行，保留前导零。</p><h3>数据范围</h3><p>0 ≤ n ≤ 10。</p><h3>示例 1</h3><pre>输入：\n0\n输出：\nEMPTY</pre><h3>示例 2</h3><pre>输入：\n1\n输出：\n0\n1</pre>",
+    "category": "recursion",
+    "tags": [
+      "递归",
+      "字典序"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "0\n",
+        "output": "EMPTY",
+        "public": true
+      },
+      {
+        "input": "1\n",
+        "output": "0\n1",
+        "public": true
+      },
+      {
+        "input": "2\n",
+        "output": "00\n01\n10\n11",
+        "public": false
+      },
+      {
+        "input": "3\n",
+        "output": "000\n001\n010\n011\n100\n101\n110\n111",
+        "public": false
+      },
+      {
+        "input": "4\n",
+        "output": "0000\n0001\n0010\n0011\n0100\n0101\n0110\n0111\n1000\n1001\n1010\n1011\n1100\n1101\n1110\n1111",
+        "public": false
+      },
+      {
+        "input": "5\n",
+        "output": "00000\n00001\n00010\n00011\n00100\n00101\n00110\n00111\n01000\n01001\n01010\n01011\n01100\n01101\n01110\n01111\n10000\n10001\n10010\n10011\n10100\n10101\n10110\n10111\n11000\n11001\n11010\n11011\n11100\n11101\n11110\n11111",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-RECURSION-03",
+    "title": "目标和子集数",
+    "description": "<p>每个下标的元素可选或不选，统计所选元素之和为t的方案数；空集也计入。</p><h3>输入格式</h3><p>首行 n t，次行 n 个整数。</p><h3>输出格式</h3><p>输出方案数，数值相同的不同下标视为不同选择。</p><h3>数据范围</h3><p>1 ≤ n ≤ 20，元素与t绝对值≤100。</p><h3>示例 1</h3><pre>输入：\n3 3\n1 2 3\n输出：\n2</pre><h3>示例 2</h3><pre>输入：\n1 0\n0\n输出：\n2</pre>",
+    "category": "recursion",
+    "tags": [
+      "回溯",
+      "子集"
+    ],
+    "difficulty": "中等",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "3 3\n1 2 3\n",
+        "output": "2",
+        "public": true
+      },
+      {
+        "input": "1 0\n0\n",
+        "output": "2",
+        "public": true
+      },
+      {
+        "input": "4 0\n0 0 0 0\n",
+        "output": "16",
+        "public": false
+      },
+      {
+        "input": "3 0\n-1 0 1\n",
+        "output": "4",
+        "public": false
+      },
+      {
+        "input": "3 9\n1 2 3\n",
+        "output": "0",
+        "public": false
+      },
+      {
+        "input": "5 5\n1 1 2 3 4\n",
+        "output": "4",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-RECURSION-04",
+    "title": "皇后摆放计数",
+    "description": "<p>在n×n棋盘放n个皇后，每行每列各一个，且不能位于同一条对角线。</p><h3>输入格式</h3><p>一个整数 n。</p><h3>输出格式</h3><p>输出不同合法摆放数量，旋转或镜像视为不同。</p><h3>数据范围</h3><p>1 ≤ n ≤ 9。</p><h3>示例 1</h3><pre>输入：\n1\n输出：\n1</pre><h3>示例 2</h3><pre>输入：\n2\n输出：\n0</pre>",
+    "category": "recursion",
+    "tags": [
+      "回溯",
+      "约束剪枝"
+    ],
+    "difficulty": "中等",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "1\n",
+        "output": "1",
+        "public": true
+      },
+      {
+        "input": "2\n",
+        "output": "0",
+        "public": true
+      },
+      {
+        "input": "3\n",
+        "output": "0",
+        "public": false
+      },
+      {
+        "input": "4\n",
+        "output": "2",
+        "public": false
+      },
+      {
+        "input": "5\n",
+        "output": "10",
+        "public": false
+      },
+      {
+        "input": "6\n",
+        "output": "4",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-RECURSION-05",
+    "title": "选人组合数",
+    "description": "<p>从编号1至n的人中选k人，不考虑选择顺序。</p><h3>输入格式</h3><p>一行两个整数 n k。</p><h3>输出格式</h3><p>输出组合数。</p><h3>数据范围</h3><p>0 ≤ k ≤ n ≤ 20。</p><h3>示例 1</h3><pre>输入：\n5 2\n输出：\n10</pre><h3>示例 2</h3><pre>输入：\n0 0\n输出：\n1</pre>",
+    "category": "recursion",
+    "tags": [
+      "组合",
+      "递归记忆化"
+    ],
+    "difficulty": "中等",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "5 2\n",
+        "output": "10",
+        "public": true
+      },
+      {
+        "input": "0 0\n",
+        "output": "1",
+        "public": true
+      },
+      {
+        "input": "6 0\n",
+        "output": "1",
+        "public": false
+      },
+      {
+        "input": "6 6\n",
+        "output": "1",
+        "public": false
+      },
+      {
+        "input": "10 3\n",
+        "output": "120",
+        "public": false
+      },
+      {
+        "input": "20 10\n",
+        "output": "184756",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-RECURSION-06",
+    "title": "经过所有点的路径数",
+    "description": "<p>在有向图中统计从1到n、每个顶点恰好经过一次的路径数。</p><h3>输入格式</h3><p>首行 n m，随后m行 u v 表示有向边；无自环和重边。</p><h3>输出格式</h3><p>输出路径数，n为1时空路径计1。</p><h3>数据范围</h3><p>1 ≤ n ≤ 15，0 ≤ m ≤ n(n-1)。</p><h3>示例 1</h3><pre>输入：\n3 3\n1 2\n2 3\n1 3\n输出：\n1</pre><h3>示例 2</h3><pre>输入：\n1 0\n输出：\n1</pre>",
+    "category": "recursion",
+    "tags": [
+      "状态压缩",
+      "路径计数"
+    ],
+    "difficulty": "困难",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "3 3\n1 2\n2 3\n1 3\n",
+        "output": "1",
+        "public": true
+      },
+      {
+        "input": "1 0\n",
+        "output": "1",
+        "public": true
+      },
+      {
+        "input": "3 1\n1 3\n",
+        "output": "0",
+        "public": false
+      },
+      {
+        "input": "4 5\n1 2\n2 3\n3 4\n1 3\n2 4\n",
+        "output": "1",
+        "public": false
+      },
+      {
+        "input": "4 6\n1 2\n1 3\n2 3\n3 2\n2 4\n3 4\n",
+        "output": "2",
+        "public": false
+      },
+      {
+        "input": "2 1\n1 2\n",
+        "output": "1",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-GRAPHS-01",
+    "title": "无向图的度数",
+    "description": "<p>统计无向图中每个顶点连接的边数。</p><h3>输入格式</h3><p>首行 n m，随后m行 u v；无自环和重边。</p><h3>输出格式</h3><p>按顶点1至n输出度数，空格分隔。</p><h3>数据范围</h3><p>1 ≤ n ≤ 1000，0 ≤ m ≤ 100000。</p><h3>示例 1</h3><pre>输入：\n4 3\n1 2\n2 3\n2 4\n输出：\n1 3 1 1</pre><h3>示例 2</h3><pre>输入：\n1 0\n输出：\n0</pre>",
+    "category": "graphs",
+    "tags": [
+      "图",
+      "邻接关系"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "4 3\n1 2\n2 3\n2 4\n",
+        "output": "1 3 1 1",
+        "public": true
+      },
+      {
+        "input": "1 0\n",
+        "output": "0",
+        "public": true
+      },
+      {
+        "input": "3 0\n",
+        "output": "0 0 0",
+        "public": false
+      },
+      {
+        "input": "4 2\n1 2\n3 4\n",
+        "output": "1 1 1 1",
+        "public": false
+      },
+      {
+        "input": "3 3\n1 2\n2 3\n1 3\n",
+        "output": "2 2 2",
+        "public": false
+      },
+      {
+        "input": "5 4\n1 2\n2 3\n3 4\n4 5\n",
+        "output": "1 2 2 2 1",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-GRAPHS-02",
+    "title": "有根树的叶子数",
+    "description": "<p>根为1，每个其他顶点给出父节点，统计没有子节点的叶子。单节点树的根也算叶子。</p><h3>输入格式</h3><p>第一行 n，第二行依次为顶点2至n的父节点；n为1时该行为空。</p><h3>输出格式</h3><p>输出叶子数量。</p><h3>数据范围</h3><p>1 ≤ n ≤ 100000，父节点编号小于当前顶点编号。</p><h3>示例 1</h3><pre>输入：\n4\n1 1 2\n输出：\n2</pre><h3>示例 2</h3><pre>输入：\n1\n输出：\n1</pre>",
+    "category": "graphs",
+    "tags": [
+      "树",
+      "叶子节点"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "4\n1 1 2\n",
+        "output": "2",
+        "public": true
+      },
+      {
+        "input": "1\n\n",
+        "output": "1",
+        "public": true
+      },
+      {
+        "input": "5\n1 2 3 4\n",
+        "output": "1",
+        "public": false
+      },
+      {
+        "input": "5\n1 1 1 1\n",
+        "output": "4",
+        "public": false
+      },
+      {
+        "input": "6\n1 1 2 2 3\n",
+        "output": "3",
+        "public": false
+      },
+      {
+        "input": "3\n1 2\n",
+        "output": "1",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-GRAPHS-03",
+    "title": "连通块数量",
+    "description": "<p>统计无向图的连通块，孤立顶点各算一个。</p><h3>输入格式</h3><p>首行 n m，随后m行 u v；无自环和重边。</p><h3>输出格式</h3><p>输出连通块数量。</p><h3>数据范围</h3><p>1 ≤ n ≤ 10000，0 ≤ m ≤ 100000。</p><h3>示例 1</h3><pre>输入：\n4 3\n1 2\n2 3\n2 4\n输出：\n1</pre><h3>示例 2</h3><pre>输入：\n1 0\n输出：\n1</pre>",
+    "category": "graphs",
+    "tags": [
+      "图遍历",
+      "连通性"
+    ],
+    "difficulty": "中等",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "4 3\n1 2\n2 3\n2 4\n",
+        "output": "1",
+        "public": true
+      },
+      {
+        "input": "1 0\n",
+        "output": "1",
+        "public": true
+      },
+      {
+        "input": "3 0\n",
+        "output": "3",
+        "public": false
+      },
+      {
+        "input": "4 2\n1 2\n3 4\n",
+        "output": "2",
+        "public": false
+      },
+      {
+        "input": "3 3\n1 2\n2 3\n1 3\n",
+        "output": "1",
+        "public": false
+      },
+      {
+        "input": "5 4\n1 2\n2 3\n3 4\n4 5\n",
+        "output": "1",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-GRAPHS-04",
+    "title": "网格岛屿数量",
+    "description": "<p>1表示陆地、0表示水，上下左右相连的陆地组成岛屿；对角相接不连通。</p><h3>输入格式</h3><p>首行 h w，随后h行各w个0/1字符，不含空格。</p><h3>输出格式</h3><p>输出岛屿数量。</p><h3>数据范围</h3><p>1 ≤ h,w ≤ 100。</p><h3>示例 1</h3><pre>输入：\n3 4\n1100\n0101\n0011\n输出：\n2</pre><h3>示例 2</h3><pre>输入：\n1 1\n0\n输出：\n0</pre>",
+    "category": "graphs",
+    "tags": [
+      "网格",
+      "DFS"
+    ],
+    "difficulty": "中等",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "3 4\n1100\n0101\n0011\n",
+        "output": "2",
+        "public": true
+      },
+      {
+        "input": "1 1\n0\n",
+        "output": "0",
+        "public": true
+      },
+      {
+        "input": "1 1\n1\n",
+        "output": "1",
+        "public": false
+      },
+      {
+        "input": "2 2\n10\n01\n",
+        "output": "2",
+        "public": false
+      },
+      {
+        "input": "3 3\n111\n111\n111\n",
+        "output": "1",
+        "public": false
+      },
+      {
+        "input": "1 5\n10101\n",
+        "output": "3",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-GRAPHS-05",
+    "title": "最少经过几条边",
+    "description": "<p>求无向图中从顶点1到顶点n的最短路径边数。</p><h3>输入格式</h3><p>首行 n m，随后m行 u v；无自环和重边。</p><h3>输出格式</h3><p>输出最少边数，不可达输出 -1。</p><h3>数据范围</h3><p>1 ≤ n ≤ 10000，0 ≤ m ≤ 100000。</p><h3>示例 1</h3><pre>输入：\n4 3\n1 2\n2 3\n2 4\n输出：\n2</pre><h3>示例 2</h3><pre>输入：\n1 0\n输出：\n0</pre>",
+    "category": "graphs",
+    "tags": [
+      "BFS",
+      "最短路"
+    ],
+    "difficulty": "中等",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "4 3\n1 2\n2 3\n2 4\n",
+        "output": "2",
+        "public": true
+      },
+      {
+        "input": "1 0\n",
+        "output": "0",
+        "public": true
+      },
+      {
+        "input": "3 0\n",
+        "output": "-1",
+        "public": false
+      },
+      {
+        "input": "4 2\n1 2\n3 4\n",
+        "output": "-1",
+        "public": false
+      },
+      {
+        "input": "3 3\n1 2\n2 3\n1 3\n",
+        "output": "1",
+        "public": false
+      },
+      {
+        "input": "5 4\n1 2\n2 3\n3 4\n4 5\n",
+        "output": "4",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-GRAPHS-06",
+    "title": "带权路线最短距离",
+    "description": "<p>有向图的边具有非负长度，求从1到n的最短距离。</p><h3>输入格式</h3><p>首行 n m，随后m行 u v w；无自环和重边。</p><h3>输出格式</h3><p>输出最短距离，不可达输出 -1。</p><h3>数据范围</h3><p>1 ≤ n ≤ 10000，0 ≤ m ≤ 100000，0 ≤ w ≤ 10^6。</p><h3>示例 1</h3><pre>输入：\n3 3\n1 2 2\n2 3 3\n1 3 9\n输出：\n5</pre><h3>示例 2</h3><pre>输入：\n1 0\n输出：\n0</pre>",
+    "category": "graphs",
+    "tags": [
+      "Dijkstra",
+      "优先队列"
+    ],
+    "difficulty": "困难",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "3 3\n1 2 2\n2 3 3\n1 3 9\n",
+        "output": "5",
+        "public": true
+      },
+      {
+        "input": "1 0\n",
+        "output": "0",
+        "public": true
+      },
+      {
+        "input": "3 1\n1 2 1\n",
+        "output": "-1",
+        "public": false
+      },
+      {
+        "input": "3 3\n1 2 0\n2 3 0\n1 3 2\n",
+        "output": "0",
+        "public": false
+      },
+      {
+        "input": "4 4\n1 2 5\n1 3 1\n3 2 1\n2 4 2\n",
+        "output": "4",
+        "public": false
+      },
+      {
+        "input": "2 1\n2 1 3\n",
+        "output": "-1",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-DP-01",
+    "title": "台阶走法",
+    "description": "<p>每次走1或2级台阶，求走到第n级的方案数；n为0时空走法算1种。</p><h3>输入格式</h3><p>一个整数 n。</p><h3>输出格式</h3><p>输出方案数对1000000007取模后的值。</p><h3>数据范围</h3><p>0 ≤ n ≤ 100000。</p><h3>示例 1</h3><pre>输入：\n0\n输出：\n1</pre><h3>示例 2</h3><pre>输入：\n1\n输出：\n1</pre>",
+    "category": "dp",
+    "tags": [
+      "动态规划",
+      "状态转移"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "0\n",
+        "output": "1",
+        "public": true
+      },
+      {
+        "input": "1\n",
+        "output": "1",
+        "public": true
+      },
+      {
+        "input": "2\n",
+        "output": "2",
+        "public": false
+      },
+      {
+        "input": "5\n",
+        "output": "8",
+        "public": false
+      },
+      {
+        "input": "10\n",
+        "output": "89",
+        "public": false
+      },
+      {
+        "input": "30\n",
+        "output": "1346269",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-DP-02",
+    "title": "不相邻奖励",
+    "description": "<p>从一列非负奖励中挑选若干项，相邻项不可同时选择，求最大总奖励。允许全部不选。</p><h3>输入格式</h3><p>第一行 n，第二行 n 个非负整数。</p><h3>输出格式</h3><p>输出最大总奖励。</p><h3>数据范围</h3><p>1 ≤ n ≤ 100000，单项≤10^6。</p><h3>示例 1</h3><pre>输入：\n5\n2 7 9 3 1\n输出：\n12</pre><h3>示例 2</h3><pre>输入：\n1\n0\n输出：\n0</pre>",
+    "category": "dp",
+    "tags": [
+      "动态规划",
+      "相邻约束"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "5\n2 7 9 3 1\n",
+        "output": "12",
+        "public": true
+      },
+      {
+        "input": "1\n0\n",
+        "output": "0",
+        "public": true
+      },
+      {
+        "input": "1\n5\n",
+        "output": "5",
+        "public": false
+      },
+      {
+        "input": "4\n1 1 1 1\n",
+        "output": "2",
+        "public": false
+      },
+      {
+        "input": "4\n9 1 1 9\n",
+        "output": "18",
+        "public": false
+      },
+      {
+        "input": "3\n0 0 0\n",
+        "output": "0",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-DP-03",
+    "title": "最大连续段和",
+    "description": "<p>求非空连续子数组的最大元素和。</p><h3>输入格式</h3><p>第一行 n，第二行 n 个整数。</p><h3>输出格式</h3><p>输出最大和；全负数组也必须选至少一个元素。</p><h3>数据范围</h3><p>1 ≤ n ≤ 100000，元素绝对值≤10^6。</p><h3>示例 1</h3><pre>输入：\n5\n2 -3 4 5 -1\n输出：\n9</pre><h3>示例 2</h3><pre>输入：\n1\n-5\n输出：\n-5</pre>",
+    "category": "dp",
+    "tags": [
+      "动态规划",
+      "连续子数组"
+    ],
+    "difficulty": "简单",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "5\n2 -3 4 5 -1\n",
+        "output": "9",
+        "public": true
+      },
+      {
+        "input": "1\n-5\n",
+        "output": "-5",
+        "public": true
+      },
+      {
+        "input": "3\n-3 -2 -7\n",
+        "output": "-2",
+        "public": false
+      },
+      {
+        "input": "3\n0 0 0\n",
+        "output": "0",
+        "public": false
+      },
+      {
+        "input": "3\n1 2 3\n",
+        "output": "6",
+        "public": false
+      },
+      {
+        "input": "3\n5 -9 6\n",
+        "output": "6",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-DP-04",
+    "title": "最少硬币数",
+    "description": "<p>每种面额硬币可无限使用，求凑出目标金额的最少硬币数量。</p><h3>输入格式</h3><p>首行 n t，次行 n 个互不相同的正面额。</p><h3>输出格式</h3><p>输出最少数量，不可凑出输出 -1，目标0输出0。</p><h3>数据范围</h3><p>1 ≤ n ≤ 20，0 ≤ t ≤ 10000，面额1至1000。</p><h3>示例 1</h3><pre>输入：\n3 11\n1 2 5\n输出：\n3</pre><h3>示例 2</h3><pre>输入：\n1 3\n2\n输出：\n-1</pre>",
+    "category": "dp",
+    "tags": [
+      "动态规划",
+      "完全背包"
+    ],
+    "difficulty": "中等",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "3 11\n1 2 5\n",
+        "output": "3",
+        "public": true
+      },
+      {
+        "input": "1 3\n2\n",
+        "output": "-1",
+        "public": true
+      },
+      {
+        "input": "2 0\n2 7\n",
+        "output": "0",
+        "public": false
+      },
+      {
+        "input": "2 6\n1 3\n",
+        "output": "2",
+        "public": false
+      },
+      {
+        "input": "3 7\n2 3 5\n",
+        "output": "2",
+        "public": false
+      },
+      {
+        "input": "1 20\n4\n",
+        "output": "5",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-DP-05",
+    "title": "避障网格路径",
+    "description": "<p>从左上到右下，每步只能向右或向下。0可通行，1为障碍，起点或终点受阻时无路径。</p><h3>输入格式</h3><p>首行 h w，随后h行各w个0/1字符。</p><h3>输出格式</h3><p>输出路径数对1000000007取模后的值。</p><h3>数据范围</h3><p>1 ≤ h,w ≤ 100。</p><h3>示例 1</h3><pre>输入：\n3 3\n000\n010\n000\n输出：\n2</pre><h3>示例 2</h3><pre>输入：\n1 1\n0\n输出：\n1</pre>",
+    "category": "dp",
+    "tags": [
+      "动态规划",
+      "网格路径"
+    ],
+    "difficulty": "中等",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "3 3\n000\n010\n000\n",
+        "output": "2",
+        "public": true
+      },
+      {
+        "input": "1 1\n0\n",
+        "output": "1",
+        "public": true
+      },
+      {
+        "input": "1 1\n1\n",
+        "output": "0",
+        "public": false
+      },
+      {
+        "input": "2 2\n00\n01\n",
+        "output": "0",
+        "public": false
+      },
+      {
+        "input": "2 3\n000\n000\n",
+        "output": "3",
+        "public": false
+      },
+      {
+        "input": "3 2\n00\n11\n00\n",
+        "output": "0",
+        "public": false
+      }
+    ]
+  },
+  {
+    "id": "CL-DP-06",
+    "title": "文本编辑距离",
+    "description": "<p>每次可插入、删除或替换一个字符，求将a变为b的最少操作数。</p><h3>输入格式</h3><p>两行小写字母串 a b，两行都保留，允许为空。</p><h3>输出格式</h3><p>输出最少操作数。</p><h3>数据范围</h3><p>0 ≤ |a|,|b| ≤ 500。</p><h3>示例 1</h3><pre>输入：\nkitten\nsitting\n输出：\n3</pre><h3>示例 2</h3><pre>输入：\n\n输出：\n0</pre>",
+    "category": "dp",
+    "tags": [
+      "动态规划",
+      "编辑距离"
+    ],
+    "difficulty": "困难",
+    "judge_mode": "text",
+    "source": "智练 CodeLab 自编教学题；采用经典算法知识，题面与用例由项目编写",
+    "cases": [
+      {
+        "input": "kitten\nsitting\n",
+        "output": "3",
+        "public": true
+      },
+      {
+        "input": "\n\n",
+        "output": "0",
+        "public": true
+      },
+      {
+        "input": "a\n\n",
+        "output": "1",
+        "public": false
+      },
+      {
+        "input": "\nabc\n",
+        "output": "3",
+        "public": false
+      },
+      {
+        "input": "abc\nabc\n",
+        "output": "0",
+        "public": false
+      },
+      {
+        "input": "abc\nxyz\n",
+        "output": "3",
+        "public": false
+      }
+    ]
+  }
+]

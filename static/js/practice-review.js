@@ -5,7 +5,7 @@
     let user = null, ready = false, busy = false, sequence = 0, latest = null, activeId = null, nextBefore = null;
     const proposals = new Map(), rows = new Map(), attempts = new Map();
     const states = {pending:'尚未采纳',accepted:'已采纳，待复测',rejected:'已拒绝',undone:'已撤销'};
-    const actionNames = {accept:'采纳',reject:'拒绝',undo:'撤销'};
+    const actionNames = {accept:'采纳',reject:'拒绝',undo:'撤销',co_create:'共创候选已准备'};
     function el(tag, text = '', className = '') {
         const node = document.createElement(tag); node.textContent = text; node.className = className; return node;
     }
@@ -27,6 +27,7 @@
         document.querySelectorAll('[data-proposal-card]').forEach(card => {
             const p = proposals.get(Number(card.dataset.proposalCard)); if (!p) return;
             const note = card.querySelector('[data-proposal-status]');
+            card.dataset.proposalState = p.state;
             note.textContent = states[p.state] || p.state;
             if (p.state === 'accepted') {
                 const tested = p.latest_test;
@@ -36,6 +37,7 @@
                 } else if (editor.value !== p.candidate_code) note.textContent = '已采纳；当前代码与建议不同，这份修改尚未复测。';
             }
             else if (p.state !== 'accepted' && editor.value !== p.base_code) note.textContent += ' · 编辑器已变化，采纳前请核对原代码。';
+            card.dataset.proposalStale = String(p.state === 'accepted' ? editor.value !== p.candidate_code : editor.value !== p.base_code);
             card.querySelectorAll('[data-proposal-action]').forEach(node => {
                 const action = node.dataset.proposalAction;
                 node.hidden = action === 'undo' || action === 'retest' ? p.state !== 'accepted' : action === 'reject' ? !['pending','undone'].includes(p.state) : p.state === 'accepted';
@@ -50,6 +52,7 @@
         if (!stored || stored.revision <= p.revision) proposals.set(p.id, p);
         const details = panel('查看修改差异', 'proposal-'+p.id);
         details.dataset.proposalCard = String(p.id);
+        details.append(el('p', '先核对修改，再决定是否采纳。采纳后需重新提交，才能验证结果。', 'proposal-introduction'));
         details.append(diff(p.diff));
         const base = panel('建议依据的原代码', 'base-'+p.id);
         base.append(el('pre', p.base_code, 'help-code')); details.append(base);
@@ -153,7 +156,7 @@
                 let label=actionNames[event.kind];
                 if(event.kind==='retest') label=event.proposal_id ? (event.data.edited_after_accept?'采纳后代码又有修改，再次判题':'按建议代码再次判题') : event.data.parent_submission_id?'修改后再次判题':'开始本次练习';
                 item=panel(`${time(row.time)} · ${label}`,row.key);
-                item.append(el('p',`关联提交 #${event.submission_id}`,'panel-note'));
+                item.append(el('p',event.submission_id ? `关联提交 #${event.submission_id}` : '从题目共创带回，尚未创建正式提交','panel-note'));
                 if(event.kind==='retest') {
                     if(event.data.parent_submission_id) item.append(el('p',`承接提交 #${event.data.parent_submission_id}`,'panel-note'));
                     if(event.data.diff?.length) item.append(el('p','本次提交相对建议或前次提交的差异','panel-note'),diff(event.data.diff));
@@ -161,6 +164,8 @@
                     const p=proposals.get(event.proposal_id); if(p) attachProposal(p,item);
                 }
             }
+            item.dataset.entryType = row.type;
+            if (row.type === 'event') item.dataset.eventKind = row.value.kind;
             item.open=opened.has(row.key); timeline.append(item);
         });
         byId('reviewOlder').hidden = !nextBefore;
@@ -182,6 +187,29 @@
             data.helps.forEach(value=>rows.set('h'+value.id,{key:'h'+value.id,type:'help',value,time:value.created_at}));
             data.events.forEach(value=>rows.set('e'+value.id,{key:'e'+value.id,type:'event',value,time:value.created_at}));
             ready=true; section.hidden=!rows.size; status.textContent=''; renderHistory();
+            const requested = Number(new URLSearchParams(location.search).get('co_create_proposal'));
+            const candidate = proposals.get(requested);
+            if (candidate?.source === 'co_create') {
+                if (editor.dataset.untouchedTemplate === 'true') {
+                    editor.value = candidate.base_code;
+                    editor.dispatchEvent(new Event('input'));
+                    renderGhostLayer();
+                }
+                const card = timeline.querySelector(`[data-proposal-card="${requested}"]`);
+                if (card) {
+                    for (let ancestor = card; ancestor; ancestor = ancestor.parentElement) {
+                        if (ancestor.tagName === 'DETAILS') ancestor.open = true;
+                        if (ancestor === section) break;
+                    }
+                    const messages = {
+                        pending: '共创候选已带回。请核对差异后选择采纳；候选尚未替换当前代码。',
+                        accepted: '这份共创候选已采纳。请查看实际复测记录确认结果，也可核对差异或撤销采纳。',
+                        rejected: '这份共创候选已拒绝。可以重新核对差异后决定是否采纳，当前草稿仍保留。',
+                        undone: '这份共创候选已撤销采纳。可以查看差异并重新决定，当前草稿仍保留。'
+                    };
+                    status.textContent = messages[candidate.state] || '共创候选记录已打开，请核对差异与最新状态。';
+                }
+            }
         } catch(error) {
             if(ticket!==sequence) return;
             section.hidden=false; status.textContent='过程记录读取失败：'+error.message+'。请重试，代码仍保留。';

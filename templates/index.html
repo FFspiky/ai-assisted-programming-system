@@ -2,19 +2,20 @@
 <html lang="zh-CN"><head>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/brand-v1/logo.png') }}"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>智练 CodeLab · 程序设计辅助训练系统</title>
-<meta name="description" content="练习 Python 与 C++，看懂运行反馈，按需获得 AI 帮助。和达菲郁一起，把一道题变成自己的理解。">
+  <meta name="description" content="和达菲郁一起验证 AI 代码、解释修改，再独立尝试关联题。支持 Python、C++ 与 Java，把真实运行变成看得懂的学习记录。">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 </head><body><div id="cl-ocean" data-page="home" data-motion="on">
 <main>
     <div class="oc-ocean">
-      <div class="oc-wrap"><header class="og-header"><a class="og-logo" href="/index.html"><span class="og-logo-icon"><img class="codelab-brand-mark" src="/static/images/brand-v1/logo.png" alt="" width="44" height="44"></span><span class="og-logo-text">智练 CodeLab</span></a><nav aria-label="主导航"><ul><li><a href="/index.html" aria-current="page">首页</a></li><li><a href="/problem_selector.html">刷题</a></li><li><a href="/learn-analytics.html">学习分析</a></li></ul></nav><div class="user-info"><div class="user-details"><div class="username">访客</div><div class="user-stats"><a href="/login.html">登录</a><a href="/register.html">注册</a></div></div></div></header></div>
+      <div class="oc-wrap"><header class="og-header"><a class="og-logo" href="/index.html"><span class="og-logo-icon"><img class="codelab-brand-mark" src="/static/images/brand-v1/logo.png" alt="" width="44" height="44"></span><span class="og-logo-text">智练 CodeLab</span></a><nav aria-label="主导航"><ul><li><a href="/index.html" aria-current="page">首页</a></li><li><a href="/problem_selector.html">刷题</a></li><li><a href="/co-create.html">AI 共创</a></li><li><a href="/task-room.html">实战任务室</a></li><li><a href="/learn-analytics.html">学习分析</a></li></ul></nav><div class="user-info"><div class="user-details"><div class="username">访客</div><div class="user-stats"><a href="/login.html">登录</a><a href="/register.html">注册</a></div></div></div></header></div>
       <div class="oc-hero">
         <div class="oc-eyebrow oc-line-reveal">智练 CodeLab · 程序设计辅助训练系统</div>
         <h1 class="oc-line-reveal">写下代码。<span class="oc-line-reveal oc-delay">让每一步，都更明白。</span></h1>
-        <p class="oc-line-reveal oc-delay">练习 Python 与 C++，看懂运行反馈，按需获得一点帮助。<br>和达菲郁一起，把一道题，变成自己的理解。</p>
+        <p class="oc-line-reveal oc-delay">练习 Python、C++ 与 Java，看懂运行反馈，按需获得一点帮助。<br>和达菲郁一起，验证 AI 代码，解释修改，再独立试一次。</p>
         <div class="oc-actions oc-line-reveal oc-delay">
           <a class="oc-action oc-action-primary" href="/problem_selector.html">开始练习 <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+          <a class="oc-action" href="/task-room.html">进入实战任务室 <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
           <button class="oc-action" data-scroll="oc-features">了解核心功能 <i class="fas fa-arrow-down" aria-hidden="true"></i></button>
         </div>
       </div>
@@ -28,6 +29,17 @@
       </figure>
     </div>
     <div class="oc-story-wrap" id="oc-features">
+      <section class="oc-create-entry oc-reveal" aria-labelledby="oc-create-title">
+        <div class="oc-copy"><div class="oc-eyebrow">达菲郁共创 · 从验证走向理解</div><h2 id="oc-create-title">验证 AI 代码。<br>说清修改，再独立试一次。</h2><p>从一道具体题目出发，用真实运行检查候选代码；记下你修改的原因，再试一道关联练习。代码、证据和自己的解释，留在同一张复盘卡里。</p></div>
+        <div class="oc-create-options">
+          <a class="oc-create-option" href="/co-create.html?mode=examples&stage=verify"><span class="oc-create-number">01</span><div><h3>验证候选，找到依据</h3><p>带入草稿，补充边界测试；对照 AI 候选和实际结果，自主决定是否采纳。</p></div><i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+          <a class="oc-create-option" href="/co-create.html?mode=review&stage=explain"><span class="oc-create-number">02</span><div><h3>解释修改，独立再做</h3><p>用自己的话说明修改依据，保存复盘卡，再进入经审核的关联练习。</p></div><i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+        </div>
+      </section>
+      <section class="oc-task-room oc-reveal" id="oc-task-room" aria-labelledby="oc-task-room-title">
+        <div class="oc-copy"><div class="oc-eyebrow">AI 实战任务室 · 独立模块</div><h2 id="oc-task-room-title">接住真实需求，<br>完成一次交付。</h2><p>与 AI 客户问清需求，自己确认业务规则，再写下代码、逐项验收。交付之后，继续应对客户提出的新变化。</p><a class="oc-link" href="/task-room.html">进入实战任务室 <i class="fas fa-arrow-right" aria-hidden="true"></i></a></div>
+        <div class="oc-task-flow"><ol aria-label="实战任务流程"><li><span>01</span><div><h3>问清楚，再动手</h3><p>讨论重复数据、优先顺序和边界情况，确认双方约定。</p></div></li><li><span>02</span><div><h3>用运行结果验收</h3><p>对照公开用例的预期与实际输出，把每项规则落实到代码。</p></div></li><li><span>03</span><div><h3>接住下一次变化</h3><p>保留需求版本与交付记录，修改后重新验收。</p></div></li></ol><div class="oc-task-scenarios"><span>报名整理</span><span>名额候补</span><span>物资分配</span></div></div>
+      </section>
       <div class="oc-intro oc-reveal"><div class="oc-eyebrow">不止完成一道题</div><h2>写得下去。<br><span>也想得明白。</span></h2><p>从选择题目到查看反馈，把注意力留给思考。需要帮助时，再多看一点。</p></div>
       <section class="oc-split" aria-label="运行反馈">
         <div class="oc-copy oc-reveal"><div class="oc-eyebrow">看懂反馈</div><h2>哪里不一样，<br>一眼就知道。</h2><p>输入、预期输出、实际输出放在一起。先找到没通过的用例，再想清楚程序为什么走到了这里。</p><button type="button" class="oc-link" data-open-feedback>看看这次提交 <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></button></div>
@@ -85,7 +97,7 @@ print(total)</pre></details>
     </section>
     <div class="oc-story-wrap">
       <section class="oc-two-features" aria-label="选择题目和学习分析">
-        <div class="oc-feature-block oc-reveal"><div class="oc-eyebrow">从一道题开始</div><h2>熟悉的题库，<br>随时进入状态。</h2><p>浏览题目与难度，开始练习。Python 和 C++，在编辑器里自由切换。</p><div class="oc-mini-library" id="oc-mini-library"></div><a type="button" class="oc-link" href="/problem_selector.html">查看题库 <i class="fas fa-arrow-right" aria-hidden="true"></i></a></div>
+        <div class="oc-feature-block oc-reveal"><div class="oc-eyebrow">从一道题开始</div><h2>熟悉的题库，<br>随时进入状态。</h2><p>浏览题目与难度，开始练习。Python、C++ 和 Java，在编辑器里自由切换。</p><div class="oc-mini-library" id="oc-mini-library"></div><a type="button" class="oc-link" href="/problem_selector.html">查看题库 <i class="fas fa-arrow-right" aria-hidden="true"></i></a></div>
         <div class="oc-feature-block oc-reveal" id="oc-analysis-section"><div class="oc-eyebrow">回看练习</div><h2>练过的每一步，<br>都有迹可循。</h2><p>在学习分析里回看完成题数、练习时长与正确率，再看看下一步的建议。</p><div class="oc-mini-analytics"><h3>学习概览</h3><div class="og-stats-grid"><div class="og-stat-card"><div class="og-stat-label">总完成题数</div><div class="og-stat-value">12</div></div><div class="og-stat-card"><div class="og-stat-label">学习总时长</div><div class="og-stat-value">4.5h</div></div><div class="og-stat-card"><div class="og-stat-label">平均正确率</div><div class="og-stat-value">75%</div></div></div><div class="oc-analysis-advice"><strong>AI 深度分析与建议</strong>下一次练习，可以试着在运行前列出边界输入，检查你的判断是否完整。</div></div><div class="oc-caption">学习分析 · 数据与建议仅为演示</div></div>
       </section>
     </div>
@@ -116,7 +128,7 @@ print(total)</pre></details>
     <div class="og-problem-header"><h2 class="og-problem-title"><span data-problem-title>3的幂</span><span class="og-difficulty" data-difficulty>简单</span></h2></div>
     <div class="og-problem-content" data-problem-content></div>
     <div class="og-editor-container">
-      <div class="og-editor-header"><div class="og-editor-title"><i class="fas fa-code" aria-hidden="true"></i><span>代码编辑器</span></div><div class="og-editor-actions-wrap"><div class="og-editor-actions"><select data-language aria-label="代码语言"><option value="python">Python</option><option value="cpp">C++</option></select><button type="button" class="og-button" data-optimize><i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i>AI优化</button><button type="button" class="og-button og-run" data-run><i class="fas fa-play" aria-hidden="true"></i>运行代码</button><button type="button" class="og-button og-submit" data-submit><i class="fas fa-paper-plane" aria-hidden="true"></i>提交解答</button></div></div></div>
+      <div class="og-editor-header"><div class="og-editor-title"><i class="fas fa-code" aria-hidden="true"></i><span>代码编辑器</span></div><div class="og-editor-actions-wrap"><div class="og-editor-actions"><select data-language aria-label="代码语言"><option value="python">Python</option><option value="cpp">C++</option><option value="java">Java</option></select><button type="button" class="og-button" data-optimize><i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i>AI优化</button><button type="button" class="og-button og-run" data-run><i class="fas fa-play" aria-hidden="true"></i>运行代码</button><button type="button" class="og-button og-submit" data-submit><i class="fas fa-paper-plane" aria-hidden="true"></i>提交解答</button></div></div></div>
       <div class="og-editor-tools"><label>辅助方式 <select aria-label="辅助方式" data-mode><option>学习模式</option><option>自由辅助</option></select></label><label>AI 帮助 <select aria-label="AI 帮助程度" data-level-select><option value="1">概念线索</option><option value="2">定位与解释</option><option value="3">局部修改</option><option value="4">完整参考</option></select></label><span data-completion>自动补全已关闭</span><span class="og-draft">草稿自动保存</span></div>
       <div class="og-code-wrapper"><textarea class="og-code-area" data-code aria-label="代码编辑器内容" spellcheck="false" wrap="soft"></textarea></div><div class="og-inline-hint">Tab 接受 / Esc 取消</div>
       <div class="og-input-area"><label class="og-output-title"><i class="fas fa-keyboard" aria-hidden="true"></i><span>标准输入 (Standard Input)</span></label><textarea class="og-custom-input" data-input aria-label="标准输入" spellcheck="false">45</textarea></div>

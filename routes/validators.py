@@ -7,22 +7,12 @@ from config import (
     SUPPORTED_LANGUAGES,
 )
 from routes.api_response import api_error
-
-
-def normalize_language(language):
-    if not isinstance(language, str):
-        return ""
-    normalized = language.strip().lower()
-    if normalized in {"c++", "cpp"}:
-        return "cpp"
-    if normalized in {"py", "python3"}:
-        return "python"
-    return normalized
+from services.language_support import LANGUAGE_IDS, normalize_language
 
 
 def validate_language(language):
     normalized = normalize_language(language)
-    if normalized not in SUPPORTED_LANGUAGES:
+    if normalized not in SUPPORTED_LANGUAGES or normalized not in LANGUAGE_IDS:
         response, status = api_error(
             "UNSUPPORTED_LANGUAGE",
             f"不支持的语言: {language}",

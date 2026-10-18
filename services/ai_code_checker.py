@@ -3,6 +3,7 @@ import re
 
 from config import MODEL_NAME
 from services.ai_client import AIClientError, chat_completion
+from services.language_support import language_prompt
 
 
 def _extract_json_object(text: str) -> dict | None:
@@ -118,6 +119,7 @@ JSON 结构必须是：
 
 """
 
+    full_prompt += language_prompt(language)
     payload = {
         "model": MODEL_NAME,
         "messages": [

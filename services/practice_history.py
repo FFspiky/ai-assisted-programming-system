@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+from types import SimpleNamespace
 
 from config import MAX_CODE_CHARS
 from models import CodeProposal, PracticeEvent, Submission, db
@@ -32,6 +33,13 @@ def owned_proposal(user_id, proposal_id):
     if not proposal:
         raise PracticeConflict("建议不存在", 404)
     base = Submission.query.filter_by(id=proposal.submission_id, user_id=user_id).first()
+    if proposal.source == "co_create" and proposal.problem_id and proposal.language:
+        base = SimpleNamespace(
+            id=base.id if base else None,
+            problem_id=proposal.problem_id,
+            language=proposal.language,
+            code_submitted=proposal.base_code,
+        )
     if not base:
         raise PracticeConflict("原提交不存在", 404)
     return proposal, base
@@ -146,7 +154,7 @@ def prepare_submission(user_id, data, code, language, problem_id):
             or proposal.state != "accepted"
         ):
             raise PracticeConflict("建议状态已改变，请刷新后再提交")
-        if parent is None:
+        if parent is None and base.id is not None:
             parent = base
     return {
         "proposal": proposal,

@@ -37,7 +37,7 @@ jobs:
         run: black --check .
 
       - name: Compile Python
-        run: python -m compileall -q app.py models.py config.py routes services tests migrations
+        run: python -m compileall -q app.py models.py config.py routes services modules tests migrations
 
       - name: Build isolated code runner
         run: docker build -t codelab-runner:local sandbox
@@ -53,9 +53,12 @@ jobs:
 
       - name: Check JavaScript syntax
         run: |
-          for f in static/js/*.js; do
+          for f in static/js/*.js modules/task_room/static/*.js modules/co_create/static/*.js; do
             node --check "$f"
           done
+
+      - name: Run frontend controller regressions
+        run: node --test tests/*.test.cjs
 
       - name: Install Playwright browser
         run: npx playwright install chromium

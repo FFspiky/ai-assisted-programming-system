@@ -7,6 +7,7 @@ from services.ai_client import (
     stream_chat_deltas,
     stream_chat_events,
 )
+from services.language_support import language_prompt
 
 
 def runtime_identity():
@@ -40,6 +41,7 @@ def stream_code_from_prompt(
 问题缺少决定性信息时询问具体缺项；可以给条件化建议，不把假设当成事实。
 涉及新版本、库接口或时效信息时说明无法联网核验，不编造资料来源。
 代码示例使用对应语言的 Markdown 围栏。"""
+    system += language_prompt(language)
     messages = [{"role": "system", "content": system}]
     messages.extend(history or [])
     messages.append(

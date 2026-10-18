@@ -10,12 +10,11 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Source+Code+Pro:wght@400;600&display=swap"
         rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/learn-analytics.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/ocean-theme.css') }}">
 </head>
 
-<body class="ocean-theme">
+<body class="ocean-theme analytics-page">
     <div class="container">
         <div class="glowing glowing-1"></div>
         <div class="glowing glowing-2"></div>
@@ -25,11 +24,12 @@
                 <div class="logo-icon"><img class="codelab-brand-mark" src="/static/images/brand-v1/logo.png" alt="" width="44" height="44"></div>
                 <div class="logo-text">智练 CodeLab</div>
             </div>
-            <nav>
+            <nav aria-label="主导航">
                 <ul>
                     <li><a href="./index.html">首页</a></li>
                     <li><a href="./problem_selector.html">刷题</a></li>
-                    <li><a href="./learn-analytics.html" class="active">学习分析</a></li>
+                    <li><a href="/co-create.html">AI 共创</a></li><li><a href="/task-room.html">实战任务室</a></li>
+                    <li><a href="/learn-analytics.html" class="active" aria-current="page">学习分析</a></li>
                 </ul>
             </nav>
 
@@ -49,42 +49,59 @@
 
         <section class="analysis-hero">
             <h1 class="hero-title">学习分析与成长路径</h1>
-            <p class="hero-subtitle">查看练习记录与 AI 学习建议。问卷学习路径待完善，当前不用于个性化能力评估。</p>
+            <p class="hero-subtitle">花两分钟说说你的基础与兴趣，从一个简单项目开始。完成任务后，回来查看真实的学习进度。</p>
         </section>
 
-        <div class="card">
+        <div class="card assessment-card" id="assessmentCard">
             <div class="card-header">
                 <div class="card-icon"><i class="fas fa-clipboard-list"></i></div>
-                <h3 class="card-title">编程学习问卷 · 待完善 <span id="questionCount">1/20</span></h3>
+                <h2 class="card-title">编程学习问卷 <span id="questionCount" class="question-count">9 个小问题</span></h2>
             </div>
             <div class="card-body">
-                <p>本轮优先开放执行证据诊断；问卷结果尚未接入学习路径，暂不提供生成。</p>
-                <form id="assessmentForm" style="position: relative;" inert>
-                    <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
+                <p class="assessment-intro">没有考试，也没有分数。按照实际情况填写，推荐会结合你的回答和实战任务室的项目记录。</p>
+                <div id="assessmentNotice" class="assessment-notice" role="status" aria-live="polite"></div>
+                <div id="assessmentSaved" class="assessment-saved" hidden>
+                    <div><strong>问卷已保存</strong><p id="assessmentSavedAt" class="muted"></p></div>
+                    <button type="button" id="retakeBtn" class="nav-btn">重新填写</button>
+                </div>
+                <div id="questionLoading" class="inline-loading" role="status"><span class="loader" aria-hidden="true"></span> 正在加载问卷…</div>
+                <button type="button" id="retryQuestionsBtn" class="nav-btn" hidden>重新加载问卷</button>
+                <form id="assessmentForm" hidden novalidate>
+                    <div class="assessment-progress"><span id="completedCount">已完成 0 / 9</span><span>约 2 分钟</span></div>
+                    <div class="progress-container" id="assessmentProgress" role="progressbar" aria-label="问卷完成进度" aria-valuemin="0" aria-valuemax="9" aria-valuenow="0"><div class="progress-bar" id="progressBar"></div></div>
                     <div id="questionContainer" class="question-container"></div>
+                    <p id="questionError" class="question-error" role="alert" hidden></p>
                     <div class="question-nav">
                         <button type="button" id="prevBtn" class="nav-btn" disabled><i class="fas fa-arrow-left"></i> 上一题</button>
                         <button type="button" id="nextBtn" class="nav-btn-primary">下一题 <i class="fas fa-arrow-right"></i></button>
-                        <button type="button" id="submitBtn" class="nav-btn-success" style="display: none;">立刻获得个性化学习路径！ <i class="fas fa-rocket"></i></button>
+                        <button type="submit" id="submitBtn" class="nav-btn-success" hidden>保存并推荐简单项目 <i class="fas fa-arrow-right"></i></button>
                     </div>
+                    <button type="button" id="cancelRetakeBtn" class="text-btn" hidden>保留原问卷，返回推荐</button>
                 </form>
-                <div id="get-path-container" style="display: none; text-align: center; margin-top: 20px;"></div>
+                <div id="assessmentConflict" class="assessment-conflict" role="alert" hidden>
+                    <p>问卷已在另一处更新。你正在填写的答案已保留，请选择下一步。</p>
+                    <div class="conflict-actions">
+                        <button type="button" id="useLatestAnswersBtn" class="nav-btn">读取最新已保存答案</button>
+                        <button type="button" id="keepDraftAnswersBtn" class="nav-btn-primary">保留当前答案，继续保存</button>
+                        <button type="button" id="retryConflictBtn" class="nav-btn" hidden>重新读取最新版本</button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div id="pathPreview" class="card" style="display:none; margin-top: 25px;">
-            <div class="card-header">
-                <div class="card-icon"><i class="fas fa-road"></i></div>
-                <h3 class="card-title">您的个性化学习路径</h3>
+        <section id="pathPreview" class="card learning-plan-card" hidden aria-labelledby="learningPlanTitle">
+            <div class="card-header plan-header">
+                <div class="plan-heading"><div class="card-icon"><i class="fas fa-road"></i></div><h2 class="card-title" id="learningPlanTitle">你的下一步项目</h2></div>
+                <button type="button" id="refreshPlanBtn" class="refresh-analysis-btn"><i class="fas fa-rotate-right"></i> 刷新学习进度</button>
             </div>
             <div class="card-body">
-                <div id="assessmentLoading" style="text-align: center; padding: 20px;">
-                    <div class="loader" style="margin: 0 auto 15px; width: 40px; height: 40px; border-width: 4px;"></div>
-                    <p>AI正在为您分析和规划路径...</p>
-                </div>
-                <div id="pathContent" class="path-content" style="display:none;"></div>
+                <div id="planNotice" class="assessment-notice" role="status" aria-live="polite"></div>
+                <div id="planContent"></div>
+                <a class="catalog-link" href="/task-room.html?catalog=1">浏览实战任务室的全部项目 <i class="fas fa-arrow-right"></i></a>
             </div>
-        </div>
+        </section>
+
+        <div id="planLoadError" class="assessment-notice is-error" hidden role="alert"><span id="planLoadErrorText"></span> <button type="button" id="retryPlanBtn" class="text-btn">重试读取</button></div>
 
                 <h2 class="section-title">学习概览</h2>
             <div class="stats-grid">
@@ -113,11 +130,11 @@
                 </div>
             </div>
 
-       <h2 class="section-title">AI 深度分析与建议</h2>
+       <h2 class="section-title">AI 学习分析（可选）</h2>
         <div id="aiAnalysisContainer" class="card">
-            <div class="card-body" style="min-height: 150px;">
-                <div class="loader"></div>
-                <p style="text-align:center;">正在拉取您的学习数据并请求AI分析...</p>
+            <div class="card-body">
+                <p class="muted">项目推荐不调用 AI。此处只在你主动点击后，根据刷题记录生成分析。</p>
+                <button type="button" id="generateAiAnalysisBtn" class="refresh-analysis-btn" disabled>生成 AI 分析</button>
             </div>
         </div>
 

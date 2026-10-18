@@ -8,9 +8,10 @@ from bs4 import BeautifulSoup
 from config import MODEL_NAME
 from models import LearningHelp, User, db
 from services.ai_client import AIClientError, chat_completion
+from services.language_support import language_prompt
 from services.tutor_service import diagnosis_cases, insufficient_diagnosis
 
-PROMPT_VERSION = "graded-help-v4"
+PROMPT_VERSION = "graded-help-v5-multilingual"
 LEVELS = {1: "概念线索", 2: "定位与解释", 3: "局部修改", 4: "完整参考"}
 LEVEL_RULES = {
     1: "只点出需复习的概念，并提出1到2个开放自查问题，让学生自己检查。不得断言已找到错误或解释本次错误如何产生；不得说漏了哪个值、错在何处、应改什么。不得引用原代码表达式、变量名或具体行号，不使用反引号。摘要同样不能泄露根因。",
@@ -210,6 +211,7 @@ def generate_context_help(context, level):
 "lines":[],"evidence_ids":[],"code":""}。行号从1开始。""" + learning_policy(
         level
     )
+    system += language_prompt(context.get("language", "python"))
     if level == 3:
         context = {
             **context,

@@ -41,6 +41,15 @@ def seed_demo_problems():
                 title=demo["title"],
                 description=demo["description"],
                 judge_mode="text",
+                category={"DEMO-01": "control", "DEMO-02": "strings", "DEMO-03": "basics"}[
+                    demo["id"]
+                ],
+                tags={
+                    "DEMO-01": ["循环", "边界条件"],
+                    "DEMO-02": ["字符串", "索引"],
+                    "DEMO-03": ["输入输出", "类型转换"],
+                }[demo["id"]],
+                source="智练 CodeLab 自编演示题",
             )
         )
         for stdin, expected, public in demo["cases"]:
