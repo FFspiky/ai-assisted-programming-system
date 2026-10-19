@@ -190,3 +190,45 @@ body { margin:0; background:#0d1b2d; }
 @media(max-width:380px){#cl-ocean .og-logo-text{font-size:18px}#cl-ocean .og-header .user-details{max-width:72px}}
 
 #cl-ocean .codelab-brand-mark{display:block;width:40px;height:40px;object-fit:contain;transform:scale(1.3)}
+
+/* Small spacing and touch refinements; preserve the original home composition. */
+#cl-ocean .oc-hero { padding-top: 72px; padding-bottom: 54px; }
+#cl-ocean .oc-action { min-height: 48px; justify-content: center; }
+#cl-ocean :is(.oc-demo-tabs button,.oc-evidence-selection button,.og-evidence-button,.oc-motion,.og-button,.og-back) { min-height: 44px; }
+#cl-ocean .og-header .user-stats a { min-width: 36px; min-height: 44px; justify-content: center; }
+#cl-ocean .oc-demo-tabs { gap: 8px; }
+#cl-ocean .oc-action:active { transform: translateY(0); }
+@media (max-width: 650px) {
+  #cl-ocean .og-header { padding-block: 14px; gap: 8px; }
+  #cl-ocean .og-header .user-details { max-width: 88px; }
+  #cl-ocean .og-header .user-stats { flex-wrap: nowrap; gap: 4px; }
+  #cl-ocean .og-header nav ul { gap: 4px 12px; }
+  #cl-ocean .og-header nav a { font-size: 13px; padding-inline: 2px; }
+  #cl-ocean .oc-hero { padding: 32px 18px 32px; }
+  #cl-ocean .oc-hero .oc-eyebrow { margin-bottom: 18px; letter-spacing: .08em; }
+  #cl-ocean .oc-hero p { margin-top: 20px; line-height: 1.8; text-wrap: pretty; }
+  #cl-ocean .oc-actions { gap: 10px; margin-top: 24px; }
+  #cl-ocean .oc-hero .oc-action { padding: 10px 16px; font-size: 14px; gap: 8px; }
+  #cl-ocean .oc-hero .oc-actions button { flex-basis: auto; margin-inline: 48px; }
+  #cl-ocean .oc-demo-head { gap: 12px; padding-bottom: 14px; }
+  #cl-ocean .oc-demo-tabs { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); width: 100%; gap: 6px; }
+  #cl-ocean .oc-demo-tabs button { padding: 8px 4px; font-size: 12px; white-space: nowrap; }
+  #cl-ocean .oc-demo-caption { align-items: flex-start; gap: 8px; }
+  #cl-ocean .oc-demo-caption p { flex: 1 1 200px; }
+  #cl-ocean .oc-demo-caption .oc-motion { flex-shrink: 0; }
+  #cl-ocean .oc-home-practice .og-editor-actions { gap: 8px; }
+  #cl-ocean .oc-home-practice .og-editor-actions select { min-height: 44px; font-size: 16px; }
+  #cl-ocean .og-diagnosis-actions { gap: 8px; }
+  #cl-ocean .oc-create-option { padding: 18px; }
+}
+@media (max-width: 380px) {
+  #cl-ocean .og-header nav ul { gap: 2px 8px; }
+  #cl-ocean .og-header nav a { font-size: 12px; padding-inline: 0; }
+  #cl-ocean .og-header .user-info { gap: 4px; }
+  #cl-ocean .og-header .user-avatar { width: 28px; height: 28px; }
+  #cl-ocean .oc-hero { padding-inline: 12px; }
+  #cl-ocean .oc-hero .oc-action { padding-inline: 12px; font-size: 13px; }
+  #cl-ocean .oc-demo-tabs { gap: 4px; }
+  #cl-ocean .oc-demo-tabs button { font-size: 11px; }
+  #cl-ocean .oc-home-practice .og-problem-nav { grid-template-columns: 1fr 1fr; }
+}
