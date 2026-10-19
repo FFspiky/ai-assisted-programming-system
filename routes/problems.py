@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 from flask import Blueprint, request
 from flask_login import current_user, login_required
+from sqlalchemy import case, func
 
 from models import Problem, Submission, db
 from routes.api_response import api_error, api_success
@@ -11,9 +12,10 @@ problems_blueprint = Blueprint("problems", __name__)
 
 @problems_blueprint.route("/problems", methods=["GET"])
 def get_all_problems():
-    problems = Problem.query.order_by(Problem.id.asc()).all()
     category_order = {key: index for index, key in enumerate(CATEGORIES)}
-    problems.sort(key=lambda p: (category_order.get(p.category, len(CATEGORIES)), p.id))
+    problems = Problem.query.order_by(
+        case(category_order, value=Problem.category, else_=len(CATEGORIES)), Problem.id
+    )
     accepted_problem_ids, attempted_problem_ids = set(), set()
     if current_user.is_authenticated:
         accepted_problem_ids = {
@@ -30,8 +32,11 @@ def get_all_problems():
             .distinct()
         }
 
+    category_counts = dict(
+        db.session.query(Problem.category, func.count(Problem.id)).group_by(Problem.category).all()
+    )
     categories = [
-        {"id": key, "name": name, "count": sum(p.category == key for p in problems)}
+        {"id": key, "name": name, "count": category_counts.get(key, 0)}
         for key, name in CATEGORIES.items()
     ]
     selected = request.args.get("category", "")
@@ -46,25 +51,24 @@ def get_all_problems():
         return api_error("INVALID_FILTER", "无效的练习状态", 400)
     if state and not current_user.is_authenticated:
         return api_error("AUTH_REQUIRED", "登录后可按练习状态筛选", 401)
-    problems = [
-        p
-        for p in problems
-        if (not selected or p.category == selected)
-        and (not difficulty or p.difficulty == difficulty)
-        and (not query or query in (p.id + " " + p.title).casefold())
-        and (
-            not state
-            or (state == "accepted" and p.id in accepted_problem_ids)
-            or (
-                state == "attempted"
-                and p.id in attempted_problem_ids
-                and p.id not in accepted_problem_ids
-            )
-            or (state == "unattempted" and p.id not in attempted_problem_ids)
+    if selected:
+        problems = problems.filter(Problem.category == selected)
+    if difficulty:
+        problems = problems.filter(Problem.difficulty == difficulty)
+    if query:
+        problems = problems.filter(
+            func.lower(Problem.id + " " + Problem.title).contains(query, autoescape=True)
         )
-    ]
-    total = len(problems)
-    ids = [p.id for p in problems]
+    if state == "accepted":
+        problems = problems.filter(Problem.id.in_(accepted_problem_ids))
+    elif state == "attempted":
+        problems = problems.filter(
+            Problem.id.in_(attempted_problem_ids), ~Problem.id.in_(accepted_problem_ids)
+        )
+    elif state == "unattempted":
+        problems = problems.filter(~Problem.id.in_(attempted_problem_ids))
+    ids = [row.id for row in problems.with_entities(Problem.id).all()]
+    total = len(ids)
     pagination = {}
     # The original unpaginated contract is retained for existing integrations.
     if "page" in request.args:
@@ -76,7 +80,7 @@ def get_all_problems():
             return api_error("INVALID_PAGE", "页码须为整数", 400)
         pages = max(1, (total + size - 1) // size)
         page = min(page, pages)
-        problems = problems[(page - 1) * size : page * size]
+        problems = problems.offset((page - 1) * size).limit(size)
         pagination = {"page": page, "page_size": size, "pages": pages}
 
     problems_list = [

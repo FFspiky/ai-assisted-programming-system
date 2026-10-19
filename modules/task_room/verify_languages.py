@@ -1,6 +1,6 @@
 """Real Docker checks, without Flask/user databases or any AI request.
 
-Run: python -m modules.task_room.verify_languages --languages python cpp java
+Run: python -m modules.task_room.verify_languages --languages python cpp
 """
 
 import argparse
@@ -30,15 +30,7 @@ def score_code(language, rules):
     Json result=Json::object();result["count"]=data["scores"].size();result["total"]=total;
     result["highest"]=highest;result["passed"]=passed;return result;
 }}"""
-    return f"""class Solution {{ static Json solve(Json data) {{
-    long total=0,highest=0,passed=0;
-    for(Json value:data.get("scores").arrayItems()) {{
-        long score=value.asInt();total+=score;highest=Math.max(highest,score);
-        if(score {compare} {threshold})passed++;
-    }}
-    return Json.object().put("count",data.get("scores").size()).put("total",total)
-        .put("highest",highest).put("passed",passed);
-}} }}"""
+    raise ValueError("Unsupported language")
 
 
 def verify(language, label, code, inputs, expected):
@@ -77,8 +69,8 @@ def main():
     parser.add_argument(
         "--languages",
         nargs="+",
-        choices=("python", "cpp", "java"),
-        default=["python", "cpp", "java"],
+        choices=("python", "cpp"),
+        default=["python", "cpp"],
     )
     parser.add_argument(
         "--output", type=Path, default=Path("tmp/task-room-multilang/docker-verification.json")
@@ -101,7 +93,6 @@ def main():
         code = {
             "python": "def solve(data):\n    print('debug')\n    return data\n",
             "cpp": 'Json solve(const Json& data) { cout << "debug"; return data; }',
-            "java": 'class Solution { static Json solve(Json data) { System.out.println("debug"); return data; } }',
         }[language]
         inputs = [
             {

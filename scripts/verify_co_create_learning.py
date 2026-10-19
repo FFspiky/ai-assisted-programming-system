@@ -1,4 +1,4 @@
-"""Three real Docker learning journeys in a fresh, isolated SQLite database.
+"""Two real Docker learning journeys in a fresh, isolated SQLite database.
 
 This does not test live AI generation. Programs are explicitly authored verifier
 fixtures, all in-process HTTP provider requests are forbidden, and the production
@@ -29,7 +29,7 @@ os.environ.update(
     AUTO_CREATE_DATABASE="0",
     FLASK_SECRET_KEY="isolated-learning-journey-verifier",
     SILICONFLOW_API_KEY="",
-    SUPPORTED_LANGUAGES="python,cpp,java",
+    SUPPORTED_LANGUAGES="python,cpp",
     RATE_LIMIT_REDIS_URL="",
     REDIS_URL="",
     ADMIN_USERNAME="",
@@ -55,22 +55,12 @@ SOURCE_PROGRAMS = {
         "#include <iostream>\nint main(){ long long t; std::cin >> t;\n"
         "std::cout << t/3600 << ' ' << t/60%60 << ' ' << t%60 << '\\n'; }\n"
     ),
-    "java": (
-        "import java.util.Scanner;\npublic class Main { public static void main(String[] a){\n"
-        "long t = new Scanner(System.in).nextLong();\n"
-        'System.out.println(t/3600 + " " + t/60%60 + " " + t%60); }}\n'
-    ),
 }
 TARGET_PROGRAMS = {
     "python": "n = abs(int(input()))\ns = 0\nwhile n:\n    s += n % 10\n    n //= 10\nprint(s)\n",
     "cpp": (
         "#include <iostream>\nint main(){ long long n; std::cin >> n;\n"
         "if(n<0)n=-n; int s=0; while(n){s+=n%10;n/=10;} std::cout << s << '\\n'; }\n"
-    ),
-    "java": (
-        "import java.util.Scanner;\npublic class Main { public static void main(String[] a){\n"
-        "long n = Math.abs(new Scanner(System.in).nextLong());\n"
-        "int s=0; while(n!=0){s+=n%10;n/=10;} System.out.println(s); }}\n"
     ),
 }
 executions = []
@@ -357,8 +347,8 @@ def main():
                 flush=True,
             )
         network.assert_not_called()
-    assert counts() == {"submissions": 3, "points": 10, "transfer_events": 3}
-    assert len(executions) == 21
+    assert counts() == {"submissions": 2, "points": 10, "transfer_events": 2}
+    assert len(executions) == 14
     report = {
         "verified_at_utc": datetime.now(UTC).isoformat(),
         "run_id": RUN_ID,
@@ -373,8 +363,8 @@ def main():
         "docker_executions": len(executions),
         "execution_languages": dict(Counter(item["language"] for item in executions)),
         "execution_metadata": executions,
-        "formal_submission_count": 3,
-        "points_after_three_languages_same_target": 10,
+        "formal_submission_count": 2,
+        "points_after_two_languages_same_target": 10,
         "elapsed_seconds": round(time.monotonic() - started, 2),
         "passed": True,
         "evidence": evidence,
@@ -387,8 +377,8 @@ def main():
             {
                 "passed": True,
                 "report": str(REPORT),
-                "docker_executions": 21,
-                "formal_submissions": 3,
+                "docker_executions": len(executions),
+                "formal_submissions": len(evidence),
                 "paid_ai_requests": 0,
             }
         ),

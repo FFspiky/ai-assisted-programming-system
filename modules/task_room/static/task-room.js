@@ -10,8 +10,8 @@
   const json = value => JSON.stringify(value, null, 2) ?? 'null';
   const labels = { discovery: '需求确认中', development: '开发与验收', delivered: '已交付' };
   const intentLabels = { customer: 'AI 客户', coach: '开发教练', review: '项目复盘' };
-  const languageLabels = {python:'Python',cpp:'C++',java:'Java'};
-  const sourceFiles = {python:'solution.py',cpp:'solution.cpp',java:'Solution.java'};
+  const languageLabels = {python:'Python',cpp:'C++'};
+  const sourceFiles = {python:'solution.py',cpp:'solution.cpp'};
   const avatar = client => String(client?.avatar || client?.name || '客').slice(0, 2);
   const sameId = (a, b) => String(a ?? '') === String(b ?? '');
   const date = value => {

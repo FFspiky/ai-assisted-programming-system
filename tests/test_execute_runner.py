@@ -36,7 +36,7 @@ class ExecuteRunnerTest(unittest.TestCase):
         result = runner.run_code("this is not C++", "cpp")
         self.assertEqual(result["status"], "Compile Error", result)
 
-    def test_three_language_starters_execute_in_same_bounded_container(self):
+    def test_two_language_starters_execute_in_same_bounded_container(self):
         for language in LANGUAGE_IDS:
             with self.subTest(language=language):
                 result = runner.run_code(starter_code(language), language, "hello\n")
@@ -53,9 +53,6 @@ class ExecuteRunnerTest(unittest.TestCase):
             "cpp": "//"
             + comment
             + "\n#include <iostream>\nint main(){std::cout<<std::cin.rdbuf();}",
-            "java": "//"
-            + comment
-            + "\npublic class Main { public static void main(String[] args) throws Exception { System.out.print(new String(System.in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8)); } }",
         }
         for language, code in sources.items():
             with self.subTest(language=language):
@@ -83,34 +80,6 @@ class ExecuteRunnerTest(unittest.TestCase):
             result = runner.run_code("print(input())", "python", "legacy request\n")
         self.assertEqual(result["status"], "Accepted", result)
         self.assertEqual(result["output"].strip(), "legacy request")
-
-    def test_java_input_unicode_and_compile_error(self):
-        code = 'import java.util.Scanner; public class Main { public static void main(String[] args) { int n = new Scanner(System.in).nextInt(); System.out.println("结果 " + (n+1)); } }'
-        result = runner.run_code(code, "Java", "5\n")
-        self.assertEqual(result["status"], "Accepted", result)
-        self.assertEqual(result["output"].strip(), "结果 6")
-        result = runner.run_code("public class Main { invalid java }", "java")
-        self.assertEqual(result["status"], "Compile Error", result)
-        self.assertIn("error", result["error"])
-
-    def test_java_runtime_error_heap_limit_and_timeout(self):
-        result = runner.run_code(
-            'public class Main { public static void main(String[] args) { throw new IllegalArgumentException("test"); } }',
-            "java",
-        )
-        self.assertEqual(result["status"], "Runtime Error", result)
-        self.assertIn("IllegalArgumentException", result["error"])
-        result = runner.run_code(
-            "public class Main { public static void main(String[] args) { System.out.println(new byte[160 * 1024 * 1024].length); } }",
-            "java",
-        )
-        self.assertEqual(result["status"], "Resource Limit Exceeded", result)
-        with patch.object(runner, "CODE_RUN_TIMEOUT_SECONDS", 3):
-            result = runner.run_code(
-                "public class Main { public static void main(String[] args) throws Exception { Thread.sleep(30000); } }",
-                "java",
-            )
-        self.assertEqual(result["status"], "Time Limit Exceeded", result)
 
     def test_input_and_error_stream_are_drained_concurrently(self):
         code = "import sys; sys.stderr.write('e'*8192); print(len(sys.stdin.read()))"

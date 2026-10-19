@@ -13,6 +13,7 @@ from sqlalchemy.exc import IntegrityError
 from models import db
 from services.ai_client import AIClientError
 from services.execute_runner import run_code
+from services.language_support import enabled_language_ids
 
 from . import ai
 from .catalog import build_contract, evaluate_input, get_scenario, validate_rules
@@ -101,6 +102,39 @@ def run_payload(item):
 
 def serialize(project, full=True):
     recover_interrupted(project)
+    if not full:
+        versions_query = TaskContract.query.filter_by(project_id=project.id)
+        runs_query = TaskRun.query.filter_by(project_id=project.id)
+        latest = current_contract(project)
+        return {
+            **{
+                key: getattr(project, key)
+                for key in (
+                    "id",
+                    "title",
+                    "scenario_id",
+                    "language",
+                    "state",
+                    "archived",
+                    "revision",
+                    "draft_revision",
+                    "delivery",
+                )
+            },
+            "created_at": timestamp(project.created_at),
+            "updated_at": timestamp(project.updated_at),
+            "stats": {
+                "contracts": versions_query.count(),
+                "runs": runs_query.count(),
+                "passed": runs_query.filter_by(status="passed", kind="acceptance").count(),
+                "changes": versions_query.filter(
+                    TaskContract.change_id.isnot(None), TaskContract.change_id != ""
+                ).count(),
+                "messages": TaskMessage.query.filter_by(project_id=project.id, role="user").count(),
+            },
+            "contract": contract_payload(latest) if latest else None,
+            "language_guide": interface_guide(project.language),
+        }
     versions = contracts(project)
     runs = (
         TaskRun.query.filter_by(project_id=project.id)
@@ -239,7 +273,9 @@ def create_project(user_id, scenario_id, language="python"):
     try:
         language = normalize_language(language)
     except ValueError as exc:
-        raise RoomError("请选择 Python、C++ 或 Java。") from exc
+        raise RoomError("请选择 Python 或 C++。") from exc
+    if language not in enabled_language_ids():
+        raise RoomError("当前未启用此编程语言。")
     if TaskProject.query.filter_by(user_id=user_id).count() >= 100:
         raise RoomError("已达到 100 个项目的保存上限。", 409)
     project = TaskProject(

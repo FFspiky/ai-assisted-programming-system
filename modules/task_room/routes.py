@@ -9,7 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from models import db
 from routes.api_response import api_error, api_success
 from routes.guards import rate_limit
-from services.language_support import language_options
+from services.language_support import enabled_language_ids, language_options
 
 from . import ai, service
 from .catalog import list_catalog
@@ -78,7 +78,7 @@ def catalog():
                     "filename": source_filename(spec["id"]),
                     "entrypoint": interface_guide(spec["id"]),
                 }
-                for spec in language_options()
+                for spec in language_options(enabled_language_ids())
             ],
         }
     )

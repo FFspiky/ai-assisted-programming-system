@@ -7,7 +7,7 @@ import subprocess
 import sys
 
 language = sys.argv[1]
-if language not in {"python", "cpp", "java"}:
+if language not in {"python", "cpp"}:
     sys.exit(64)
 payload = json.load(sys.stdin)
 source = payload["code"]
@@ -41,44 +41,4 @@ if language == "cpp":
         sys.exit(65)
     restore_submission_limits()
     os.execv("/work/main", ["/work/main"])
-if language == "java":
-    with open("/work/Main.java", "w", encoding="utf-8") as f:
-        f.write(source)
-    # Bound the compiler JVM as well as the submission JVM. Serial GC and one
-    # active processor keep native thread use below the container's 32 PID cap.
-    jvm_options = [
-        "-Xms16m",
-        "-Xmx96m",
-        "-Xss256k",
-        "-XX:+UseSerialGC",
-        "-XX:ActiveProcessorCount=1",
-        "-XX:CICompilerCount=2",
-        "-XX:TieredStopAtLevel=1",
-        "-XX:MaxMetaspaceSize=64m",
-        "-XX:ReservedCodeCacheSize=32m",
-        "-XX:MaxDirectMemorySize=16m",
-        "-XX:-UsePerfData",
-        "-XX:-CreateCoredumpOnCrash",
-        "-Dfile.encoding=UTF-8",
-        "-Djava.io.tmpdir=/tmp",
-    ]
-    result = subprocess.run(
-        [
-            "javac",
-            *["-J" + option for option in jvm_options],
-            "-encoding",
-            "UTF-8",
-            "--release",
-            "17",
-            "-proc:none",
-            "-d",
-            "/work",
-            "/work/Main.java",
-        ]
-    )
-    if result.returncode:
-        # Keep resource-related termination distinguishable from syntax errors.
-        sys.exit(128 - result.returncode if result.returncode < 0 else 65)
-    restore_submission_limits()
-    os.execvp("java", ["java", *jvm_options, "-cp", "/work", "Main"])
 sys.exit(64)

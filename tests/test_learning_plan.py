@@ -537,23 +537,23 @@ class LearningPlanTest(unittest.TestCase):
         scenario_id = initial["plan"]["recommendations"][0]["scenario_id"]
         project = self.delivered_project(scenario_id)
         self.assertEqual(self.recommendation(self.load(), scenario_id)["status"], "delivered")
-        answers = {**self.answers, "preferred_language": "java"}
+        answers = {**self.answers, "preferred_language": "cpp"}
         switched = self.data(self.submit(answers, initial["assessment"]["revision"]))
         recommendation = self.recommendation(switched, scenario_id)
-        self.assertEqual(recommendation["language"], "java")
+        self.assertEqual(recommendation["language"], "cpp")
         self.assertEqual(recommendation["status"], "not_started")
         self.assertIsNone(recommendation["project_id"])
         self.assertEqual(switched["plan"]["stats"]["delivered"], 1)
-        java = self.data(
+        cpp = self.data(
             self.client.post(
                 ROOM + "/projects",
-                json={"scenario_id": scenario_id, "language": "java"},
+                json={"scenario_id": scenario_id, "language": "cpp"},
                 headers=self.headers,
             ),
             201,
         )["project"]
         recommendation = self.recommendation(self.load(), scenario_id)
-        self.assertEqual(recommendation["project_id"], java["id"])
+        self.assertEqual(recommendation["project_id"], cpp["id"])
         self.assertNotEqual(recommendation["project_id"], project["id"])
 
 

@@ -223,13 +223,13 @@ class CoCreateLearningTest(unittest.TestCase):
         self.assertEqual(self.post(row, "learning/transfer", problem_id=TARGET).status_code, 409)
 
     def test_transfer_context_does_not_copy_solution_or_create_fake_submission(self):
-        row = self.create("review", language="java", code="ORIGINAL_CODE")
+        row = self.create("review", language="cpp", code="ORIGINAL_CODE")
         result = self.start(row)
         attempt = result["attempt"]
-        self.assertEqual(attempt["language"], "java")
+        self.assertEqual(attempt["language"], "cpp")
         self.assertEqual(attempt["status"], "in_progress")
         self.assertEqual(attempt["existing_submission_count"], 0)
-        self.assertIn("language=java", result["practice_url"])
+        self.assertIn("language=cpp", result["practice_url"])
         self.assertIn("transfer_attempt=" + attempt["id"], result["practice_url"])
         context = self.data(
             self.client.get(f'{BASE}/sessions/{row["id"]}/learning/transfer/{attempt["id"]}')

@@ -15,15 +15,15 @@ const pairs = JSON.parse(fs.readFileSync(path.join(root, 'data/co_create_learnin
 const library = JSON.parse(fs.readFileSync(path.join(root, 'data/problem_library.json'), 'utf8'));
 const copy = data => JSON.parse(JSON.stringify(data));
 const owned = () => ({session_id:'session-7',revision:4,
-    source:{session_id:'session-7',problem_id:'CL-BASICS-01',title:'秒数换算',language:'java'},
-    attempt:{id:'attempt-9',problem_id:'CL-BASICS-02',title:'数位之和',language:'java',submissions:[]},
+    source:{session_id:'session-7',problem_id:'CL-BASICS-01',title:'秒数换算',language:'cpp'},
+    attempt:{id:'attempt-9',problem_id:'CL-BASICS-02',title:'数位之和',language:'cpp',submissions:[]},
     recap_url:'/co-create.html?session=session-7&learning=recap'});
 
 function page({href,record=owned(),draft,latest=false,getStatus=200,postStatuses=[],deferRead=false}={}) {
-    let currentURL = new URL(href || 'http://codelab.test/practice.html?problem=CL-BASICS-02&language=java&co_create_session=session-7&transfer_attempt=attempt-9');
+    let currentURL = new URL(href || 'http://codelab.test/practice.html?problem=CL-BASICS-02&language=cpp&co_create_session=session-7&transfer_attempt=attempt-9');
     const nodes = new Map(), calls = [], handlers = new Map(), documentHandlers = new Map();
     const storage = new Map();
-    if (draft) storage.set('codelab:draft:v2:42:CL-BASICS-02:java',JSON.stringify(draft));
+    if (draft) storage.set('codelab:draft:v2:42:CL-BASICS-02:cpp',JSON.stringify(draft));
     class Node {
         constructor(id) {this.id=id;this.value='';this.hidden=false;this.disabled=false;this.dataset={};this.textContent='';this.attributes={};this.handlers=new Map();}
         addEventListener(type,callback) {if(!this.handlers.has(type))this.handlers.set(type,[]);this.handlers.get(type).push(callback);}
@@ -113,7 +113,7 @@ test('mode styles retain the typed-code mirror and pet while putting AI history 
 });
 
 test('ordinary practice and guest or invalid attempt links retain normal AI access',async()=>{
-    const ordinary=page({href:'http://codelab.test/practice.html?problem=CL-BASICS-02&language=java'});
+    const ordinary=page({href:'http://codelab.test/practice.html?problem=CL-BASICS-02&language=cpp'});
     ordinary.ready();await ordinary.settle();
     assert.equal(ordinary.api.blocksAI,false);assert.equal(ordinary.calls.length,0);
     const guest=page();assert.equal(guest.api.pending,true);
@@ -126,7 +126,7 @@ test('ordinary practice and guest or invalid attempt links retain normal AI acce
 });
 
 test('only owned matching problem/language activates; safe recap and prior draft notice preserve original work',async()=>{
-    const draft={code:'MY EXISTING JAVA CODE',input:'203\n'};
+    const draft={code:'MY EXISTING CPP CODE',input:'203\n'};
     const record=owned();record.recap_url='https://evil.example/leak';
     const app=page({draft,latest:true,record});app.ready();await app.settle();
     assert.equal(app.api.active,true);assert.equal(app.api.pending,false);
@@ -135,16 +135,16 @@ test('only owned matching problem/language activates; safe recap and prior draft
     assert.match(app.node('transferRecap').href,/^\/co-create.html\?/);
     assert.equal(app.bodyClasses.has('practice-transfer-active'),true);
     assert.equal(app.node('aiToggleBtn').hidden,false,'The companion is still present');
-    assert.deepEqual(copy(app.api.context),{session_id:'session-7',attempt_id:'attempt-9',problem_id:'CL-BASICS-02',language:'java'});
+    assert.deepEqual(copy(app.api.context),{session_id:'session-7',attempt_id:'attempt-9',problem_id:'CL-BASICS-02',language:'cpp'});
     assert.ok(app.events.some(event=>event.active && !event.pending));
-    const mismatch=owned();mismatch.attempt.language='cpp';
+    const mismatch=owned();mismatch.attempt.language='python';
     const rejected=page({record:mismatch});rejected.ready();await rejected.settle();
     assert.equal(rejected.api.blocksAI,false);assert.equal(rejected.bodyClasses.size,0);
 });
 
 test('language change or explicit exit restores ordinary UI without losing per-language draft',async()=>{
     const app=page({draft:{code:'SAVED',input:'-91'}});app.ready();await app.settle();
-    app.node('languageSelector').value='cpp';app.node('languageSelector').trigger('change');
+    app.node('languageSelector').value='python';app.node('languageSelector').trigger('change');
     assert.equal(app.api.blocksAI,false);assert.equal(app.url.searchParams.has('co_create_session'),false);
     assert.equal(app.node('codeInput').value,'SAVED');
     app.emit('practice:submission',{submission_id:39,language:'cpp',problem_id:'CL-BASICS-02'});
@@ -155,7 +155,7 @@ test('language change or explicit exit restores ordinary UI without losing per-l
 
 test('actual submission association defaults to unspecified; self-report can be updated without another judge call',async()=>{
     const app=page();app.ready();await app.settle();
-    app.emit('practice:submission',{submission_id:31,language:'java',problem_id:'CL-BASICS-02'});await app.settle();
+    app.emit('practice:submission',{submission_id:31,language:'cpp',problem_id:'CL-BASICS-02'});await app.settle();
     let posts=app.calls.filter(call=>call.method==='POST');
     assert.equal(posts.length,1);assert.deepEqual(posts[0].body,{revision:4,submission_id:31,help_usage:'unspecified'});
     app.node('transferHelpUsage').value='none';app.node('transferHelpUsage').trigger('change');
@@ -186,8 +186,8 @@ test('a late ownership response cannot reactivate after leaving and foreign subm
     delayed.node('languageSelector').value='python';delayed.node('languageSelector').trigger('change');
     delayed.release();await delayed.settle();assert.equal(delayed.api.blocksAI,false);
     const app=page();app.ready();await app.settle();
-    app.emit('practice:submission',{submission_id:41,language:'cpp',problem_id:'CL-BASICS-02'});
-    app.emit('practice:submission',{submission_id:42,language:'java',problem_id:'CL-BASICS-01'});
+    app.emit('practice:submission',{submission_id:41,language:'python',problem_id:'CL-BASICS-02'});
+    app.emit('practice:submission',{submission_id:42,language:'cpp',problem_id:'CL-BASICS-01'});
     await app.settle();assert.equal(app.calls.filter(call=>call.method==='POST').length,0);
 });
 
@@ -225,7 +225,7 @@ test('post-submission self-report restores only this owned attempt and never cla
     assert.equal(app.calls.filter(call=>call.method==='POST').length,0);
     app.node('transferHelpUsage').value='none';app.node('transferLinkSubmission').trigger('click');await app.settle();
     assert.equal(app.calls.filter(call=>call.method==='POST')[0].body.submission_id,61);
-    app.emit('practice:submission',{submission_id:62,language:'java',problem_id:'CL-BASICS-02'});await app.settle();
+    app.emit('practice:submission',{submission_id:62,language:'cpp',problem_id:'CL-BASICS-02'});await app.settle();
     const second=app.calls.filter(call=>call.method==='POST')[1];
     assert.equal(second.body.submission_id,62);assert.equal(second.body.help_usage,'unspecified','A new submission never inherits the previous self report');
     app.node('transferExit').trigger('click');assert.equal(app.node('transferFollowup').hidden,true);

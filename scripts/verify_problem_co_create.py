@@ -29,7 +29,7 @@ os.environ.update(
     AUTO_CREATE_DATABASE="0",
     FLASK_SECRET_KEY="isolated-problem-docker-verification",
     SILICONFLOW_API_KEY="",
-    SUPPORTED_LANGUAGES="python,cpp,java",
+    SUPPORTED_LANGUAGES="python,cpp",
     RATE_LIMIT_REDIS_URL="",
     REDIS_URL="",
     ADMIN_USERNAME="",
@@ -58,17 +58,10 @@ PROGRAMS = {
         "int main() { long long t; if (!(std::cin >> t)) return 1;\n"
         "std::cout << t / 3600 << ' ' << t / 60 % 60 << ' ' << t % 60 << '\\n'; }\n"
     ),
-    "java": (
-        "import java.util.Scanner;\n"
-        "public class Main { public static void main(String[] args) {\n"
-        "Scanner scanner = new Scanner(System.in); long t = scanner.nextLong();\n"
-        'System.out.println(t / 3600 + " " + t / 60 % 60 + " " + t % 60); } }\n'
-    ),
 }
 WRONG = {
     "python": PROGRAMS["python"].replace("t // 60 % 60", "t // 60"),
     "cpp": PROGRAMS["cpp"].replace("t / 60 % 60", "t / 60"),
-    "java": PROGRAMS["java"].replace("t / 60 % 60", "t / 60"),
 }
 executions = []
 stage = {"language": None, "name": None}
@@ -441,7 +434,7 @@ def main():
                 flush=True,
             )
         provider.assert_not_called()
-    assert counts() == {"submissions": 3, "points": 10}
+    assert counts() == {"submissions": 2, "points": 10}
     report = {
         "verified_at_utc": datetime.now(UTC).isoformat(),
         "run_id": RUN_ID,
@@ -454,8 +447,8 @@ def main():
         "docker_executions": len(executions),
         "execution_languages": dict(Counter(item["execution_language"] for item in executions)),
         "execution_metadata": executions,
-        "formal_submission_count": 3,
-        "points_after_three_languages_same_problem": 10,
+        "formal_submission_count": 2,
+        "points_after_two_languages_same_problem": 10,
         "elapsed_seconds": round(time.monotonic() - started, 2),
         "passed": True,
         "evidence": evidence,

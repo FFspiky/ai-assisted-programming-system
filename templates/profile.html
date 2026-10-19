@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/brand-v1/logo.png') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/brand-v1/logo-128.png') }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>个人主页 - 智练 CodeLab</title>
@@ -14,7 +14,7 @@
 <div class="container">
     <header>
         <a class="logo" href="/index.html" aria-label="智练 CodeLab 首页">
-            <div class="logo-icon"><img class="codelab-brand-mark" src="/static/images/brand-v1/logo.png" alt="" width="44" height="44"></div>
+            <div class="logo-icon"><img class="codelab-brand-mark" src="/static/images/brand-v1/logo-128.png" alt="" width="44" height="44"></div>
             <div class="logo-text">智练 CodeLab</div>
         </a>
         <nav aria-label="主导航"><ul>
@@ -79,7 +79,7 @@
                 </div>
                 <div class="profile-card settings-card">
                     <h2>头像</h2><p class="muted">支持 PNG、JPG、WebP，大小不超过 2 MB。上传后会裁成正方形。</p>
-                    <div class="avatar-presets" role="group" aria-label="选择默认头像"><button type="button" class="avatar-preset" data-avatar-preset="whale" aria-label="使用小蓝鲸头像"><img src="/static/images/brand-v1/avatars/whale.png" alt="" width="64" height="64" loading="lazy"><span>小蓝鲸</span></button><button type="button" class="avatar-preset" data-avatar-preset="seal" aria-label="使用雪团海豹头像"><img src="/static/images/brand-v1/avatars/seal.png" alt="" width="64" height="64" loading="lazy"><span>雪团海豹</span></button><button type="button" class="avatar-preset" data-avatar-preset="penguin" aria-label="使用耳机企鹅头像"><img src="/static/images/brand-v1/avatars/penguin.png" alt="" width="64" height="64" loading="lazy"><span>耳机企鹅</span></button><button type="button" class="avatar-preset" data-avatar-preset="otter" aria-label="使用珍珠海獭头像"><img src="/static/images/brand-v1/avatars/otter.png" alt="" width="64" height="64" loading="lazy"><span>珍珠海獭</span></button><button type="button" class="avatar-preset" data-avatar-preset="octopus" aria-label="使用博士章鱼头像"><img src="/static/images/brand-v1/avatars/octopus.png" alt="" width="64" height="64" loading="lazy"><span>博士章鱼</span></button><button type="button" class="avatar-preset" data-avatar-preset="robot" aria-label="使用小蓝同学头像"><img src="/static/images/brand-v1/avatars/robot.png" alt="" width="64" height="64" loading="lazy"><span>小蓝同学</span></button></div><div class="form-actions"><button class="profile-button" id="uploadAvatarBtn">上传头像</button><button class="profile-button" id="resetAvatarBtn">恢复默认头像</button></div>
+                    <div class="avatar-presets" role="group" aria-label="选择默认头像"><button type="button" class="avatar-preset" data-avatar-preset="whale" aria-label="使用小蓝鲸头像"><img src="/static/images/brand-v1/avatars/whale.webp" alt="" width="64" height="64" loading="lazy"><span>小蓝鲸</span></button><button type="button" class="avatar-preset" data-avatar-preset="seal" aria-label="使用雪团海豹头像"><img src="/static/images/brand-v1/avatars/seal.webp" alt="" width="64" height="64" loading="lazy"><span>雪团海豹</span></button><button type="button" class="avatar-preset" data-avatar-preset="penguin" aria-label="使用耳机企鹅头像"><img src="/static/images/brand-v1/avatars/penguin.webp" alt="" width="64" height="64" loading="lazy"><span>耳机企鹅</span></button><button type="button" class="avatar-preset" data-avatar-preset="otter" aria-label="使用珍珠海獭头像"><img src="/static/images/brand-v1/avatars/otter.webp" alt="" width="64" height="64" loading="lazy"><span>珍珠海獭</span></button><button type="button" class="avatar-preset" data-avatar-preset="octopus" aria-label="使用博士章鱼头像"><img src="/static/images/brand-v1/avatars/octopus.webp" alt="" width="64" height="64" loading="lazy"><span>博士章鱼</span></button><button type="button" class="avatar-preset" data-avatar-preset="robot" aria-label="使用小蓝同学头像"><img src="/static/images/brand-v1/avatars/robot.webp" alt="" width="64" height="64" loading="lazy"><span>小蓝同学</span></button></div><div class="form-actions"><button class="profile-button" id="uploadAvatarBtn">上传头像</button><button class="profile-button" id="resetAvatarBtn">恢复默认头像</button></div>
                 </div>
             </section>
             <section id="securityPanel" role="tabpanel" aria-labelledby="tabSecurity" hidden>
@@ -98,6 +98,7 @@
     </main>
 </div>
 <script src="{{ url_for('static', filename='js/user-session.js') }}"></script>
+<script src="{{ url_for('static', filename='js/form-accessibility.js') }}"></script>
 <script src="{{ url_for('static', filename='js/profile.js') }}"></script>
 </body>
 </html>

@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 
 <head>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/brand-v1/logo.png') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/brand-v1/logo-128.png') }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>刷题挑战 - 智练 CodeLab</title>
@@ -25,7 +25,7 @@
             <div class="header-left">
                 <div class="logo">
                     <div class="logo-icon">
-                        <img class="codelab-brand-mark" src="/static/images/brand-v1/logo.png" alt="" width="44" height="44">
+                        <img class="codelab-brand-mark" src="/static/images/brand-v1/logo-128.png" alt="" width="44" height="44">
                     </div>
                     <div class="logo-text">智练 CodeLab</div>
                 </div>
@@ -107,7 +107,7 @@
 	                                <select id="languageSelector" aria-label="代码语言">
 	                                    <option value="python">Python</option>
 	                                    <option value="cpp">C++</option>
-	                                    <option value="java">Java</option>
+
 	                                </select>
                                 <button class="btn btn-ai" id="optimizeBtn">
                                     <i class="fas fa-wand-magic-sparkles"></i>
@@ -145,8 +145,8 @@
                         <span id="draftStatus" role="status">草稿自动保存</span>
                     </div>
                     <div class="code-editor-wrapper">
-                        <div id="ghostLayer"></div>
-                        <textarea class="code-area" id="codeInput" placeholder="在此输入您的代码..."></textarea>
+                        <div id="ghostLayer" aria-hidden="true"></div>
+                        <textarea class="code-area" id="codeInput" aria-label="代码编辑器" placeholder="在此输入您的代码..."></textarea>
                     </div>
                     <div class="inline-hint" id="inlineHint">Tab 接受 / Esc 取消</div>
                     <div class="input-area"
@@ -155,7 +155,7 @@
                             <i class="fas fa-keyboard"></i>
                             <span>标准输入 (Standard Input)</span>
                         </div>
-                        <textarea id="customInput" placeholder="如果代码需要输入，请在此处提供测试数据..."
+                        <textarea id="customInput" aria-label="标准输入" placeholder="如果代码需要输入，请在此处提供测试数据..."
                             style="width: 100%; min-height: 80px; background: #1e1e2e; color: #f8f8f2; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 10px; font-family: 'Source Code Pro', monospace; resize: vertical;"></textarea>
                     </div>
                     <div class="output-area">
@@ -252,14 +252,18 @@
                     </div>
                 </div>
 
-                <div class="chat-container" id="chatContainer" aria-label="与达菲郁的对话"></div>
+                <div class="chat-container" id="chatContainer" role="log" aria-live="off" aria-label="与达菲郁的对话"></div>
 
-                <div class="chat-context-controls">
+                <div class="chat-placement" role="group" aria-label="调整助手窗口">
+<button type="button" data-chat-dock="left">靠左</button><button type="button" data-chat-dock="right">靠右</button>
+<button type="button" data-chat-size="compact">紧凑</button><button type="button" data-chat-size="normal">标准</button>
+<button type="button" id="dockPet">角色归位</button><button type="button" id="hidePet">隐藏角色</button>
+</div><div class="chat-context-controls">
                     <button type="button" id="attachPracticeContext" class="chat-context-btn" aria-pressed="false" title="下一条消息附带当前题目、代码、输入和最近提交结果">附带当前练习</button>
                     <span id="chatContextStatus" aria-live="polite"></span>
                 </div>
                 <div class="input-container">
-                    <input type="text" class="message-input" id="messageInput" placeholder="向达菲郁提问...">
+                    <input type="text" class="message-input" id="messageInput" aria-label="给达菲郁的消息" placeholder="向达菲郁提问...">
                     <button type="button" id="stopChat" class="chat-context-btn" hidden>停止生成</button>
                     <button class="send-btn" id="sendMessage" aria-label="发送消息">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="m21 3-6 18-4-8-8-4 18-6ZM11 13 21 3"/></svg>
@@ -271,6 +275,7 @@
             {% endfor %}
         </div>
 
+        <button type="button" id="restorePet" class="pet-restore" hidden>打开助手</button>
         <button class="ai-toggle-btn" id="aiToggleBtn" aria-label="打开达菲郁编程助手" aria-expanded="false" aria-controls="aiFloatingWindow" title="达菲郁 · 点击聊天，拖动提起，右键选择动作">
             <span class="pet-sprite" aria-hidden="true"></span>
             <span class="pet-caption" aria-hidden="true">陪你写代码</span>

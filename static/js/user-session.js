@@ -1,5 +1,5 @@
 (function () {
-    const defaultAvatar = '/static/images/brand-v1/avatars/whale.png';
+    const defaultAvatar = '/static/images/brand-v1/avatars/whale.webp';
 
     function escapeHtml(text) {
         const map = {

@@ -9,7 +9,7 @@ os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 os.environ["FLASK_SECRET_KEY"] = "problem-co-create-test-secret"
 os.environ["AUTO_CREATE_DATABASE"] = "0"
 os.environ["SILICONFLOW_API_KEY"] = ""
-os.environ["SUPPORTED_LANGUAGES"] = "python,cpp,java"
+os.environ["SUPPORTED_LANGUAGES"] = "python,cpp"
 
 from app import app
 from models import Problem, Submission, TestCase, User, db
@@ -62,7 +62,7 @@ class ProblemCoCreateTest(unittest.TestCase):
             "modules.co_create.problem_service.SUPPORTED_LANGUAGES",
             "modules.co_create.routes.SUPPORTED_LANGUAGES",
         ):
-            language_patch = patch(target, {"python", "cpp", "java"})
+            language_patch = patch(target, {"python", "cpp"})
             language_patch.start()
             self.addCleanup(language_patch.stop)
         _MEMORY_BUCKETS.clear()
@@ -158,8 +158,8 @@ class ProblemCoCreateTest(unittest.TestCase):
 
     def test_public_snapshot_languages_and_private_reference_not_exposed(self):
         catalog = self.data(self.client.get(BASE + "/catalog"))
-        self.assertEqual({x["id"] for x in catalog["languages"]}, {"python", "cpp", "java"})
-        for language in ("python", "cpp", "java"):
+        self.assertEqual({x["id"] for x in catalog["languages"]}, {"python", "cpp"})
+        for language in ("python", "cpp"):
             row = self.create(language=language)
             self.assertFalse(row["legacy"])
             self.assertEqual(row["language"], language)
@@ -169,7 +169,7 @@ class ProblemCoCreateTest(unittest.TestCase):
             self.assertEqual(row["state"]["practice_context"]["code"], "")
 
     def test_three_language_verification_uses_runner_without_formal_submission(self):
-        for language in ("python", "cpp", "java"):
+        for language in ("python", "cpp"):
             row = self.create("review", language=language, code="OK")
             run = self.data(self.post(row, "verify"))["run"]
             self.assertTrue(run["passed"])
@@ -401,7 +401,7 @@ class ProblemCoCreateTest(unittest.TestCase):
         self.assertEqual(row["id"], again["id"])
         changed = self.create(code="OK", input_text="3661", reuse=True)
         self.assertNotEqual(row["id"], changed["id"])
-        other_language = self.create(code="BASE", input_text="3661", reuse=True, language="java")
+        other_language = self.create(code="BASE", input_text="3661", reuse=True, language="cpp")
         self.assertNotEqual(row["id"], other_language["id"])
         explicit_new = self.create(code="BASE", input_text="3661")
         self.assertNotEqual(row["id"], explicit_new["id"])
