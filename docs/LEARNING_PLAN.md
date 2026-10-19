@@ -1,6 +1,6 @@
 # 编程学习问卷与项目推荐
 
-> 当前参赛分支仅支持 Python / C++17；历史 Java 和三语言测试记录仅供追溯。当前启动与验证结果见 [参赛说明](COMPETITION_PREVIEW.md)。
+> 当前版本仅支持 Python / C++17；历史 Java 和三语言测试记录仅供追溯。当前启动与验证结果见 [参赛说明](COMPETITION_PREVIEW.md)。
 
 
 入口为原项目 `/learn-analytics.html`。问卷有 9 个问题：练习经验、首选编程语言、语言中立的编码熟悉度、判断与循环、列表与字典、测试习惯、单次学习时间、兴趣场景、当前目标。兴趣可选 1–2 项，其余为单选。
@@ -10,7 +10,7 @@
 1. 登录现有账号，按实际情况填写问卷，点击「保存并推荐简单项目」。
 2. 查看 6 个项目的目标、时间参考和推荐理由。推荐依据是问卷自述，不生成能力分数，不调用 AI。
 3. 点击「查看项目」进入任务室中的对应任务介绍，明确领取后才创建项目。没有自动创建或自动发起模型请求。
-4. 确认少量规则，使用所选 Python、C++ 或 Java 模板编写 `solve(data)` 函数，运行公开验收。
+4. 确认少量规则，使用所选 Python 或 C++ 模板编写 `solve(data)` 函数，运行公开验收。
 5. 通过全部用例并确认交付后，返回学习分析，状态显示「已交付」，可以回看项目。领取但未交付显示「进行中」。
 6. 可刷新项目进度、继续上次的项目，或重新填写问卷调整推荐。重新填写在成功保存前不覆盖原问卷。
 
@@ -31,7 +31,7 @@
 - `routes/assessment.py`：公开 `GET /api/learning-plan/questions`；登录后 `GET /api/learning-plan` 和 `POST /api/learning-plan`。
 - POST 正文为 `{answers: {...}, revision: 0}`，已有问卷使用上次返回的 revision；过期版本返回 409，防止覆盖另一窗口。
 - `modules/task_room/simple_catalog.py`：6 个小项目的输入约定、规则、公开案例及确定性参考实现。
-- 任务室支持 `?scenario=项目ID&language=python|cpp|java&from=learning-plan` 打开介绍，`?project=项目ID` 继续已有项目。
+- 任务室支持 `?scenario=项目ID&language=python|cpp&from=learning-plan` 打开介绍，`?project=项目ID` 继续已有项目。
 
 原 AI 学习分析保留为可选按钮，只有主动点击后才请求已配置模型。常规问卷、推荐、项目进度查询与自动化测试不调用收费 AI。
 

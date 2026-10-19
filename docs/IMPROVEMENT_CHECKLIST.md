@@ -1,189 +1,46 @@
 # 项目改进清单
 
-更新时间：2026-05-24
+更新时间：2026-10-19
 
-## 当前状态
+## 当前基线
 
-- 本地仓库已完成多轮安全、测试、前端拆分和后端判题增强。
-- 本轮新增改进完成后，需要提交并推送到远端。
-- 当前基础检查命令：
+当前参赛版本支持 Python 3.11 / C++17，主线为“验证 AI 代码 → 解释修改 → 独立再做一次”。题库、学习共创、关联练习、任务室与问卷推荐共用现有账号和真实判题。
 
-```bash
-make check
-```
+仓库当前为公开仓库。通过面向 `main` 的 PR 运行完整 CI，检查通过后合并；提交是否已同步、具体测试数量及结果以 GitHub 当前提交和 Actions 为准，不沿用旧开发机的工作区状态。
 
 ## 已完成
 
-- 初始化 Git 仓库并提交基线。
-- 创建 GitHub 私有仓库。
-- 移除源码中的默认 AI API Key。
-- 移除硬编码管理员弱密码。
-- 管理员创建改为环境变量或 `flask --app app create-admin`。
-- 默认关闭 Flask debug。
-- 收紧 CORS 来源配置。
-- 高风险接口增加登录限制。
-- 代码运行增加基础资源限制。
-- 代码运行限制改为环境变量配置。
-- 请求 payload 增加语言、代码长度、标准输入长度、AI prompt 长度校验。
-- 代码运行输出增加截断保护。
-- 昂贵接口增加内存版频率限制。
-- AI 调用封装到 `services/ai_client.py`。
-- AI 代码优化改为优先结构化 JSON，兼容 Markdown 回退。
-- 前端拆分：
-  - `index.html` 拆出 `static/css/index.css`、`static/js/index.js`
-  - `practice.html` 拆出 `static/css/practice.css`、`static/js/practice.js`
-  - `learn-analytics.html` 拆出 `static/css/learn-analytics.css`、`static/js/learn-analytics.js`
-- 新增公共用户会话脚本 `static/js/user-session.js`。
-- 清理首页模拟运行、模拟 AI 优化、模拟提交逻辑。
-- 首页入口改为跳转真实题目选择流程。
-- 提交判题避免重复 Accepted 无限加分。
-- 提交表增加常用查询索引迁移。
-- 提交记录查询去除 N+1 查询。
-- 判题增强：
-  - 忽略行尾空白
-  - 支持浮点误差比较
-  - 区分 `Compile Error`、`Runtime Error`、`Time Limit Exceeded`
-- 后台题目导入返回明细：
-  - 成功导入题目列表
-  - 跳过题目列表和原因
-  - 每题测试用例数量
-  - 测试用例解析失败明细
-- 后台题目导入兼容模板中的 `h2[data-id]` 题目 ID，并支持空标准输入用例。
-- 后台导入页展示导入结果明细。
-- 数据库迁移已在干净 SQLite 数据库上跑通。
-- CI 增加干净数据库迁移检查。
-- 应用启动自动建表逻辑已避开 Flask-Migrate `db` 命令。
-- 已登录用户的高风险 POST 接口增加 CSRF token 校验。
-- 前端新增 `UserSession.csrfFetch`，运行、提交、AI 请求、登出、后台导入等 POST 自动携带 CSRF token。
-- 学习时长上报改为支持自定义请求头的 `fetch(..., keepalive: true)`。
-- 登录失败次数和昂贵接口限流抽象为共享限流服务。
-- 限流支持通过 `RATE_LIMIT_REDIS_URL` / `REDIS_URL` 接入 Redis，未配置时回退到进程内限流。
-- README 补充 Redis 限流生产环境配置说明。
-- 判题支持使用单独一行 `---OR---` 分隔多个合法答案。
-- 提交判题接口返回每个测试用例的结构化结果 `test_results`，并兼容旧字段。
-- 代码运行结果增加 `output_truncated` / `error_truncated`，前端对截断输出显示明确提示。
-- 代码运行结果拆分 `compile_time` 和 `run_time`，提交判题逐测试用例透传耗时信息。
-- 登录/注册页增加前端表单校验、密码规则提示，并用页面内错误/成功提示替代 `alert`。
-- 学习时长上报改为页面可见时累计，前端每 60 秒心跳上报并在页面隐藏/离开时补报。
-- 学习时长后端增加单次上报上限和单日最大值限制。
-- 题目描述 HTML 清洗改为严格白名单，移除危险标签、事件属性、样式属性和不安全链接协议。
-- 排行榜补充积分、正确率、学习时长等展示指标，排序明确为解题数优先、积分其次。
-- 普通 JSON API 统一增加 `success`、`data`、`message`、结构化 `error.code/message` 响应格式，并保留关键旧字段兼容前端。
-- 新增前端 `UIFeedback` 工具，统一错误消息解析、按钮 loading 和 retry 展示。
-- 抽取共享 CSS：消息提示、次要按钮、危险按钮等公共样式。
-- 后台管理页新增题目列表、题目编辑、测试用例编辑和删除题目能力。
-- 新增部署文档 `docs/DEPLOYMENT.md`。
-- 新增 `Makefile`。
-- 新增 GitHub Actions CI。
-- 新增 `pyproject.toml`。
-- 刷题页新增上一题、下一题、回题库、当前题进度和已通过标记。
-- 学习分析页新增 AI 分析结果本地缓存和重新生成功能。
-- CI 实际运行 Ruff / Black。
-- CI 增加 Playwright 冒烟测试，覆盖主要页面和移动端横向溢出检查。
-- 接入 pip-audit、npm audit 和 Dependabot。
-- 完成刷题页、学习分析页的移动端样式收敛，并将首页、刷题页、学习分析页移动端检查纳入 CI。
-- 单元/API 测试扩展到 28 个。
+- 移除源码中的默认 API Key 和硬编码管理员弱密码；密钥从环境变量读取，管理员显式创建，默认关闭 debug。
+- 登录、所有权与 CSRF 校验，输入长度校验，题面 HTML 白名单清洗，隐藏用例脱敏。
+- Docker 隔离执行：禁网、只读根文件系统、非特权用户、无宿主挂载，限制 CPU、内存、进程、文件、输出和总时长；Docker 不可用时拒绝执行。
+- Python/C++ 判题、文本/浮点比较、多个合法答案及编译错误、运行异常、超时等真实状态。
+- Redis 原子限流预约与内存限流加锁；Redis 不可用时回退到进程内限流。
+- 数据库迁移、题库种子命令、后台题目与测试用例维护、题库筛选分页下推数据库。
+- 执行证据诊断、分级帮助、代码差异预览、采纳/撤销、正式复测、解释与代码版本绑定、关联题独立尝试和复盘导出。
+- 9 个任务室项目、问卷驱动的 6 项推荐、个人资料与真实练习统计。
+- 聊天流式思考与回答、停止生成、自动补全、窗口与桌宠交互、移动端布局检查。
+- CI 实际运行 Ruff、Black、Python 编译与测试、Docker 镜像构建、干净数据库迁移、JS 语法、Node 控制器测试、Playwright 浏览器回归、pip-audit 和 npm audit。
 
-## P0：必须优先处理
+## 开发与验收
 
-1. 提交并推送本轮新增改进
+安装 `requirements-dev.txt`、执行 `npm ci`，启动 Docker 并构建 `codelab-runner:local` 后：
 
 ```bash
-git add .
-git commit
-git push
+make check
+make lint
+make format-check
+node --test tests/*.test.cjs
 ```
 
-当前工作区有本轮新增改动，完成验收后应同步到远端。
+`make check` 仅包含编译、Python 测试和 JS 语法。完整浏览器验收还需要迁移并准备独立数据库、启动 Flask、安装 Chromium，然后执行 `npm run smoke`；具体步骤以 `.github/workflows/ci.yml` 为准。
 
-2. 真正代码执行沙箱
+参赛预览准备与 Docker 验证命令见 [参赛说明](COMPETITION_PREVIEW.md) 和 [语言支持](LANGUAGES.md)。不配置模型密钥也可运行使用测试替身的自动回归；这不证明真实模型回复质量。
 
-当前仍是本机进程级资源限制，不是强隔离。公网部署前应接入以下方案之一：
+## 待完成
 
-- Docker 隔离容器
-- nsjail
-- Firecracker
-- Judge0
-- 独立 worker + 低权限用户 + 容器网络隔离
-
-3. 旧 API Key 吊销
-
-如果曾经写在源码中的 SiliconFlow Key 是真实可用 Key，应到平台后台吊销并重新生成。
-
-## P1：高优先级
-
-1. 判题能力继续增强
-
-- Special Judge
-
-## P2：中优先级
-
-1. 前端 AI 流式输出取消按钮
-
-涉及：
-
-- AI 聊天
-- AI 学习路径
-- AI 学习分析
-- AI 补全
-
-## P3：工程化
-
-1. ~~CI 实际运行 Ruff / Black~~（已完成）
-
-当前已有 `pyproject.toml`，但依赖和 CI 尚未实际运行：
-
-```bash
-ruff check .
-black --check .
-```
-
-2. ~~增加 Playwright 冒烟测试~~（已完成）
-
-建议覆盖：
-
-- `/index.html`
-- `/login.html`
-- `/register.html`
-- `/problem_selector.html`
-- `/practice.html`
-- `/learn-analytics.html`
-
-检查内容：
-
-- 页面 200
-- 无 JS runtime error
-- 核心按钮存在
-- 登录态/游客态用户区正常
-
-3. ~~依赖安全扫描~~（已完成）
-
-可接入：
-
-- Dependabot
-- pip-audit
-
-## P4：产品体验
-
-1. ~~移动端视觉检查~~（已完成）
-
-需要实际检查首页、刷题页、学习分析页在移动端是否有遮挡、溢出、按钮过小等问题。
-
-当前已完成刷题页、学习分析页的移动端样式收敛；首页、刷题页、学习分析页已纳入 Playwright 移动端横向溢出和运行时错误检查。
-
-2. ~~刷题页导航增强~~（已完成）
-
-- 上一题
-- 下一题
-- 回题库
-- 当前题进度
-- 已通过标记
-
-3. ~~学习分析页结果持久化~~（已完成）
-
-AI 分析结果可缓存，避免每次刷新都重新请求 AI。
-
-## 建议下一步执行顺序
-
-1. `git push` 同步远端。
-2. 设计并接入真正代码沙箱。
+1. 参赛验收：保持最终提交 CI 通过，补齐真实 AI 样例、学生观察、作品说明、演示视频和素材来源；当前工程测试不能证明教学收益。
+2. 公网部署：把执行服务与业务主机隔离，统一全局并发与任务调度。当前每个 Flask 进程最多执行两个任务，SQLite 与进程内回退限流面向本机演示。参见 [部署文档](DEPLOYMENT.md)。
+3. 依赖维护：更新并检查待处理的 Dependabot PR，逐项确认兼容性。
+4. 密钥历史：如果旧源码中曾存在真实可用的 Key，应在供应商后台吊销；仓库无法证明后台是否已处理。
+5. 判题扩展：按实际题型需求评估 Special Judge；当前内置题库不因此宣称支持任意判题协议。
+6. 题库复核：Git 内置 60 道 CL 题与 3 道演示题；原开发机额外 120 道 P 系列题依赖旧数据库导入，尚需逐题复核，不随克隆提供。

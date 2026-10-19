@@ -1,6 +1,6 @@
 # 达菲郁学习共创：验证、解释与独立尝试
 
-> 当前参赛分支仅支持 Python / C++17；历史 Java 和三语言测试记录仅供追溯。当前启动与验证结果见 [参赛说明](COMPETITION_PREVIEW.md)。
+> 当前版本仅支持 Python / C++17；历史 Java 和三语言测试记录仅供追溯。当前启动与验证结果见 [参赛说明](COMPETITION_PREVIEW.md)。
 
 
 2026-10-18：页面已按“验证 AI 代码 → 解释修改 → 独立再做一次”组织。下述用例推演、代码质检与采纳复测保留在验证阶段；新增解释、关联练习与复盘卡的完整契约见 [学习共创说明](CO_CREATE_LEARNING.md)。阶段可自由返回，学生解释与输出预测不作为强制门槛；现有会话无需重建。
@@ -18,7 +18,7 @@
 7. 「题库验证」在 Docker 中对当前候选或质检代码运行题库用例，隐藏用例只显示状态与汇总。
 8. 共创验证不创建正式 Submission、不加积分、不伪造学习结果。正式采纳、撤回、提交及复测与刷题原流程衔接。
 
-完整程序采用标准输入/标准输出协议，不再要求 `def solve(data)` 或 JSON 输入输出。Python、C++17、Java 17 使用统一语言约定；Java 入口为 `public class Main`，不声明 package。实际可用语言由主站配置和 Docker 镜像共同决定。
+完整程序采用标准输入/标准输出协议，不再要求 `def solve(data)` 或 JSON 输入输出。Python 3.11、C++17 使用统一语言约定。实际可用语言由主站配置和 Docker 镜像共同决定。
 
 ## 判定来源
 
@@ -100,7 +100,7 @@ handoff 只准备一条所属本人的 `CodeProposal` 和一条共创事件，�
 .\.venv\Scripts\python.exe -m unittest tests.test_problem_co_create tests.test_co_create -v
 ```
 
-真实 Docker 验证应使用独立测试库。启动主站前先备份并执行主站迁移，再确认隔离镜像覆盖 Python、C++ 与 Java。没有 Docker 时执行失败，不回退到应用宿主。
+真实 Docker 验证应使用独立测试库。启动主站前先备份并执行主站迁移，再确认隔离镜像覆盖 Python 与 C++。没有 Docker 时执行失败，不回退到应用宿主。
 
 `scripts/verify_co_create.py` 保留为历史三场景验证脚本，其结果不能当作新题目驱动或新增 Java 的验证证明。历史 2026-10-15 的 21 次 Docker 与两次真实 AI 验证属于旧版本；新版本以本次实际测试结果为准。
 
