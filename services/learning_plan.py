@@ -40,7 +40,6 @@ QUESTIONS = [
         "options": [
             {"value": "python", "label": "Python"},
             {"value": "cpp", "label": "C++"},
-            {"value": "java", "label": "Java"},
         ],
     },
     {

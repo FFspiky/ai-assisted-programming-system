@@ -65,7 +65,7 @@ jobs:
 
       - name: Run Playwright smoke tests
         run: |
-          DATABASE_URL="sqlite:///$(pwd)/smoke.db" FLASK_SECRET_KEY=ci-secret flask --app app db upgrade
+          python scripts/prepare_competition_preview.py --database smoke.db
           DATABASE_URL="sqlite:///$(pwd)/smoke.db" FLASK_SECRET_KEY=ci-secret flask --app app run --host 127.0.0.1 --port 5005 &
           server_pid="$!"
           trap 'kill "$server_pid"' EXIT

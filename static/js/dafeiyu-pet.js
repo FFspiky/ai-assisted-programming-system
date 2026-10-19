@@ -38,7 +38,11 @@
         if (activity === 'idle' && previous === 'talk') play('wave');
         else resumeActivity();
     }
-    window.DafeiyuPet = {setActivity};
+    window.DafeiyuPet = {setActivity, dock() {
+        drag = null; fall = null; pet.classList.remove('is-dragging');
+        clampPet(innerWidth - pet.offsetWidth - 16, innerHeight - pet.offsetHeight - 16);
+        savePosition(); resumeActivity();
+    }};
 
     function clampPet(left, top) {
         const {width, height} = pet.getBoundingClientRect();

@@ -179,3 +179,29 @@ body.ocean-theme {
   .ocean-theme:not(.task-room-page) > .container > header .logo-text {font-size:18px}
   .ocean-theme:not(.task-room-page) > .container > header .user-details {max-width:72px}
 }
+/* Accessible controls share the ocean button language. */
+.ocean-theme .btn-submit,.ocean-theme .send-btn,.ocean-theme.auth-page button,.ocean-theme.admin-page button {background:#3268b5;color:#fff}
+.ocean-theme .btn-submit:hover,.ocean-theme .send-btn:hover,.ocean-theme.auth-page button:hover,.ocean-theme.admin-page button:hover {background:#285795}
+.ocean-theme .editor-tools select,.ocean-theme #languageSelector,.ocean-theme .problem-filters select {
+  appearance:none;min-height:40px;border-radius:8px;padding:8px 36px 8px 12px;
+  border:1px solid #6e8eb5;background:#213a56;color:#f2f7fd;font:inherit;font-weight:500;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23c3d3e6' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;
+  transition:background-color .15s,border-color .15s;
+}
+.ocean-theme .editor-tools select:hover:not(:disabled),.ocean-theme #languageSelector:hover {background-color:#2a486b;border-color:#a5c9ff}
+.ocean-theme select:disabled {opacity:.65;cursor:not-allowed}
+.field-error {color:#ffb8bd;font-size:13px;line-height:1.5;margin:4px 0 12px}
+[aria-invalid="true"] {border-color:#ffb8bd!important}
+.problem-filters {display:flex;gap:16px;align-items:end;flex-wrap:wrap;margin:24px 0}
+.problem-filters label {display:grid;gap:8px;flex:1;min-width:160px}
+.problem-filters input {min-height:44px;width:100%;border:1px solid #6e8eb5;border-radius:8px;background:#213a56;color:#f2f7fd;padding:10px 12px;font:inherit}
+.problem-filters button,.chat-placement button,.pet-restore {min-height:40px;border:1px solid #6e8eb5;border-radius:8px;background:#213a56;color:#f2f7fd;padding:8px 12px;cursor:pointer;font:inherit}
+.chat-placement {display:flex;gap:6px;flex-wrap:wrap;font-size:12px;flex-shrink:0}
+.chat-placement button {min-height:32px;padding:5px 8px}
+.pet-restore {position:fixed;right:16px;bottom:16px;z-index:1001}
+.ai-toggle-btn[hidden],.pet-restore[hidden] {display:none!important}
+.ocean-theme .chat-icon-btn {width:36px;height:36px}
+.ocean-theme .ai-header {flex-wrap:wrap}
+.ocean-theme .reasoning-text {max-height:180px;overflow:auto;overscroll-behavior:contain}
+.ocean-theme .glowing {max-width:80vw;pointer-events:none}
+@media(pointer:coarse),(max-width:650px){.ocean-theme .chat-icon-btn,.chat-placement button,.pet-restore {min-width:44px;min-height:44px}.ocean-theme .chat-resize-handle {display:none}.ocean-theme .ai-assistant-section {padding:12px;gap:8px}}

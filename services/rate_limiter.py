@@ -1,5 +1,7 @@
 import logging
+import threading
 import time
+import uuid
 from collections import defaultdict
 
 from config import RATE_LIMIT_REDIS_URL
@@ -8,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 _MEMORY_BUCKETS = defaultdict(list)
+_MEMORY_LOCK = threading.Lock()
 _REDIS_CLIENT = None
 _REDIS_DISABLED = False
 
@@ -33,35 +36,34 @@ def _get_redis_client():
 
 
 def _allow_with_memory(key: str, max_calls: int, window_seconds: int, now: float) -> bool:
-    calls = [timestamp for timestamp in _MEMORY_BUCKETS[key] if now - timestamp < window_seconds]
-    if len(calls) >= max_calls:
-        _MEMORY_BUCKETS[key] = calls
-        return False
+    with _MEMORY_LOCK:
+        calls = [
+            timestamp for timestamp in _MEMORY_BUCKETS[key] if now - timestamp < window_seconds
+        ]
+        if len(calls) >= max_calls:
+            _MEMORY_BUCKETS[key] = calls
+            return False
 
-    calls.append(now)
-    _MEMORY_BUCKETS[key] = calls
-    return True
+        calls.append(now)
+        _MEMORY_BUCKETS[key] = calls
+        return True
 
 
 def _allow_with_redis(client, key: str, max_calls: int, window_seconds: int, now: float) -> bool:
-    redis_key = f"rate-limit:{key}"
-    cutoff = now - window_seconds
-    member = f"{now}:{time.time_ns()}"
-
-    pipe = client.pipeline()
-    pipe.zremrangebyscore(redis_key, 0, cutoff)
-    pipe.zcard(redis_key)
-    _, call_count = pipe.execute()
-
-    if call_count >= max_calls:
-        client.expire(redis_key, window_seconds)
-        return False
-
-    pipe = client.pipeline()
-    pipe.zadd(redis_key, {member: now})
-    pipe.expire(redis_key, window_seconds)
-    pipe.execute()
-    return True
+    script = """
+    redis.call('ZREMRANGEBYSCORE', KEYS[1], '-inf', ARGV[1] - ARGV[2])
+    if redis.call('ZCARD', KEYS[1]) >= tonumber(ARGV[3]) then
+        return 0
+    end
+    redis.call('ZADD', KEYS[1], ARGV[1], ARGV[4])
+    redis.call('EXPIRE', KEYS[1], ARGV[2])
+    return 1
+    """
+    return bool(
+        client.eval(
+            script, 1, f"rate-limit:{key}", now, window_seconds, max_calls, uuid.uuid4().hex
+        )
+    )
 
 
 def allow_request(key: str, max_calls: int, window_seconds: int) -> bool:
@@ -84,8 +86,10 @@ def reset_limit(key: str) -> None:
             client.delete(f"rate-limit:{key}")
         except Exception as exc:
             logger.warning("Redis rate limit reset failed: %s", exc)
-    _MEMORY_BUCKETS.pop(key, None)
+    with _MEMORY_LOCK:
+        _MEMORY_BUCKETS.pop(key, None)
 
 
 def clear_memory_limits() -> None:
-    _MEMORY_BUCKETS.clear()
+    with _MEMORY_LOCK:
+        _MEMORY_BUCKETS.clear()

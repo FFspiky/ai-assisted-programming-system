@@ -1,7 +1,7 @@
 (() => {
     const byId = id => document.getElementById(id);
     let currentUser = null;
-    const languageNames = {python: 'Python', cpp: 'C++', java: 'Java'};
+    const languageNames = {python: 'Python', cpp: 'C++'};
     const statusNames = {'Accepted':'通过', 'Wrong Answer':'答案错误', 'Runtime Error':'运行错误', 'Compile Error':'编译错误', 'Time Limit Exceeded':'运行超时', 'Environment Error':'执行环境不可用', 'Output Limit Exceeded':'输出超限', 'Resource Limit Exceeded':'资源超限', 'Busy':'执行繁忙'};
     const tabs = [...document.querySelectorAll('[data-tab]')];
 
@@ -181,7 +181,7 @@
     byId('resetAvatarBtn').addEventListener('click',()=>updateAvatar({method:'DELETE'}));
     byId('passwordForm').addEventListener('submit',async event=>{
         event.preventDefault();
-        if(byId('newPassword').value!==byId('confirmPassword').value) {message('passwordMessage','两次输入的新密码不一致','error');return;}
+        if(byId('newPassword').value!==byId('confirmPassword').value) {FormAccessibility.error(byId('confirmPassword'),'两次输入的新密码不一致');message('passwordMessage','两次输入的新密码不一致','error');return;}
         const button=event.submitter;button.disabled=true;
         try {
             await api('/api/profile/password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({current_password:byId('currentPassword').value,new_password:byId('newPassword').value})});

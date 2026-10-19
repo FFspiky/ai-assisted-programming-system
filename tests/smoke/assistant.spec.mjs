@@ -40,7 +40,7 @@ async function mockChatStream(page, {stop = false} = {}) {
     }, {stop});
 }
 
-test('思考实时显示、回答后折叠、历史只发送回答', async ({page}) => {
+test('思考实时显示、完成后保留展开、手动折叠、历史只发送回答', async ({page}) => {
     await mockSession(page);
     await mockChatStream(page);
     await page.goto(baseURL + '/practice.html?problem=DEMO-01');
@@ -53,8 +53,10 @@ test('思考实时显示、回答后折叠、历史只发送回答', async ({pag
     await expect(thought.locator('.reasoning-text')).toContainText('先比较数据是否可变');
     await expect(page.locator('.message-content').last()).not.toContainText('tuple 不可变');
     await expect(page.locator('.message-content').last()).toContainText('tuple 不可变');
-    await expect(thought).not.toHaveAttribute('open');
+    await expect(thought).toHaveAttribute('open');
     await expect(page.locator('#stopChat')).toBeHidden();
+    await thought.locator('summary').click();
+    await expect(thought.locator('.reasoning-text')).toBeHidden();
     await thought.locator('summary').click();
     await expect(thought.locator('.reasoning-text')).toBeVisible();
     await expect(thought.locator('img')).toHaveCount(0);

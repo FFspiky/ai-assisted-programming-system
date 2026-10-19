@@ -1,6 +1,6 @@
 """Shared language identities and the standard-input contract used by all editors."""
 
-LANGUAGE_IDS = ("python", "cpp", "java")
+LANGUAGE_IDS = ("python", "cpp")
 
 _SPECS = {
     "python": {
@@ -19,14 +19,6 @@ _SPECS = {
         "entrypoint": "int main()；使用 std::cin/std::cout 读写标准输入输出",
         "starter_code": "#include <iostream>\n#include <string>\n\nint main() {\n    std::ios::sync_with_stdio(false);\n    std::cin.tie(nullptr);\n    std::string line;\n    // 按题面解析输入，并将答案写到标准输出。\n    while (std::getline(std::cin, line)) {\n        std::cout << line << '\\n';\n    }\n    return 0;\n}\n",
     },
-    "java": {
-        "id": "java",
-        "label": "Java",
-        "version": "Java 17",
-        "filename": "Main.java",
-        "entrypoint": "public class Main；public static void main(String[] args)，不声明 package",
-        "starter_code": "import java.io.BufferedReader;\nimport java.io.InputStreamReader;\nimport java.nio.charset.StandardCharsets;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader reader = new BufferedReader(\n            new InputStreamReader(System.in, StandardCharsets.UTF_8));\n        StringBuilder output = new StringBuilder();\n        String line;\n        // 按题面解析输入，并将答案写到标准输出。\n        while ((line = reader.readLine()) != null) {\n            output.append(line).append('\\n');\n        }\n        System.out.print(output);\n    }\n}\n",
-    },
 }
 
 
@@ -38,8 +30,6 @@ def normalize_language(value):
         "c++": "cpp",
         "py": "python",
         "python3": "python",
-        "java17": "java",
-        "jdk17": "java",
     }.get(value, value)
 
 
@@ -73,3 +63,9 @@ def language_prompt(language):
         "题面或模块若明确给出函数合同，优先遵守该函数签名及输入输出约定。"
         "局部补全或局部修改仅输出请求的片段，不补写无关入口；完整参考才提供可运行入口。"
     )
+
+
+def enabled_language_ids():
+    import config
+
+    return {normalize_language(value) for value in config.SUPPORTED_LANGUAGES} & set(LANGUAGE_IDS)

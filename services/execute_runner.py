@@ -15,7 +15,7 @@ from config import (
     CODE_RUN_TIMEOUT_SECONDS,
     CODE_SANDBOX_IMAGE,
 )
-from services.language_support import LANGUAGE_IDS, language_spec, normalize_language
+from services.language_support import enabled_language_ids, language_spec, normalize_language
 
 _SLOTS = threading.BoundedSemaphore(2)
 
@@ -29,7 +29,7 @@ def _remove_container(name):
 
 def run_code(code: str, language: str = "Python", input_text: str = None) -> dict:
     language = normalize_language(language)
-    if language not in LANGUAGE_IDS:
+    if language not in enabled_language_ids():
         return {"success": False, "status": "Environment Error", "error": "不支持的语言"}
     if not _SLOTS.acquire(blocking=False):
         return {"success": False, "status": "Busy", "error": "执行任务较多，请稍后重试"}
@@ -152,7 +152,7 @@ def run_code(code: str, language: str = "Python", input_text: str = None) -> dic
                 status = "Accepted"
             elif returncode == 125:
                 status = "Environment Error"
-            elif returncode == 65 and language in {"cpp", "java"}:
+            elif returncode == 65 and language == "cpp":
                 status = "Compile Error"
             elif returncode in {137, 152}:
                 status = "Resource Limit Exceeded"
@@ -160,12 +160,6 @@ def run_code(code: str, language: str = "Python", input_text: str = None) -> dic
                 status = "Runtime Error"
         output = buffers["output"].decode("utf-8", errors="replace")
         error = buffers["error"].decode("utf-8", errors="replace")
-        if (
-            language == "java"
-            and status in {"Runtime Error", "Compile Error"}
-            and "java.lang.OutOfMemoryError" in error
-        ):
-            status = "Resource Limit Exceeded"
         if status == "Environment Error":
             error = "隔离执行环境未就绪，请启动 Docker 并构建 codelab-runner:local 镜像"
         elif status == "Time Limit Exceeded":

@@ -611,13 +611,28 @@ class TaskRoomTest(unittest.TestCase):
             self.assertNotIn("SILICONFLOW_API_KEY", content)
             self.assertNotIn("password_hash", content)
 
-    def test_all_tasks_offer_three_languages_with_separate_projects(self):
+    def test_disabled_languages_cannot_create_projects(self):
+        with patch("config.SUPPORTED_LANGUAGES", {"python"}):
+            catalog = self.data(self.client.get(BASE + "/catalog"))
+            self.assertEqual([row["id"] for row in catalog["languages"]], ["python"])
+            for language in ("cpp", "java", "Java17"):
+                response = self.client.post(
+                    BASE + "/projects",
+                    json={
+                        "scenario_id": self.scenario["id"],
+                        "language": language,
+                    },
+                    headers=self.headers,
+                )
+                self.assertEqual(response.status_code, 400)
+
+    def test_all_tasks_offer_two_languages_with_separate_projects(self):
         from modules.task_room.languages import validate_solution
 
         catalog = self.data(self.client.get(BASE + "/catalog"))
-        self.assertEqual({x["id"] for x in catalog["languages"]}, {"python", "cpp", "java"})
+        self.assertEqual({x["id"] for x in catalog["languages"]}, {"python", "cpp"})
         projects = []
-        for language in ("python", "cpp", "java"):
+        for language in ("python", "cpp"):
             for scenario in catalog["scenarios"]:
                 _MEMORY_BUCKETS.clear()
                 project = self.data(
@@ -635,12 +650,12 @@ class TaskRoomTest(unittest.TestCase):
         self.assertEqual(len({p["id"] for p in projects}), len(projects))
         python = next(p for p in projects if p["language"] == "python")
         saved = self.save(python, "def solve(data):\n    return {'keep': 'my Python draft'}\n")
-        java = next(p for p in projects if p["language"] == "java")
-        self.save(java, "class Solution { static Json solve(Json data) { return Json.object(); } }")
+        cpp = next(p for p in projects if p["language"] == "cpp")
+        self.save(cpp, "Json solve(const Json& data) { return Json::object(); }")
         self.assertEqual(self.load(python)["code"], saved["code"])
         self.assertEqual(
             self.client.patch(
-                self.url(python), json={"language": "java"}, headers=self.headers
+                self.url(python), json={"language": "cpp"}, headers=self.headers
             ).status_code,
             409,
         )
@@ -660,12 +675,6 @@ class TaskRoomTest(unittest.TestCase):
                 "Json solve(const Json& data) { return Json::object(); }",
                 "solution.cpp",
                 "main.cpp",
-            ),
-            (
-                "java",
-                "class Solution { static Json solve(Json data) { return Json.object(); } }",
-                "Solution.java",
-                "Main.java",
             ),
         ):
             with self.subTest(language=language):
@@ -715,7 +724,7 @@ class TaskRoomTest(unittest.TestCase):
         accepted = self.accept(project)
         with app.app_context():
             run = db.session.get(TaskRun, accepted["run"]["id"])
-            run.language = "java"
+            run.language = "cpp"
             db.session.commit()
         self.assertEqual(self.deliver(self.load(project)).status_code, 409)
 

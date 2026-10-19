@@ -14,7 +14,7 @@
     const requestedLanguage = params.get('language');
     const validId = value => typeof value === 'string' && /^[a-zA-Z0-9_-]{1,100}$/.test(value);
     let eligible = validId(sessionId) && validId(attemptId) && !!requestedProblem
-        && ['python', 'cpp', 'java'].includes(requestedLanguage);
+        && ['python', 'cpp'].includes(requestedLanguage);
     let active = false, pending = eligible, user = null, problem = null;
     let sequence = 0, record = null, linking = false, lastSubmission = null;
     let nonFresh = false;
@@ -153,7 +153,7 @@
             record = data;
             byId('transferSource').textContent = `承接「${data.source.title}」`;
             byId('transferTarget').textContent = data.attempt.title;
-            byId('transferLanguage').textContent = {python:'Python',cpp:'C++',java:'Java'}[requestedLanguage];
+            byId('transferLanguage').textContent = {python:'Python',cpp:'C++'}[requestedLanguage];
             setRecapLink(data.recap_url);
             const saved=(data.attempt.submissions || []).filter(s=>Number.isInteger(s.submission_id) && s.record_available!==false && s.submission).at(-1);
             if(saved){lastSubmission=saved.submission_id;help.value=['none','hint','full','unspecified'].includes(saved.help_usage)?saved.help_usage:'unspecified';}

@@ -114,65 +114,6 @@ int main() {
 }
 """
 
-JAVA_HELPER = r"""
-class Json {
-    private final Object value;
-    private Json(Object value){this.value=value;}
-    static Json of(Object value){if(value instanceof Json)return (Json)value;if(value==null||value instanceof String||value instanceof Boolean||value instanceof Number)return new Json(value);throw new IllegalArgumentException("use Json.array/object for containers");}
-    static Json object(){return new Json(new java.util.LinkedHashMap<String,Json>());}
-    static Json array(){return new Json(new java.util.ArrayList<Json>());}
-    @SuppressWarnings("unchecked") java.util.Map<String,Json> objectItems(){return (java.util.Map<String,Json>)value;}
-    @SuppressWarnings("unchecked") java.util.List<Json> arrayItems(){return (java.util.List<Json>)value;}
-    Json get(String key){Json result=objectItems().get(key);if(result==null)throw new IllegalArgumentException("missing key: "+key);return result;}
-    Json get(int index){return arrayItems().get(index);}
-    boolean contains(String key){return objectItems().containsKey(key);}
-    Json put(String key,Object item){objectItems().put(key,of(item));return this;}
-    Json add(Object item){arrayItems().add(of(item));return this;}
-    int size(){return value instanceof java.util.Map?objectItems().size():value instanceof java.util.List?arrayItems().size():asString().length();}
-    long asInt(){if(!(value instanceof Long||value instanceof Integer))throw new IllegalArgumentException("expected integer");return ((Number)value).longValue();}
-    double asNumber(){return ((Number)value).doubleValue();}
-    String asString(){return (String)value;}
-    boolean asBool(){return (Boolean)value;}
-    static String quote(String s){StringBuilder out=new StringBuilder("\"");for(int i=0;i<s.length();i++){char c=s.charAt(i);switch(c){case '"':out.append("\\\"");break;case '\\':out.append("\\\\");break;case '\b':out.append("\\b");break;case '\f':out.append("\\f");break;case '\n':out.append("\\n");break;case '\r':out.append("\\r");break;case '\t':out.append("\\t");break;default:if(c<32)out.append(String.format("\\u%04x",(int)c));else out.append(c);}}return out.append('"').toString();}
-    String dump(){if(value==null)return "null";if(value instanceof String)return quote((String)value);if(value instanceof Boolean)return value.toString();if(value instanceof Number){double d=((Number)value).doubleValue();if(!Double.isFinite(d))throw new IllegalArgumentException("non-finite JSON number");return value.toString();}StringBuilder out=new StringBuilder();if(value instanceof java.util.List){out.append('[');for(Json x:arrayItems()){if(out.length()>1)out.append(',');out.append(x.dump());}return out.append(']').toString();}out.append('{');for(java.util.Map.Entry<String,Json> p:objectItems().entrySet()){if(out.length()>1)out.append(',');out.append(quote(p.getKey())).append(':').append(p.getValue().dump());}return out.append('}').toString();}
-    static class Parser {
-        final String text;int pos=0,depth=0;Parser(String text){this.text=text;}
-        void ws(){while(pos<text.length()&&Character.isWhitespace(text.charAt(pos)))pos++;}
-        char take(){if(pos>=text.length())throw new IllegalArgumentException("unexpected end of JSON");return text.charAt(pos++);}
-        void need(char c){ws();if(take()!=c)throw new IllegalArgumentException("invalid JSON separator");}
-        String str(){need('"');StringBuilder out=new StringBuilder();for(;;){char c=take();if(c=='"')return out.toString();if(c<32)throw new IllegalArgumentException("control character");if(c!='\\'){out.append(c);continue;}switch(take()){case '"':out.append('"');break;case '\\':out.append('\\');break;case '/':out.append('/');break;case 'b':out.append('\b');break;case 'f':out.append('\f');break;case 'n':out.append('\n');break;case 'r':out.append('\r');break;case 't':out.append('\t');break;case 'u':String hex="";for(int i=0;i<4;i++)hex+=take();out.append((char)Integer.parseInt(hex,16));break;default:throw new IllegalArgumentException("invalid escape");}}}
-        Json read(){ws();if(++depth>128)throw new IllegalArgumentException("JSON too deep");char c=pos<text.length()?text.charAt(pos):0;Json out;
-            if(c=='"')out=of(str());else if(c=='['){pos++;out=array();ws();if(pos<text.length()&&text.charAt(pos)==']')pos++;else for(;;){out.add(read());ws();char sep=take();if(sep==']')break;if(sep!=',')throw new IllegalArgumentException("array separator");}}
-            else if(c=='{'){pos++;out=object();ws();if(pos<text.length()&&text.charAt(pos)=='}')pos++;else for(;;){String key=str();need(':');if(out.contains(key))throw new IllegalArgumentException("duplicate key");out.put(key,read());ws();char sep=take();if(sep=='}')break;if(sep!=',')throw new IllegalArgumentException("object separator");}}
-            else if(text.startsWith("true",pos)){pos+=4;out=of(true);}else if(text.startsWith("false",pos)){pos+=5;out=of(false);}else if(text.startsWith("null",pos)){pos+=4;out=of(null);}
-            else{int start=pos;if(pos<text.length()&&text.charAt(pos)=='-')pos++;if(pos>=text.length()||!Character.isDigit(text.charAt(pos)))throw new IllegalArgumentException("invalid number");if(text.charAt(pos)=='0')pos++;else while(pos<text.length()&&Character.isDigit(text.charAt(pos)))pos++;boolean real=false;if(pos<text.length()&&text.charAt(pos)=='.'){real=true;pos++;int q=pos;while(pos<text.length()&&Character.isDigit(text.charAt(pos)))pos++;if(pos==q)throw new IllegalArgumentException("fraction");}if(pos<text.length()&&(text.charAt(pos)=='e'||text.charAt(pos)=='E')){real=true;pos++;if(pos<text.length()&&(text.charAt(pos)=='+'||text.charAt(pos)=='-'))pos++;int q=pos;while(pos<text.length()&&Character.isDigit(text.charAt(pos)))pos++;if(pos==q)throw new IllegalArgumentException("exponent");}String n=text.substring(start,pos);out=real?of(Double.valueOf(n)):of(Long.valueOf(n));}
-            depth--;return out;
-        }
-    }
-    static Json parse(String text){Parser p=new Parser(text);Json out=p.read();p.ws();if(p.pos!=text.length())throw new IllegalArgumentException("trailing JSON");return out;}
-}
-"""
-
-JAVA_DRIVER = r"""
-public class Main {
-    public static void main(String[] args) throws Exception {
-        String text=new String(System.in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
-        Json inputs=Json.parse(text),results=Json.array();
-        java.io.PrintStream output=System.out,errors=System.err;
-        for(int i=0;i<inputs.size();i++){
-            Json row=Json.object().put("index",i).put("actual",null).put("error",null);
-            java.io.PrintStream logs=new java.io.PrintStream(new java.io.ByteArrayOutputStream(),true,"UTF-8");
-            System.setOut(logs);System.setErr(logs);
-            try{Json actual=Solution.solve(inputs.get(i));actual.dump();row.put("actual",actual);}
-            catch(Throwable e){String message=e.toString();row.put("error",message.substring(0,Math.min(1000,message.length())));}
-            finally{System.setOut(output);System.setErr(errors);logs.close();}
-            results.add(row);
-        }
-        output.println(Json.object().put("results",results).dump());
-    }
-}
-"""
-
 
 def scaffold(scenario, language):
     language = normalize_language(language)
@@ -185,9 +126,9 @@ def scaffold(scenario, language):
 
     def blank(value):
         if isinstance(value, list):
-            return "Json::array()" if language == "cpp" else "Json.array()"
+            return "Json::array()"
         if isinstance(value, dict):
-            return "Json::object()" if language == "cpp" else "Json.object()"
+            return "Json::object()"
         if isinstance(value, bool):
             return "false"
         return '""' if isinstance(value, str) else "0"
@@ -204,18 +145,6 @@ def scaffold(scenario, language):
             "    // Json::object()/array() 构造结果；按左侧合同补全业务逻辑。\n"
             "    Json result = Json::object();\n" + fields + "    return result;\n}\n"
         )
-    fields = "".join(
-        f"        result.put({json.dumps(key, ensure_ascii=False)}, {blank(value)});\n"
-        for key, value in sample.items()
-    )
-    return (
-        f'// {scenario["title"]}: JSON 解析由任务室提供，无需 main。\n'
-        "class Solution {\n"
-        "    static Json solve(Json data) {\n"
-        '        // data.get("字段").asInt()/asString()/arrayItems() 读取输入。\n'
-        "        // Json.object()/array()，put/add 构造结果。\n"
-        "        Json result = Json.object();\n" + fields + "        return result;\n    }\n}\n"
-    )
 
 
 def interface_guide(language):
@@ -231,12 +160,6 @@ def interface_guide(language):
             "array_items()、object_items()、contains(key)、size()；"
             'Json::object()/array()、result["key"]=value、push_back(value)。可用 C++17 标准库。'
         )
-    return (
-        "实现非 public class Solution { static Json solve(Json data) { ... } }，不写 main/package/import。"
-        "已提供 Json：get(key/index)、asInt()返回long、asNumber()、asString()、asBool()、"
-        "arrayItems()、objectItems()、contains(key)、size()；Json.object()/array()、put(key,value)、add(value)。"
-        "标准库使用完整包名，例如 java.util.ArrayList。返回 Json，不返回 Map/List。"
-    )
 
 
 def validate_solution(code, language):
@@ -259,14 +182,6 @@ def validate_solution(code, language):
             raise ValueError("任务室自动提供 main，请仅提交 solve(data)。")
         if language == "cpp" and not re.search(r"\bJson\s+solve\s*\(\s*const\s+Json\s*&", clean):
             raise ValueError("C++ 请实现 Json solve(const Json& data)。")
-        if language == "java" and (
-            not re.search(r"\bclass\s+Solution\b", clean)
-            or not re.search(r"\bstatic\s+Json\s+solve\s*\(\s*Json\s+", clean)
-            or re.search(r"\b(package|import)\b|\bpublic\s+class\b", clean)
-        ):
-            raise ValueError(
-                "Java 请实现非 public 的 class Solution 与 static Json solve(Json data)，无需 package/import。"
-            )
 
 
 def compiled_harness(code, language):
@@ -274,8 +189,6 @@ def compiled_harness(code, language):
     validate_solution(code, language)
     if language == "cpp":
         return CPP_HELPER + "\n" + code + "\n" + CPP_DRIVER
-    if language == "java":
-        return JAVA_HELPER + "\n" + code + "\n" + JAVA_DRIVER
     raise ValueError("Python uses the existing isolated harness")
 
 
@@ -287,8 +200,6 @@ def export_sources(code, language):
             "solution.cpp": code,
             "main.cpp": CPP_HELPER + '\n#include "solution.cpp"\n' + CPP_DRIVER,
         }
-    if language == "java":
-        return {"Solution.java": code, "Main.java": JAVA_HELPER + JAVA_DRIVER}
     return {
         "solution.py": code,
         "run.py": 'import json, sys\nfrom solution import solve\ninputs = json.load(sys.stdin)\nprint(json.dumps({"results": [{"index": i, "actual": solve(data), "error": None} for i, data in enumerate(inputs)]}, ensure_ascii=False, allow_nan=False))\n',
@@ -296,15 +207,12 @@ def export_sources(code, language):
 
 
 def source_filename(language):
-    return {"python": "solution.py", "cpp": "solution.cpp", "java": "Solution.java"}[
-        normalize_language(language)
-    ]
+    return {"python": "solution.py", "cpp": "solution.cpp"}[normalize_language(language)]
 
 
 def local_instructions(language):
     command = {
         "python": "python run.py < inputs.json",
         "cpp": "g++ -std=c++17 main.cpp -o solution\n./solution < inputs.json",
-        "java": "javac -encoding UTF-8 Main.java Solution.java\njava Main < inputs.json",
     }[normalize_language(language)]
     return f"开发语言：{language_label(language)}。{interface_guide(language)}\n\n将导出目录作为工作目录，在可信环境中运行：\n```text\n{command}\n```\nWindows CMD 中 C++ 的启动命令为 solution.exe < inputs.json。inputs.json 为当前合同的输入数组，结果按 inputs 数组顺序输出。"

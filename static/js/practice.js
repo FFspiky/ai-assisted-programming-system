@@ -790,6 +790,13 @@ async function sendMessage() {
     sendMessageBtn.disabled = true;
     chatAbortController = new AbortController();
     let fullText = '';
+    let renderTimer = null;
+    const renderAnswer = () => {
+        clearTimeout(renderTimer); renderTimer = null;
+        const follow = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight < 80;
+        answer.innerHTML = formatAiResponse(fullText);
+        if (follow) chatContainer.scrollTop = chatContainer.scrollHeight;
+    };
     let reasoning = '';
     let failed = false;
     let finished = false;
@@ -802,7 +809,7 @@ async function sendMessage() {
         reasoningFinished = true;
         const seconds = Math.max(1, Math.round((Date.now() - reasoningStarted) / 1000));
         summary.textContent = `已思考 ${seconds} 秒`;
-        if (!userToggledReasoning) reasoningPanel.open = false;
+        // Keep the user's reading position stable; collapse only by explicit action.
     };
     const consumeEvent = (event) => {
         if (contextRevision !== chatContextRevision) return;
@@ -817,7 +824,7 @@ async function sendMessage() {
             if (!fullText) window.DafeiyuPet?.setActivity('talk');
             finishReasoning();
             fullText += event.text || '';
-            answer.innerHTML = formatAiResponse(fullText);
+            if (renderTimer === null) renderTimer = setTimeout(renderAnswer, 80);
             status.textContent = '正在回答…';
         } else if (event.type === 'error') {
             failed = true;
@@ -825,6 +832,7 @@ async function sendMessage() {
         } else if (event.type === 'help_record') {
             LearningHelpUI.acknowledge(event.id);
         } else if (event.type === 'done') {
+            renderAnswer();
             finished = true;
             finishReasoning();
             if (!failed) status.textContent = fullText.trim() ? '' : '模型未返回回答，请重试。';
@@ -884,6 +892,7 @@ async function sendMessage() {
         if (reasoning && !reasoningFinished) summary.textContent = '思考已中止';
     } finally {
         clearTimeout(chatTimeout);
+        renderAnswer();
         chatBusy = false;
         window.DafeiyuPet?.setActivity('idle');
         chatAbortController = null;
@@ -1139,8 +1148,11 @@ submitBtn.addEventListener('click', submitCode);
 sendMessageBtn.addEventListener('click', sendMessage);
 aiToggleBtn.addEventListener('click', toggleAiWindow);
 
-messageInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') sendMessage();
+let chatComposing = false;
+messageInput.addEventListener('compositionstart', () => { chatComposing = true; });
+messageInput.addEventListener('compositionend', () => { chatComposing = false; });
+messageInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.isComposing && !chatComposing && e.keyCode !== 229) { e.preventDefault(); sendMessage(); }
 });
 
 codeInput.value = `# 示例Python代码\ndef greet(name):\n    return f"Hello, {name}!"\n\nprint(greet("World"))\n`;
@@ -1148,3 +1160,24 @@ renderGhostLayer();
 
 chatProblemId = getCurrentProblemId();
 addChatMessage('我是达菲郁，陪你把代码里的小问号一个个捞起来。🐋 有问题就丢给本鱼吧！', 'ai');
+
+// Click alternatives to moving/resizing the assistant.
+document.querySelectorAll('[data-chat-dock],[data-chat-size]').forEach(button => button.addEventListener('click', () => {
+    chatMaximized = false; renderChatWindowMode();
+    const viewport = chatViewport(), rect = currentChatGeometry();
+    if (button.dataset.chatSize) {
+        rect.width = button.dataset.chatSize === 'compact' ? 360 : 440;
+        rect.height = button.dataset.chatSize === 'compact' ? 480 : 640;
+    }
+    if (button.dataset.chatDock) rect.left = button.dataset.chatDock === 'left' ? viewport.left + 12 : viewport.left + viewport.width - rect.width - 12;
+    applyChatGeometry(rect); saveChatGeometry();
+}));
+document.getElementById('dockPet').addEventListener('click', () => window.DafeiyuPet?.dock());
+document.getElementById('hidePet').addEventListener('click', () => {
+    setChatWindowOpen(false); aiToggleBtn.hidden = true;
+    document.getElementById('restorePet').hidden = false; document.getElementById('restorePet').focus();
+});
+document.getElementById('restorePet').addEventListener('click', () => {
+    aiToggleBtn.hidden = false; document.getElementById('restorePet').hidden = true;
+    window.DafeiyuPet?.dock(); setChatWindowOpen(true);
+});

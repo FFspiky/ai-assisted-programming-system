@@ -23,7 +23,7 @@ from services.tutor_service import diagnose_submission
 
 class LanguageSupportTest(unittest.TestCase):
     def test_aliases_metadata_and_options_share_canonical_identity(self):
-        for value, expected in (("Python3", "python"), (" C++ ", "cpp"), ("Java17", "java")):
+        for value, expected in (("Python3", "python"), (" C++ ", "cpp")):
             self.assertEqual(normalize_language(value), expected)
             with patch("routes.validators.SUPPORTED_LANGUAGES", set(LANGUAGE_IDS)):
                 language, response, status = validate_language(value)
@@ -32,20 +32,16 @@ class LanguageSupportTest(unittest.TestCase):
                 self.assertIsNone(status)
         self.assertEqual(normalize_language(3), "")
         self.assertEqual([row["id"] for row in language_options()], list(LANGUAGE_IDS))
-        self.assertEqual([row["id"] for row in language_options(["java", "C++"])], ["cpp", "java"])
-        spec = language_spec("java")
-        spec["filename"] = "Changed.java"
-        self.assertEqual(language_spec("java")["filename"], "Main.java")
+        self.assertEqual([row["id"] for row in language_options(["java", "C++"])], ["cpp"])
+        spec = language_spec("cpp")
+        spec["filename"] = "changed.cpp"
+        self.assertEqual(language_spec("cpp")["filename"], "main.cpp")
         with self.assertRaises(ValueError):
-            language_spec("javascript")
+            language_spec("java")
 
     def test_entrypoints_and_templates_match_runtime_contracts(self):
         self.assertIn("if __name__ == '__main__'", starter_code("python"))
         self.assertIn("int main()", starter_code("cpp"))
-        self.assertIn("public class Main", starter_code("java"))
-        self.assertIn("public static void main(String[] args)", starter_code("java"))
-        self.assertIn("append('\\n')", starter_code("java"))
-        self.assertNotIn("package ", starter_code("java"))
         for language in LANGUAGE_IDS:
             self.assertIn(language_spec(language)["version"], language_prompt(language))
 

@@ -2,12 +2,14 @@
 
 ## 运行环境
 
-- Python 3.11+
+- Python 3.11+；提交代码支持 Python 3.11 / C++17
 - Docker Engine/Desktop 与 `codelab-runner:local` 镜像（代码执行必需，见 [演示说明](EVIDENCE_DEMO.md)）
 - Redis（推荐，用于跨进程限流）
 - 生产数据库（建议 PostgreSQL；本机演示可用 SQLite）
 - 反向代理（Nginx、Caddy 或云厂商网关）
 - HTTPS 证书
+
+当前实现面向本机与参赛演示；生产部署前需完成下文执行服务隔离与全局并发治理。
 
 ## 安装依赖
 
@@ -27,6 +29,7 @@ DATABASE_URL=sqlite:////absolute/path/app.db
 SILICONFLOW_API_KEY=replace-with-your-api-key
 RATE_LIMIT_REDIS_URL=redis://127.0.0.1:6379/0
 CORS_ORIGINS=https://your-domain.example
+AUTO_CREATE_DATABASE=0
 FLASK_DEBUG=0
 ```
 
@@ -36,7 +39,7 @@ FLASK_DEBUG=0
 SILICONFLOW_API_URL=https://api.siliconflow.cn/v1/chat/completions
 SILICONFLOW_MODEL_NAME=deepseek-ai/DeepSeek-R1-Distill-Qwen-32B
 SILICONFLOW_AUTOCOMPLETE_MODEL_NAME=deepseek-ai/DeepSeek-R1-0528-Qwen3-8B
-SUPPORTED_LANGUAGES=python,cpp,java
+SUPPORTED_LANGUAGES=python,cpp
 MAX_CODE_CHARS=20000
 MAX_STDIN_CHARS=10000
 MAX_AI_PROMPT_CHARS=8000
@@ -137,6 +140,8 @@ server {
 ## 代码执行沙箱
 
 当前使用独立 Docker 容器执行 Python/C++，默认禁网、只读根文件系统、低权限用户、无宿主挂载；CPU、内存、进程、文件、输出与总时长均有限制。Docker 或镜像不可用时拒绝执行，不回退到宿主进程。
+
+Redis 连接或请求失败时限流会回退到进程内存；多进程部署须监控该降级并恢复 Redis，不能把回退视为全局共享限流。
 
 应用运行用户需要调用 Docker 的权限，该权限应只在专用执行主机上授予。当前并发限制为每个 Flask 进程 2 个任务，面向本机演示；多进程公网部署应把执行服务与业务主机分离，统一限制全局任务数，并维护容器运行时与镜像安全更新。不要向提交代码的容器挂载 Docker socket。
 

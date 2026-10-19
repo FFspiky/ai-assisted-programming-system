@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/brand-v1/logo.png') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/brand-v1/logo-128.png') }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>注册</title>
@@ -39,6 +39,7 @@
 </div>
 <script src="{{ url_for('static', filename='js/ui-feedback.js') }}"></script>
 <script src="{{ url_for('static', filename='js/user-session.js') }}"></script>
+<script src="{{ url_for('static', filename='js/form-accessibility.js') }}"></script>
 <script>
     const form = document.getElementById('registerForm');
     const messageBox = document.getElementById('formMessage');
@@ -50,12 +51,15 @@
 
     function validateForm(username, email, password) {
         if (username.length < 3 || username.length > 80) {
+            FormAccessibility.error(document.getElementById('username'), '用户名长度应为 3-80 个字符');
             return '用户名长度应为 3-80 个字符';
         }
         if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+            FormAccessibility.error(document.getElementById('email'), '邮箱格式不正确');
             return '邮箱格式不正确';
         }
         if (password.length < 8) {
+            FormAccessibility.error(document.getElementById('password'), '密码长度至少为 8 个字符');
             return '密码长度至少为 8 个字符';
         }
         return '';

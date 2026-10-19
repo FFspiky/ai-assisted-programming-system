@@ -6,7 +6,7 @@
   const state = {user:null,csrf:null,ai:false,languages:[],problems:[],page:1,pages:1,sessions:[],session:null,
     mode:params.get('mode') === 'review' ? 'review' : 'examples',busy:false,conflict:false,editing:null,queryTicket:0,topicTicket:0,
     stage:['verify','explain','transfer','recap'].includes(params.get('stage'))?params.get('stage'):'verify',learning:null,learningTicket:0,renderedAttempts:[],attemptDrafts:{},localSaved:null,olderDraft:false};
-  const names = {python:'Python',cpp:'C++',java:'Java'};
+  const names = {python:'Python',cpp:'C++'};
   const sources = {ai:'AI 实时生成',student:'你的代码',draft:'带入草稿',submission:'历史提交',official:'题目公开样例',user:'你的期望',reference:'内置参考程序',unknown:'正确性待验证',teaching:'原教学样例'};
   const fields = ['example-input','example-expected','compare-input','compare-expected','review-code','review-input','review-prediction','review-expected','review-reflection','reflection-target','reflection-reason','reflection-boundary','reflection-next-check'];
   const currentGeneration = () => state.session?.state.generations?.find(g => g.id === state.session.state.current_generation_id);

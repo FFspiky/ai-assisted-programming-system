@@ -2,7 +2,7 @@
   "name": "zhilian-codelab",
   "private": true,
   "scripts": {
-    "smoke": "playwright test tests/smoke/playwright-smoke.spec.mjs"
+    "smoke": "playwright test tests/smoke/playwright-smoke.spec.mjs tests/smoke/competition.spec.mjs tests/smoke/problem-library.spec.mjs tests/smoke/evidence-workspace.spec.mjs tests/smoke/assistant.spec.mjs tests/smoke/pet.spec.mjs tests/smoke/help-controls.spec.mjs --workers=1"
   },
   "devDependencies": {
     "@playwright/test": "1.60.0"

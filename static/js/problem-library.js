@@ -23,7 +23,7 @@
         const tags=node('div','','problem-tags');(p.tags||[]).forEach(t=>tags.append(node('span',t)));card.append(tags);
         const actions=node('div','','card-actions');
         const state=node('span',user?({accepted:'已通过',attempted:'尝试未通过',unattempted:'未尝试'}[p.practice_state]||'未尝试'):'登录后记录进度','practice-state');state.dataset.state=p.practice_state;
-        const link=node('a','开始练习 →','btn-select'),query=params();query.set('problem',p.id);link.href='/practice.html?'+query;
+        const link=node('a','开始练习 →','btn-select'),query=params();query.set('problem',p.id);link.href='/practice.html?'+query;link.setAttribute('aria-label','练习：'+p.title);
         link.addEventListener('click',()=>{
             try{sessionStorage.setItem('codelab:problem-list',JSON.stringify({ids:matchedIds,owner:user?.id||null,filter:params(false).toString()}));}catch(_){/* Filters remain in the URL. */}
         });
@@ -54,7 +54,7 @@
             $('libraryError').querySelector('span').textContent='题目加载失败：'+error.message;$('resultCount').textContent='暂时无法读取题库';
         } finally {if(ticket===sequence)$('problemGrid').setAttribute('aria-busy','false');}
     }
-    function reset(){['searchInput','categoryFilter','difficultyFilter','stateFilter'].forEach(id=>$(id).value='');page=1;load();}
+    function reset(){['searchInput','categoryFilter','difficultyFilter','stateFilter'].forEach(id=>$(id).value='');page=1;load();$('searchInput').focus();}
     $('librarySearch').addEventListener('submit',e=>{e.preventDefault();page=1;load();});
     ['categoryFilter','difficultyFilter','stateFilter'].forEach(id=>$(id).addEventListener('change',()=>{page=1;load();}));
     ['clearFilters','emptyClear'].forEach(id=>$(id).addEventListener('click',reset));$('retryLibrary').addEventListener('click',load);

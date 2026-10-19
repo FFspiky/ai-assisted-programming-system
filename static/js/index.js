@@ -40,11 +40,6 @@
       right: '#include <iostream>\nint main() { long long n; std::cin >> n; while (n > 1 && n % 3 == 0) n /= 3; std::cout << (n == 1 ? "true" : "false"); }',
       part: 'while (n > 1 && n % 3 == 0) n /= 3;\nreturn n == 1;'
     },
-    java: {
-      wrong: 'import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        long n = new Scanner(System.in).nextLong();\n        System.out.println(n > 0 && n % 3 == 0);\n    }\n}',
-      right: 'import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        long n = new Scanner(System.in).nextLong();\n        while (n > 1 && n % 3 == 0) n /= 3;\n        System.out.println(n == 1);\n    }\n}',
-      part: 'while (n > 1 && n % 3 == 0) n /= 3;\nreturn n == 1;'
-    }
   };
   function demoCode(correct) { const entry = languageCode[q('[data-language]',demo).value]; return entry ? entry[correct?'right':'wrong'] : correct?codeRight:codeWrong; }
   q('[data-language]',demo).disabled = false;

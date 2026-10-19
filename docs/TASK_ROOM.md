@@ -1,6 +1,9 @@
 # AI 实战任务室
 
-这是智练 CodeLab 的独立功能模块，入口为 `/task-room.html`，也可通过 `/task-room` 进入。它有自己的页面、前端资源、API、业务服务、数据库表和测试；复用现有 Flask 应用的登录、CSRF、数据库连接、Docker 隔离执行器和 AI 接口。当前 9 项任务全部支持 Python、C++17、Java 17 的 `solve(data)` 函数合同，不需要安装或制作手机 App，也不是另起一套独立账号服务器。
+> 当前版本仅支持 Python / C++17；历史 Java 和三语言测试记录仅供追溯。当前启动与验证结果见 [参赛说明](COMPETITION_PREVIEW.md)。
+
+
+这是智练 CodeLab 的独立功能模块，入口为 `/task-room.html`，也可通过 `/task-room` 进入。它有自己的页面、前端资源、API、业务服务、数据库表和测试；复用现有 Flask 应用的登录、CSRF、数据库连接、Docker 隔离执行器和 AI 接口。当前 9 项任务全部支持 Python、C++17 的 `solve(data)` 函数合同，不需要安装或制作手机 App，也不是另起一套独立账号服务器。
 
 模块围绕“接任务 → 澄清需求 → 确认合同 → 开发与验收 → 交付 → 应对变更 → 复盘”组织。原项目顶部导航、首页主按钮和核心功能区均可进入「实战任务室」；刷题、学习分析、个人主页也提供相同导航入口。任务室沿用原项目的深蓝海洋主题和品牌资源，页面与业务代码独立维护。
 
@@ -52,7 +55,7 @@ def solve(data):
     return {}
 ```
 
-不需要读取标准输入，不需要打印最终答案。Python 的每个案例在新的函数命名空间中执行；C++ / Java 在同一次程序中依次调用 solve，因此不要让可变全局或 static 状态影响不同输入。三种语言的标准调试输出与返回值分开处理。完整验收会在一次 Docker 执行中回放该合同的全部案例，宿主根据合同的确定性规则比较返回结果。
+不需要读取标准输入，不需要打印最终答案。Python 的每个案例在新的函数命名空间中执行；C++ 在同一次程序中依次调用 solve，因此不要让可变全局或 static 状态影响不同输入。两种语言的标准调试输出与返回值分开处理。完整验收会在一次 Docker 执行中回放该合同的全部案例，宿主根据合同的确定性规则比较返回结果。
 
 - 数组顺序属于合同；对象字段顺序不影响比较。
 - 字段必须完整，额外字段也会导致比较失败。
@@ -77,7 +80,7 @@ def solve(data):
 
 导出的 ZIP 含：
 
-- Python：`solution.py` 与 `run.py`；C++：`solution.cpp` 与 `main.cpp`；Java：`Solution.java` 与 `Main.java`。函数代码和本地运行包装分别导出。
+- Python：`solution.py` 与 `run.py`；C++：`solution.cpp` 与 `main.cpp`。函数代码和本地运行包装分别导出。
 - `inputs.json`：当前合同的 JSON 输入数组，供本地回放。
 - `project.json`：项目、历次合同、对话、事件、代码快照和实际运行记录。
 - `acceptance.json`：当前需求合同与全部公开案例；尚未确认需求时不生成该文件。
@@ -93,8 +96,8 @@ modules/task_room/
   models.py                   # 独立任务室表
   catalog.py                  # 原创任务、枚举规则、合同和确定性 oracle
   ai.py                       # 客户、开发教练、复盘的 AI 适配器
-  languages.py                # 三语言函数合同、可信 JSON helper、包装与导出
-  verify_languages.py         # 不调用 AI、不接触数据库的真实三语言 Docker 检查
+  languages.py                # Python/C++ 函数合同、可信 JSON helper、包装与导出
+  verify_languages.py         # 不调用 AI、不接触数据库的真实 Python/C++ Docker 检查
   service.py                  # 状态、版本、保存、运行、交付、变更和导出
   routes.py                   # 页面与 /api/task-room/*
   templates/task_room.html    # 独立页面
@@ -216,11 +219,11 @@ $env:SMOKE_BASE_URL = "http://127.0.0.1:5007"
 浏览器自动测试中的 AI 也应模拟。真实供应商连通性验证需要用户明确允许付费调用后，在页面主动发送一轮消息；应记录实际响应或错误，不以模拟回复充当真实接入证明。模型名称只有供应商确实返回时才作为响应记录，不填造模型标识。
 
 
-## 三语言项目与旧数据兼容（2026-10-16）
+## Python/C++ 项目与旧数据兼容（2026-10-19）
 
 创建项目时选择语言。语言绑定项目，不能通过保存草稿改变。工作区切换语言会先保存原草稿，再恢复同任务、目标语言的活动项目；不存在时创建独立项目。原项目的合同、草稿、消息与证据全部保留。归档项目仍可从“已归档”列表查看及恢复。旧项目和旧运行在迁移时标记为 Python。
 
-页面题目与业务规则相同，语言只改变代码入口和工具。C++ 与 Java 的 JSON 解析、序列化及输入输出包装已由本地可信工具提供，学生无需重写解析器，也不需要第三方 JSON 库。
+页面题目与业务规则相同，语言只改变代码入口和工具。C++ 的 JSON 解析、序列化及输入输出包装已由本地可信工具提供，学生无需重写解析器，也不需要第三方 JSON 库。
 
 ```cpp
 Json solve(const Json& data) {
@@ -233,28 +236,18 @@ Json solve(const Json& data) {
 
 C++ JSON API：`data["key"]`、`data[index]`、`as_int()`、`as_number()`、`as_string()`、`as_bool()`、`array_items()`、`object_items()`、`contains(key)`、`size()`；结果使用 `Json::object()`、`Json::array()`、赋值及 `push_back()`。源码仅含函数和辅助代码，不自行定义 `main()`。
 
-```java
-class Solution {
-    static Json solve(Json data) {
-        return Json.object().put("count", data.get("scores").size());
-    }
-}
-```
+字符串业务语义仍按合同执行，例如词频任务按 Unicode 字符计数，C++ 的 UTF-8 字符串字节数并不自动等于合同的字符数；编写业务代码时要按码点处理。JSON helper 保证传输 Unicode，不代替文本业务逻辑。
 
-Java JSON API：`get(key/index)`、`asInt()`（返回 long）、`asNumber()`、`asString()`、`asBool()`、`arrayItems()`、`objectItems()`、`contains(key)`、`size()`；结果使用 `Json.object()`、`Json.array()`、`put()`、`add()`。使用非 public `Solution` 类，不声明 `main`、`package`、`import`；标准库类型使用完整包名。页面会展示当前语言约定。
+AI 提示携带项目语言和准确函数合同。Python 候选进行 AST 结构检查；C++ 候选进行函数签名与入口检查，真实语法、运行和验收以 Docker 结果为准。候选仅是待采纳建议，服务端不会因为 AI 声称通过而记录成功。运行及交付绑定项目语言，旧 Python 验收不能用于另一语言项目。
 
-字符串业务语义仍按合同执行，例如词频任务按 Unicode 字符计数，C++ 的 UTF-8 字符串字节数、Java 的 UTF-16 长度并不自动等于合同的字符数；编写业务代码时要按码点处理。JSON helper 保证传输 Unicode，不代替文本业务逻辑。
-
-AI 提示携带项目语言和准确函数合同。Python 候选进行 AST 结构检查；C++ / Java 候选进行函数签名与入口检查，真实语法、运行和验收以 Docker 结果为准。候选仅是待采纳建议，服务端不会因为 AI 声称通过而记录成功。运行及交付绑定项目语言，旧 Python 验收不能用于另一语言项目。
-
-ZIP 的 README 提供对应启动命令。示例：Python `python run.py < inputs.json`；C++ `g++ -std=c++17 main.cpp -o solution` 后 `solution.exe < inputs.json`（Windows CMD）；Java `javac -encoding UTF-8 Main.java Solution.java` 后 `java Main < inputs.json`。导出不会执行任何代码。
+ZIP 的 README 提供对应启动命令。示例：Python `python run.py < inputs.json`；C++ `g++ -std=c++17 main.cpp -o solution` 后 `solution.exe < inputs.json`（Windows CMD）。导出不会执行任何代码。
 
 问卷版本 2 将 Python 专属熟悉度改为语言中立的编码熟悉度，并增加首选语言。旧版本 1 的 8 项答案读取时映射到 Python，保留数据库里的原答案和版本；只有明确重新提交才写入新版本。推荐入口携带首选语言，项目完成状态只引用该语言的项目，汇总统计仍反映账号下实际完成的全部语言项目。
 
-真实三语言检查（无 Flask、无用户数据库、无 AI 调用）：
+真实 Python/C++ 检查（无 Flask、无用户数据库、无 AI 调用）：
 
 ```powershell
 .\.venv\Scripts\python.exe -m modules.task_room.verify_languages
 ```
 
-默认报告保存到 `tmp/task-room-multilang/docker-verification.json`，包括每种语言的成绩统计完整验收，以及嵌套 JSON、整数/布尔/浮点类型、Unicode、调试输出分离回放。失败会退出非零状态。Java 必须使用已包含 JDK 17 及当前执行协议的新沙箱镜像。
+默认报告保存到 `tmp/task-room-multilang/docker-verification.json`，包括每种语言的成绩统计完整验收，以及嵌套 JSON、整数/布尔/浮点类型、Unicode、调试输出分离回放。失败会退出非零状态。镜像须使用当前 `sandbox/` 重建，历史 Java 项目记录保留，但不再提供 Java 执行或导出。

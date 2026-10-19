@@ -10,7 +10,7 @@
     let controller = null, sequence = 0, restoreSequence = 0, edited = false;
     let activeLanguage = language.value;
     const requestedLanguage = new URLSearchParams(location.search).get('language');
-    if (['python', 'cpp', 'java'].includes(requestedLanguage)) {
+    if (['python', 'cpp'].includes(requestedLanguage)) {
         language.value = requestedLanguage;
         activeLanguage = requestedLanguage;
     }
@@ -189,7 +189,7 @@
         const evidence = submission.evidence;
         byId('submissionResults').dataset.outcome = submission.status === 'Accepted' ? 'passed' : 'attention';
         byId('submissionVerdict').textContent = statusLabels[submission.status] || submission.status;
-        byId('submissionVersion').textContent = `#${submission.submission_id} · ${{python:'Python',cpp:'C++',java:'Java'}[submission.language] || submission.language}`;
+        byId('submissionVersion').textContent = `#${submission.submission_id} · ${{python:'Python',cpp:'C++'}[submission.language] || submission.language}`;
         byId('evidenceSummary').textContent = evidence
             ? `提交 #${submission.submission_id} · ${submission.status} · 已执行 ${evidence.executed}/${evidence.total}，未执行 ${evidence.not_run}`
             : '这次历史提交没有证据快照，请重新提交。';
@@ -258,7 +258,10 @@
         cancelInlineCompletion();
         cancelPending(); showSubmission(null);
         editor.value = ''; byId('customInput').value = '';
-        if (!restoreDraft()) setStarter(); markStale(); restoreSubmission();
+        if (!restoreDraft()) setStarter();
+        editor.scrollTop = editor.scrollLeft = 0;
+        renderGhostLayer();
+        markStale(); restoreSubmission();
         const url = new URL(location.href); url.searchParams.set('language', activeLanguage);
         url.searchParams.delete('co_create_proposal'); history.replaceState(null, '', url);
     });
