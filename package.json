@@ -5,6 +5,6 @@
     "smoke": "playwright test tests/smoke/playwright-smoke.spec.mjs tests/smoke/competition.spec.mjs tests/smoke/problem-library.spec.mjs tests/smoke/evidence-workspace.spec.mjs tests/smoke/assistant.spec.mjs tests/smoke/pet.spec.mjs tests/smoke/help-controls.spec.mjs --workers=1"
   },
   "devDependencies": {
-    "@playwright/test": "1.60.0"
+    "@playwright/test": "1.64.1"
   }
 }
