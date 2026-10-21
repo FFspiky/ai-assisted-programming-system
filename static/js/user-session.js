@@ -1,6 +1,43 @@
 (function () {
     const defaultAvatar = '/static/images/brand-v1/avatars/whale.webp';
 
+    function promptAiConfiguration() {
+        let dialog = document.getElementById('aiConfigurationDialog');
+        if (!dialog) {
+            const style = document.createElement('link');
+            style.rel = 'stylesheet';
+            style.href = '/static/css/ai-configuration.css';
+            document.head.append(style);
+            dialog = document.createElement('dialog');
+            dialog.id = 'aiConfigurationDialog';
+            dialog.setAttribute('aria-labelledby', 'aiConfigurationTitle');
+            dialog.setAttribute('aria-describedby', 'aiConfigurationDescription');
+            dialog.innerHTML = `<div class="ai-config-icon" aria-hidden="true">AI</div>
+                <h2 id="aiConfigurationTitle">先为 AI 配置一把钥匙</h2>
+                <p id="aiConfigurationDescription">尚未配置 API Key。前往个人资料页，填写自己的 Key，或选择项目提供的测试 Key，即可使用 AI 功能。</p>
+                <p class="ai-config-note">配置完成后，可返回此页面继续操作。</p>
+                <div class="ai-config-actions"><button type="button">稍后配置</button><a>前往配置 API Key →</a></div>`;
+            dialog.querySelector('button').addEventListener('click', () => dialog.close());
+            document.body.append(dialog);
+        }
+        dialog.querySelector('a').href = '/profile.html?next=' + encodeURIComponent(location.pathname + location.search + location.hash) + '#ai-settings';
+        if (!dialog.open) dialog.showModal();
+    }
+
+    // All AI screens share this response contract, including streaming fetches.
+    if (typeof window.fetch === 'function') {
+        const originalFetch = window.fetch.bind(window);
+        window.fetch = async function(input, options) {
+            const response = await originalFetch(input, options);
+            const url = new URL(input instanceof Request ? input.url : input, location.href);
+            if (url.origin === location.origin && response.status === 428) {
+                const result = await response.clone().json().catch(() => ({}));
+                if (result.error?.code === 'AI_KEY_REQUIRED') promptAiConfiguration();
+            }
+            return response;
+        };
+    }
+
     function escapeHtml(text) {
         const map = {
             '&': '&amp;',
@@ -245,6 +282,7 @@
         safeReturnPath,
         logout,
         promptLogin,
+        promptAiConfiguration,
         renderGuest,
         renderUser
     };

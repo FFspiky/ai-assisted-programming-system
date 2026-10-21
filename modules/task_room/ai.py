@@ -12,6 +12,13 @@ PROMPT_VERSION = "task-room-v2-multilang"
 
 
 def available():
+    from flask import has_request_context
+    from flask_login import current_user
+
+    from services.ai_settings import resolve_key
+
+    if has_request_context():
+        return bool(current_user.is_authenticated and resolve_key(current_user.id))
     return bool(API_KEY)
 
 

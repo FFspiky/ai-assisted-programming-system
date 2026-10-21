@@ -102,10 +102,10 @@
     $('freeze-contract').disabled = state.busy || Boolean(project.archived);
     $('deliver-project').disabled = locked || project.state === 'delivered' || state.busy || state.saving ||
       !currentPassedRun() || dirty();
-    $('send-message').disabled = state.busy || state.saving || project.archived || !state.aiAvailable ||
+    $('send-message').disabled = state.busy || state.saving || project.archived ||
       (state.intent !== 'customer' && !project.contract) ||
       (state.intent === 'review' && !(project.runs || []).length);
-    $('chat-input').disabled = project.archived || !state.aiAvailable;
+    $('chat-input').disabled = project.archived;
     $('archive-project').disabled = state.busy || state.saving;
     $('export-project').disabled = state.busy;
     $('room-language').disabled = state.busy || state.saving || Boolean(project.archived);

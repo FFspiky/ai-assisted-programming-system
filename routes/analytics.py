@@ -2,7 +2,7 @@
 import json
 from datetime import datetime, timezone
 
-from flask import Blueprint, Response, request
+from flask import Blueprint, Response, request, stream_with_context
 from flask_login import current_user, login_required
 from sqlalchemy import case
 
@@ -181,4 +181,4 @@ def ai_learning_analysis_stream():
         except AIClientError as exc:
             yield f"data: {json.dumps({'error': str(exc)}, ensure_ascii=False)}\n\n"
 
-    return Response(generate(), mimetype="text/event-stream")
+    return Response(stream_with_context(generate()), mimetype="text/event-stream")

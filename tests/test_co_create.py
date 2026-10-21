@@ -81,7 +81,17 @@ class CoCreateTest(unittest.TestCase):
             "/api/login", json={"username": username, "password": "test-password"}
         )
         self.assertEqual(response.status_code, 200)
-        return {"X-CSRF-Token": response.json["csrf_token"]}
+        headers = {"X-CSRF-Token": response.json["csrf_token"]}
+        # Provider transport is mocked; explicitly opt this fixture into AI access.
+        self.assertEqual(
+            client.put(
+                "/api/profile/ai-settings",
+                headers=headers,
+                json={"mode": "custom", "api_key": "sk-unit-test-placeholder"},
+            ).status_code,
+            200,
+        )
+        return headers
 
     def data(self, response, status=200):
         self.assertEqual(response.status_code, status, response.get_json())

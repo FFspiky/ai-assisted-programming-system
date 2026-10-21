@@ -122,7 +122,7 @@
     $('new-session').disabled=state.busy || !problemId();
     $('new-session').textContent=state.user ? `新建${state.mode==='review'?'代码质检':'题目共创'} →` : '登录并开始 →';
     ['save-example','save-review','run-review','verify-review','return-review'].forEach(id=>{$(id).disabled=locked || !present;});
-    ['generate-ai','review-generate'].forEach(id=>{$(id).disabled=locked || !present || !state.ai;});
+    ['generate-ai','review-generate'].forEach(id=>{$(id).disabled=locked || !present;});
     $('run-compare').disabled=locked || !present || !currentGeneration()?.candidates?.length;
     $('export-session').disabled=state.busy || !state.session;
     ['save-learning-reflection','refresh-learning','refresh-recap'].forEach(id=>{$(id).disabled=locked || !present;});

@@ -1,11 +1,12 @@
 # app.py
 
 import os
+import re
 import secrets
 import sys
 
 import click
-from flask import Flask, redirect, render_template, request, session, url_for
+from flask import Flask, g, redirect, render_template, request, session, url_for
 from flask_cors import CORS
 from flask_login import LoginManager, current_user, login_required, logout_user
 from flask_migrate import Migrate
@@ -126,6 +127,8 @@ def disable_remember_auto_login():
 
 @app.before_request
 def validate_json_request():
+    if request.path == "/api/profile/ai-settings":
+        request.max_content_length = 16 * 1024
     if request.path.startswith("/api/learning-plan"):
         request.max_content_length = 32 * 1024
     if request.path.startswith("/api/task-room/"):
@@ -176,6 +179,48 @@ def csrf_token():
         token = secrets.token_urlsafe(32)
         session["csrf_token"] = token
     return api_success({"csrf_token": token}, csrf_token=token)
+
+
+@app.before_request
+def require_user_ai_configuration():
+    if request.method not in {"GET", "POST"} or not current_user.is_authenticated:
+        return None
+    ai_paths = {
+        "/api/ai-chat-stream",
+        "/api/ai-inline-complete-stream",
+        "/api/optimize-code",
+        "/api/ai_learning_analysis_stream",
+        "/api/assess-learning-path",
+    }
+    is_ai = request.path in ai_paths or (
+        request.method == "POST"
+        and (
+            re.fullmatch(r"/api/submissions/\d+/(diagnosis|help)", request.path)
+            or re.fullmatch(
+                r"/api/co-create/sessions/[^/]+/(generate|review-generate)", request.path
+            )
+            or re.fullmatch(r"/api/task-room/projects/[^/]+/messages", request.path)
+        )
+    )
+    if is_ai:
+        if (
+            request.path.startswith("/api/co-create/")
+            and (request.get_json(silent=True) or {}).get("source") == "teaching"
+        ):
+            return None
+        from services.ai_settings import resolve_key
+
+        key = resolve_key(current_user.id)
+        if not key:
+            return api_error(
+                "AI_KEY_REQUIRED",
+                "未配置 API Key，请前往个人资料页配置后再使用 AI 功能。",
+                428,
+                settings_url="/profile.html#ai-settings",
+            )
+        # Streaming starts after the ORM request session has been torn down.
+        g.ai_api_key = key
+    return None
 
 
 # 5. 在所有东西都初始化完毕后，再导入并注册蓝图

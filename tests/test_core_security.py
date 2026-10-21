@@ -59,10 +59,20 @@ class CoreSecurityTest(unittest.TestCase):
             db.session.add(admin)
             db.session.commit()
 
-        return self.client.post(
+        response = self.client.post(
             "/api/login",
             json={"username": "admin", "password": "strongpass"},
         )
+        # Existing AI tests stub transport and now explicitly configure their account.
+        self.assertEqual(
+            self.client.put(
+                "/api/profile/ai-settings",
+                headers={"X-CSRF-Token": response.json["csrf_token"]},
+                json={"mode": "custom", "api_key": "sk-unit-test-placeholder"},
+            ).status_code,
+            200,
+        )
+        return response
 
     def csrf_headers(self):
         response = self.client.get("/api/csrf-token")
@@ -587,9 +597,10 @@ class CoreSecurityTest(unittest.TestCase):
                 headers=self.csrf_headers(),
             )
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 428)
         self.assertFalse(response.get_json()["success"])
-        self.assertIn("SILICONFLOW_API_KEY", api_error_message(response))
+        self.assertEqual(api_error_code(response), "AI_KEY_REQUIRED")
+        self.assertEqual(response.json["settings_url"], "/profile.html#ai-settings")
 
     def test_run_code_is_rate_limited(self):
         self.client.post(
@@ -848,6 +859,14 @@ class CoreSecurityTest(unittest.TestCase):
             json={"username": "second", "email": "second@example.com", "password": "strongpass"},
         )
         self.client.post("/api/login", json={"username": "second", "password": "strongpass"})
+        self.assertEqual(
+            self.client.put(
+                "/api/profile/ai-settings",
+                headers=self.csrf_headers(),
+                json={"mode": "custom", "api_key": "sk-second-user-placeholder"},
+            ).status_code,
+            200,
+        )
         self.assertEqual(self.client.get(f"/api/submissions/{sid}").status_code, 404)
         self.assertEqual(
             self.client.post(

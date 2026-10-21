@@ -39,6 +39,12 @@ class User(db.Model, UserMixin):
         return check_password_hash(self.password_hash, password)
 
 
+class UserAISettings(db.Model):
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
+    mode = db.Column(db.String(16), nullable=False)
+    encrypted_key = db.Column(db.LargeBinary, nullable=True)
+
+
 # 题目模型 (保持不变)
 class Problem(db.Model):
     id = db.Column(db.String(50), primary_key=True)

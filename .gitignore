@@ -7,6 +7,8 @@ __pycache__/
 node_modules/
 test-results/
 playwright-report/
+.playwright-cli/
+output/playwright/
 
 .env
 app.db

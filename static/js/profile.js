@@ -40,6 +40,81 @@
         });
     });
     byId('editProfileBtn').addEventListener('click', () => { openTab('settingsPanel'); byId('displayName').focus(); });
+    function openAiSettings() {
+        if (location.hash !== '#ai-settings') return;
+        openTab('settingsPanel');
+        byId('ai-settings').scrollIntoView({block:'start'});
+    }
+    window.addEventListener('hashchange', openAiSettings);
+    document.querySelector('.ai-settings-link').addEventListener('click', () => {
+        openTab('settingsPanel');
+        byId('ai-settings').scrollIntoView({block:'start'});
+    });
+    openAiSettings();
+
+    let aiSettings = null;
+    function updateAiFields() {
+        const custom = document.querySelector('[name=ai_mode]:checked')?.value === 'custom';
+        byId('customKeyFields').hidden = !custom;
+        byId('personalApiKey').required = custom && !(aiSettings?.has_custom_key && aiSettings?.configured);
+        byId('personalApiKey').disabled = !custom;
+    }
+    function renderAiSettings(data) {
+        aiSettings = data;
+        byId('aiKeyStatus').textContent = data.configured ? (data.mode === 'test' ? '已配置 · 测试 Key' : '已配置 · 自有 Key') : '未配置 API Key';
+        byId('aiKeyStatus').dataset.ready = String(data.configured);
+        document.querySelector('[name=ai_mode][value=test]').disabled = !data.test_available;
+        document.querySelector(`[name=ai_mode][value=${data.mode === 'test' && data.test_available ? 'test' : 'custom'}]`).checked = true;
+        byId('testKeyHint').textContent = data.test_available ? '测试 Key 已开放，选择后点击保存即可使用。共享测试额度，请按需体验。' : '项目测试 Key 暂未开放，请配置自己的 API Key。';
+        byId('aiProviderHint').textContent = `当前服务：${data.provider} · 模型：${data.model}。请使用该服务商的 Key。`;
+        byId('personalApiKey').value = '';
+        byId('personalApiKey').type = 'password';
+        byId('toggleApiKey').textContent = '显示';
+        byId('toggleApiKey').setAttribute('aria-pressed', 'false');
+        byId('personalApiKey').placeholder = data.has_custom_key ? '已保存密钥；留空保留，输入新 Key 可替换' : '粘贴服务商提供的 API Key';
+        byId('saveAiSettings').disabled = false;
+        byId('clearAiSettings').disabled = data.mode === 'none';
+        const next = new URLSearchParams(location.search).get('next');
+        byId('aiSettingsReturn').hidden = !data.configured || !next;
+        byId('aiSettingsReturn').href = UserSession.safeReturnPath(next);
+        updateAiFields();
+    }
+    document.querySelectorAll('[name=ai_mode]').forEach(input => input.addEventListener('change', updateAiFields));
+    byId('toggleApiKey').addEventListener('click', () => {
+        const show = byId('personalApiKey').type === 'password';
+        byId('personalApiKey').type = show ? 'text' : 'password';
+        byId('toggleApiKey').textContent = show ? '隐藏' : '显示';
+        byId('toggleApiKey').setAttribute('aria-pressed', String(show));
+    });
+    async function saveAiSettings(mode) {
+        const controls = [...byId('aiSettingsForm').querySelectorAll('input,button')];
+        const payload = {mode};
+        if (mode === 'custom') payload.api_key = byId('personalApiKey').value;
+        controls.forEach(control => {control.disabled = true;});
+        byId('saveAiSettings').textContent = '正在保存…';
+        let saved = false;
+        try {
+            const data = await api('/api/profile/ai-settings', {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+            aiSettings = data;
+            saved = true;
+            message('aiSettingsMessage', mode === 'none' ? '配置已清除。下次使用 AI 时需重新配置。' : '配置已保存，可使用 AI 功能。密钥有效性将在实际调用时确认。');
+        } catch (error) {showError('aiSettingsMessage', error);}
+        finally {
+            controls.forEach(control => {control.disabled = false;});
+            byId('saveAiSettings').textContent = '保存 AI 配置';
+            if (saved) renderAiSettings(aiSettings);
+            else {
+                document.querySelector('[name=ai_mode][value=test]').disabled = !aiSettings?.test_available;
+                byId('clearAiSettings').disabled = !aiSettings || aiSettings.mode === 'none';
+                updateAiFields();
+            }
+        }
+    }
+    byId('aiSettingsForm').addEventListener('submit', event => {
+        event.preventDefault();
+        saveAiSettings(document.querySelector('[name=ai_mode]:checked').value);
+    });
+    byId('clearAiSettings').addEventListener('click', () => saveAiSettings('none'));
 
     function fillForm(user) {
         [['displayName','display_name'],['profileUsername','username'],['profileEmail','email'],['profileBioInput','bio'],['profileLocation','location']].forEach(([id,key]) => {byId(id).value = user[key] || '';});
@@ -194,6 +269,8 @@
         await UserSession.init();
         try {
             const data=await api('/api/profile');renderUser(data.user);renderStats(data.stats);byId('profileStatus').hidden=true;
+            try {renderAiSettings(await api('/api/profile/ai-settings'));}
+            catch (error) {byId('aiKeyStatus').textContent = '加载失败，请刷新重试';showError('aiSettingsMessage', error);}
         } catch(error) {showError('profileStatus',error);}
         finally {byId('profilePage').setAttribute('aria-busy','false');}
     }

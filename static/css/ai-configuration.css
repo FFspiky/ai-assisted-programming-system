@@ -1,0 +1,22 @@
+#aiConfigurationDialog {
+    box-sizing: border-box;
+    width: min(480px, calc(100vw - 32px));
+    margin: auto;
+    padding: 32px;
+    border: 1px solid #d3e5ea;
+    border-radius: 20px;
+    background: #172c44;
+    color: #f2f7fd;
+    box-shadow: 0 24px 80px #14394933;
+    font-family: inherit;
+}
+#aiConfigurationDialog::backdrop { background: #16364a66; backdrop-filter: blur(3px); }
+#aiConfigurationDialog h2 { font-size: 22px; margin: 18px 0 12px; }
+#aiConfigurationDialog p { font-size: 15px; line-height: 1.8; color: #b1c3d8; }
+#aiConfigurationDialog .ai-config-note { font-size: 13px; margin: 12px 0 24px; }
+.ai-config-icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; background: #e0f5f3; color: #137e80; font-weight: 700; }
+.ai-config-actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: flex-end; }
+.ai-config-actions button, .ai-config-actions a { box-sizing: border-box; min-height: 44px; padding: 11px 16px; border-radius: 10px; border: 1px solid #ccdce3; font: inherit; font-size: 14px; text-decoration: none; cursor: pointer; }
+.ai-config-actions button { background: #172c44; color: #b1c3d8; }
+.ai-config-actions a { background: #a5c9ff; border-color: #a5c9ff; color: #10223a; }
+.ai-config-actions :focus-visible { outline: 3px solid #58b8c8; outline-offset: 3px; }

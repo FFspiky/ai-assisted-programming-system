@@ -440,6 +440,7 @@
         try {
             const response = await fetch('/api/ai_learning_analysis_stream');
             if (response.status === 401) throw new Error('登录已失效，请登录后重新生成。');
+            if (response.status === 428) throw new Error('未配置 API Key，请前往个人资料页配置后重试。');
             if (!response.ok || !response.body) throw new Error('AI 分析暂时不可用，请稍后重试。');
             reader = response.body.getReader();
             const decoder = new TextDecoder();

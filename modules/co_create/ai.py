@@ -9,6 +9,13 @@ from services.language_support import language_prompt
 
 
 def available():
+    from flask import has_request_context
+    from flask_login import current_user
+
+    from services.ai_settings import resolve_key
+
+    if has_request_context():
+        return bool(current_user.is_authenticated and resolve_key(current_user.id))
     return bool(API_KEY)
 
 

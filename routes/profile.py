@@ -16,6 +16,57 @@ from services.profile_service import practice_stats, user_payload
 profile_blueprint = Blueprint("profile", __name__)
 
 
+@profile_blueprint.get("/profile/ai-settings")
+@login_required
+def get_ai_settings():
+    from services.ai_settings import settings_payload
+
+    response, status = api_success(settings_payload(current_user.id))
+    response.headers["Cache-Control"] = "no-store"
+    return response, status
+
+
+@profile_blueprint.put("/profile/ai-settings")
+@login_required
+@rate_limit(max_calls=20, window_seconds=60)
+def save_ai_settings():
+    from models import UserAISettings
+    from services.ai_client import API_KEY
+    from services.ai_settings import cipher, settings_payload
+
+    data = request.get_json(silent=True) or {}
+    mode = data.get("mode")
+    if not isinstance(mode, str) or mode not in {"none", "test", "custom"}:
+        return api_error("INVALID_AI_MODE", "请选择 API Key 使用方式", 400)
+    if mode == "test" and not API_KEY:
+        return api_error("TEST_KEY_UNAVAILABLE", "项目测试 Key 暂未开放，请使用自己的 Key", 409)
+    row = db.session.get(UserAISettings, current_user.id)
+    encrypted = None
+    if mode == "custom":
+        key = data.get("api_key", "")
+        if not isinstance(key, str):
+            return api_error("INVALID_API_KEY", "请输入有效的 API Key", 400)
+        key = key.strip()
+        if not key and row and row.mode == "custom" and row.encrypted_key:
+            encrypted = row.encrypted_key
+        elif (
+            not 8 <= len(key) <= 4096
+            or not key.isascii()
+            or any(c.isspace() or ord(c) < 33 or ord(c) == 127 for c in key)
+        ):
+            return api_error(
+                "INVALID_API_KEY", "API Key 应为 8–4096 个字符，且不能包含空格或控制字符", 400
+            )
+        else:
+            encrypted = cipher().encrypt(key.encode())
+    if row is None:
+        row = UserAISettings(user_id=current_user.id)
+        db.session.add(row)
+    row.mode, row.encrypted_key = mode, encrypted
+    db.session.commit()
+    return api_success(settings_payload(current_user.id), message="AI 配置已保存")
+
+
 @profile_blueprint.get("/profile")
 @login_required
 def get_profile():

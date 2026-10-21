@@ -3,6 +3,8 @@ import logging
 from urllib.parse import urlparse
 
 import requests
+from flask import g, has_request_context
+from flask_login import current_user
 
 from config import AI_THINKING_MODE, API_KEY, API_URL
 
@@ -14,8 +16,18 @@ class AIClientError(Exception):
 
 
 def ensure_ai_configured():
+    if has_request_context():
+        if getattr(g, "ai_api_key", None):
+            return g.ai_api_key
+        from services.ai_settings import resolve_key
+
+        key = resolve_key(current_user.id) if current_user.is_authenticated else ""
+        if not key:
+            raise AIClientError("未配置 API Key，请前往个人资料页配置")
+        return key
     if not API_KEY:
         raise AIClientError("未配置 SILICONFLOW_API_KEY（可在 .env 或环境变量中设置）")
+    return API_KEY
 
 
 def _provider_payload(payload):
@@ -28,9 +40,9 @@ def _provider_payload(payload):
 
 
 def chat_completion(payload, timeout=120, metadata=None):
-    ensure_ai_configured()
+    key = ensure_ai_configured()
     headers = {
-        "Authorization": f"Bearer {API_KEY}",
+        "Authorization": f"Bearer {key}",
         "Content-Type": "application/json",
     }
     try:
@@ -55,9 +67,9 @@ def chat_completion(payload, timeout=120, metadata=None):
 
 def stream_chat_events(payload, timeout=120):
     """Keep provider reasoning separate from the assistant's visible answer."""
-    ensure_ai_configured()
+    key = ensure_ai_configured()
     headers = {
-        "Authorization": f"Bearer {API_KEY}",
+        "Authorization": f"Bearer {key}",
         "Content-Type": "application/json",
     }
     stream_payload = {**_provider_payload(payload), "stream": True}

@@ -133,7 +133,7 @@
     $('new-session').disabled = state.busy || !scenario();
     $('new-session').textContent = state.user ? '新建共创 →' : '登录并新建 →';
     ['save-example','generate-teaching','review-generate-teaching','save-review','run-review'].forEach(id => { $(id).disabled = locked || !present; });
-    ['generate-ai','review-generate-ai'].forEach(id => { $(id).disabled = locked || !present || !state.ai; $(id).title = state.ai ? '' : '尚未配置 AI 接口，可明确选择教学样例'; });
+    ['generate-ai','review-generate-ai'].forEach(id => { $(id).disabled = locked || !present; $(id).title = state.ai ? '' : '尚未配置 AI 接口，可明确选择教学样例'; });
     $('run-compare').disabled = locked || !present || !validCandidates;
     $('export-session').disabled = state.busy || !present;
     $('refresh-sessions').disabled = state.busy || !state.user;

@@ -35,6 +35,7 @@
             <p id="profileHandle" class="muted"></p>
             <p id="profileBio" class="profile-bio"></p>
             <button class="profile-button full-width" id="editProfileBtn">编辑个人资料</button>
+            <a class="profile-button full-width ai-settings-link" href="#ai-settings"><i class="fas fa-key" aria-hidden="true"></i> 配置 API Key</a>
             <ul class="profile-meta" id="profileMeta"></ul>
             <div id="avatarMessage" class="form-message" role="status" aria-live="polite" hidden></div>
         </aside>
@@ -62,6 +63,25 @@
                 </section>
             </section>
             <section id="settingsPanel" role="tabpanel" aria-labelledby="tabSettings" hidden>
+                <section class="profile-card settings-card ai-settings-card" id="ai-settings" aria-labelledby="aiSettingsTitle">
+                    <div class="section-heading"><h2 id="aiSettingsTitle"><i class="fas fa-key" aria-hidden="true"></i> AI 服务配置</h2><span id="aiKeyStatus" class="ai-key-status" role="status">正在加载</span></div>
+                    <p class="muted">为你的学习搭档连接 AI。使用自己的 API Key，或选择项目提供的测试 Key 即可开始体验。</p>
+                    <form id="aiSettingsForm">
+                        <fieldset class="ai-key-options"><legend>选择使用方式</legend>
+                            <label class="ai-key-option"><input type="radio" name="ai_mode" value="test"><span><strong>使用项目测试 Key</strong><small>适合评委体验 · 无需输入密钥</small></span></label>
+                            <label class="ai-key-option"><input type="radio" name="ai_mode" value="custom" checked><span><strong>使用自己的 API Key</strong><small>独立使用 · 额度由你的服务账号提供</small></span></label>
+                        </fieldset>
+                        <p id="testKeyHint" class="muted"></p>
+                        <div id="customKeyFields" class="form-field">
+                            <label for="personalApiKey">API Key</label>
+                            <div class="ai-key-input"><input id="personalApiKey" type="password" minlength="8" maxlength="4096" autocomplete="off" spellcheck="false" placeholder="粘贴服务商提供的 API Key" aria-describedby="aiProviderHint"><button type="button" class="profile-button" id="toggleApiKey" aria-pressed="false">显示</button></div>
+                            <small id="aiProviderHint"></small>
+                        </div>
+                        <p class="ai-key-privacy"><i class="fas fa-shield-alt" aria-hidden="true"></i> 密钥加密保存在服务端，仅用于当前账号的 AI 请求。</p>
+                        <div id="aiSettingsMessage" class="form-message" role="status" aria-live="polite" hidden></div>
+                        <div class="form-actions"><button type="submit" id="saveAiSettings" class="profile-button primary" disabled>保存 AI 配置</button><button type="button" id="clearAiSettings" class="profile-button" disabled>清除配置</button><a id="aiSettingsReturn" class="text-link" hidden>返回刚才的页面 →</a></div>
+                    </form>
+                </section>
                 <div class="profile-card settings-card">
                     <h2>个人资料</h2>
                     <form id="profileForm">

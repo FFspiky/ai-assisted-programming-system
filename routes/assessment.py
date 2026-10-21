@@ -1,7 +1,7 @@
 # routes/assessment.py
 import json
 
-from flask import Blueprint, Response, request  # <-- 1. 从 flask 导入 Response
+from flask import Blueprint, Response, request, stream_with_context
 from flask_login import current_user, login_required
 
 from routes.api_response import api_error, api_success
@@ -57,7 +57,9 @@ def assess_learning_path():
     try:
         # 2. 返回一个流式 Response 对象
         # mimetype='text/event-stream' 是流式响应的标准类型
-        return Response(generate_learning_path(answers), mimetype="text/event-stream")
+        return Response(
+            stream_with_context(generate_learning_path(answers)), mimetype="text/event-stream"
+        )
     except Exception as e:
         # 这个异常捕获现在主要处理非流式部分的错误
         return api_error("LEARNING_PATH_FAILED", f"生成学习路径失败: {str(e)}", 500)
