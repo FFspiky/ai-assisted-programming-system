@@ -18,6 +18,7 @@ ROOT_FILES = {
     ".gitignore",
     ".gitattributes",
     "README.md",
+    "CHANGELOG.md",
     "app.py",
     "models.py",
     "config.py",
@@ -71,6 +72,10 @@ def source_files():
             name in ROOT_FILES
             or relative.parts[0] in DIRECTORIES
             or (relative.parts[0] == "docs" and relative.name in DOCUMENTS)
+            or (
+                relative.parts[:2] == ("docs", "images")
+                and relative.name in {"home.png", "library.png", "practice.png", "task-room.png"}
+            )
         ):
             continue
         source = ROOT / relative

@@ -2,6 +2,8 @@
 
 提交预览目录保持展开状态，包含 `CodeLab/` 源码、`runtime/` 执行镜像、`开始使用.md` 和 `文件清单.sha256`。`runtime/*.tar` 是 Docker 导入文件，不是项目压缩包。
 
+GitHub 公开仓库提供完整源码，不提供真实 API Key 或用户数据库。公开执行镜像及 `runner-image.json` 从 [Releases](https://github.com/FFspiky/ai-assisted-programming-system/releases/latest) 单独下载，放到代码目录旁的 `runtime/`，再运行配置脚本；安装目录名可以是 `CodeLab` 或克隆得到的 `ai-assisted-programming-system`。单独交付评委的目录才可能随附评审 Key。
+
 ## 运行条件
 
 - Python 3.11 或更新版本；首次安装 Python 依赖需要联网。

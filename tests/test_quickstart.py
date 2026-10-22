@@ -5,6 +5,8 @@ import io
 import json
 import socket
 import sqlite3
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -127,6 +129,19 @@ class QuickstartTest(unittest.TestCase):
             self.assertEqual(message.call_args.args[-1], 0x124)
             message.return_value = 7
             self.assertFalse(setup.ask_reviewer_key())
+
+    @unittest.skipUnless(sys.platform == "darwin", "Requires the native macOS AppleScript compiler")
+    def test_macos_dialog_compiles_without_opening_a_window(self):
+        with patch.object(setup.subprocess, "run") as dialog:
+            dialog.return_value.returncode = 1
+            setup.ask_reviewer_key()
+            script = dialog.call_args.args[0][2]
+        result = subprocess.run(
+            ["osacompile", "-o", str(self.root / "reviewer-dialog.scpt"), "-e", script],
+            capture_output=True,
+            timeout=20,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr.decode("utf-8", errors="replace"))
 
     def test_database_path_confined_to_project(self):
         self.assertEqual(setup.database_path(self.root, {}), self.root / "instance/competition.db")
