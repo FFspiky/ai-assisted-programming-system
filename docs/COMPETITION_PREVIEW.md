@@ -4,6 +4,8 @@
 
 ## 环境与初始化
 
+评委快速体验请先看 [提交目录使用说明](SUBMISSION_START.md)：Windows 双击 `setup-windows.cmd` 后运行 `start-windows.cmd`；macOS 在代码目录执行 `bash setup-macos.command` 后执行 `bash start-macos.command`。脚本自动创建环境、检查镜像、生成配置并导入题库；随附评审 Key 经弹窗同意后启用。以下为开发和测试用的手动流程。
+
 需要 Python 3.11、Docker，以及运行前端测试所需的 Node.js/npm。所有命令在项目根目录执行。先创建并激活 Python 虚拟环境，安装依赖：
 
 ```sh

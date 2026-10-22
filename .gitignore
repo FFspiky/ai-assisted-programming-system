@@ -31,3 +31,4 @@ instance/
 *.log
 .ruff_cache/
 .agents/
+.private/

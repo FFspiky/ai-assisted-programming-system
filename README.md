@@ -4,6 +4,8 @@
 
 提交目录的结构、离线执行镜像导入方式见 [代码交付说明](docs/CODE_DELIVERY.md)。字体和图标已随源码提供，来源与许可见 [本地前端依赖](static/vendor/README.md)。
 
+评委快速配置：Windows 双击 `setup-windows.cmd`，随后运行 `start-windows.cmd`；macOS 在代码目录依次运行 `bash setup-macos.command` 和 `bash start-macos.command`。先安装 Python 3.11+ 并启动 Docker Desktop。随附测试 Key 的选择及共享 10 元额度说明见 [评审使用指南](docs/SUBMISSION_START.md)。
+
 ## 当前功能
 
 - 题库练习：分类筛选、代码运行、提交判题、积分排行与学习分析。

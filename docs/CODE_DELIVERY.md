@@ -21,7 +21,9 @@ python scripts/runner_image.py load ../runtime
 
 导入脚本先校验镜像文件 SHA-256，导入后核对镜像 ID、平台、执行器源码与容器用户，并通过应用执行器运行 Python/C++ 求和样例。此过程不访问镜像仓库、不读取 AI Key。
 
-接着按 [启动说明](COMPETITION_PREVIEW.md) 初始化数据库与配置环境，注册自己的本地测试账号。代码目录不携带真实用户、演示口令或 API Key。AI 需登录后在个人资料页明确选择个人 Key 或服务器配置的项目测试 Key。
+推荐直接使用 [评审快速配置](SUBMISSION_START.md) 中的 Windows/macOS 脚本，自动完成环境、镜像与数据库准备。代码目录不携带真实用户、演示口令或 API Key。评审专用 Key 可单独随附在 `runtime/reviewer-key.json`，配置弹窗同意后自动启用；个人资料页可改用个人 Key 或停用 AI。
+
+随附专用账户提供所有评委共享的 10 元测试额度，剩余额度以账户余额为准。每次调用先查询余额，余额不足或查询失败时不调用模型。网络异常、认证失败和余额不足分别提示，不将所有失败解释为欠费。接口依据见 [DeepSeek 账户余额](https://api-docs.deepseek.com/zh-cn/api/get-user-balance/) 和 [官方错误码](https://api-docs.deepseek.com/zh-cn/quick_start/error_codes/)。程序不吊销平台 Key，也不以本机累计数值承诺精确扣费上限。
 
 仅有源码、没有 `runtime/` 时，可联网构建并校验：
 
@@ -40,6 +42,8 @@ python scripts/runner_image.py check
 python scripts/prepare_submission.py --destination ../submission-preview
 ```
 
+若需要随附评审 Key，显式增加 `--reviewer-key-file .private/reviewer-key.json`。该私有 JSON 格式为 `{"api_key":"<评审专用 Key>","budget_cny":"10.00"}`；真实文件放入被 Git 忽略的 `.private/`，不得填写到脚本、测试、文档或 `.env.example`。组装脚本仅复制至提交目录的 `runtime/`，不会放进 `CodeLab/`。未提供该参数时不包含 Key。
+
 此脚本按代码与文档清单复制当前工作区（包括尚未提交的代码修改），导出已校验的执行镜像，并生成文件校验清单。不会创建项目 ZIP，也不会修改现有提交目录或执行 Git 提交。
 
-排除 `.git`、实际 `.env`、`instance/`、用户数据库、密钥、虚拟环境、`node_modules/`、测试输出、官方赛事资料和内部设计过程文档。保留当前测试、迁移、依赖声明与第三方许可，便于复核。项目配置只有 `.env.example` 模板。
+源码清单排除 `.git`、实际 `.env`、`.private/`、`instance/`、用户数据库、密钥、虚拟环境、`node_modules/`、测试输出、官方赛事资料和内部设计过程文档。唯一可显式随附的凭据是上述评审测试 Key。保留当前测试、迁移、依赖声明与第三方许可，便于复核。项目配置只有 `.env.example` 模板。

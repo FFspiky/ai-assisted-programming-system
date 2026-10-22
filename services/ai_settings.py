@@ -30,7 +30,9 @@ def resolve_key(user_id):
 
     row = db.session.get(UserAISettings, user_id)
     if not row:
-        return ""
+        from services.reviewer_access import REVIEWER_TEST_KEY_ENABLED
+
+        return API_KEY if REVIEWER_TEST_KEY_ENABLED else ""
     if row.mode == "test":
         return API_KEY
     if row.mode == "custom" and row.encrypted_key:
@@ -43,12 +45,14 @@ def resolve_key(user_id):
 
 def settings_payload(user_id):
     from services.ai_client import API_KEY
+    from services.reviewer_access import REVIEWER_TEST_KEY_ENABLED
 
     row = db.session.get(UserAISettings, user_id)
     return {
-        "mode": row.mode if row else "none",
+        "mode": row.mode if row else ("test" if REVIEWER_TEST_KEY_ENABLED and API_KEY else "none"),
         "configured": bool(resolve_key(user_id)),
         "test_available": bool(API_KEY),
+        "reviewer_test": bool(REVIEWER_TEST_KEY_ENABLED and API_KEY),
         "provider": urlparse(API_URL).hostname,
         "model": MODEL_NAME,
         "has_custom_key": bool(row and row.encrypted_key),

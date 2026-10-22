@@ -50,6 +50,44 @@ class AISettingsTest(unittest.TestCase):
             self.client.put("/api/profile/ai-settings", json={"mode": "test"}).status_code, 403
         )
 
+    def test_reviewer_consent_default_and_explicit_user_overrides(self):
+        with (
+            patch("services.reviewer_access.REVIEWER_TEST_KEY_ENABLED", True),
+            patch("services.ai_client.API_KEY", "sk-reviewer-default-test"),
+        ):
+            response = self.client.get("/api/profile/ai-settings")
+            self.assertEqual(response.json["data"]["mode"], "test")
+            self.assertTrue(response.json["data"]["reviewer_test"])
+            self.assertTrue(response.json["data"]["configured"])
+            self.assertNotIn("sk-reviewer-default-test", response.text)
+            self.save("custom", "sk-personal-override-test")
+            with app.app_context():
+                self.assertEqual(resolve_key(1), "sk-personal-override-test")
+            self.save("none")
+            with app.app_context():
+                self.assertEqual(resolve_key(1), "")
+
+    def test_depleted_reviewer_key_returns_error_before_stream_or_task_creation(self):
+        from services.reviewer_access import provider_error
+
+        with (
+            patch("services.reviewer_access.REVIEWER_TEST_KEY_ENABLED", True),
+            patch("services.ai_client.API_KEY", "sk-reviewer-default-test"),
+            patch("services.reviewer_access.check_balance", side_effect=provider_error(402)),
+            patch("services.ai_client.requests.post") as post,
+        ):
+            for path in (
+                "/api/ai-chat-stream",
+                "/api/ai-inline-complete-stream",
+                "/api/task-room/projects/missing/messages",
+                "/api/optimize-code",
+            ):
+                response = self.client.post(path, json={}, headers=self.headers)
+                self.assertEqual(response.status_code, 402)
+                self.assertEqual(response.json["error"]["code"], "REVIEWER_BALANCE_EXHAUSTED")
+                self.assertIn("自己的 DeepSeek Key", response.json["error"]["message"])
+            post.assert_not_called()
+
     def test_all_ai_routes_require_explicit_configuration(self):
         for path in (
             "/api/ai-chat-stream",

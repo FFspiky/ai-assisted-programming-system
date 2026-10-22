@@ -7,10 +7,16 @@ import subprocess
 import sys
 from pathlib import Path
 
+try:
+    from .reviewer_config import read_reviewer_key
+except ImportError:
+    from reviewer_config import read_reviewer_key
+
 ROOT = Path(__file__).resolve().parents[1]
 ROOT_FILES = {
     ".env.example",
     ".gitignore",
+    ".gitattributes",
     "README.md",
     "app.py",
     "models.py",
@@ -21,6 +27,10 @@ ROOT_FILES = {
     "package-lock.json",
     "pyproject.toml",
     "Makefile",
+    "setup-windows.cmd",
+    "setup-macos.command",
+    "start-windows.cmd",
+    "start-macos.command",
 }
 DIRECTORIES = {
     ".github",
@@ -86,11 +96,18 @@ def source_files():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--destination", type=Path, required=True)
+    parser.add_argument(
+        "--reviewer-key-file",
+        type=Path,
+        help="Explicit private reviewer JSON; copied only into runtime/",
+    )
     args = parser.parse_args()
     destination = args.destination.resolve()
     if destination.exists() or destination.is_relative_to(ROOT):
         parser.error("Use a new directory outside the source repository")
     files = list(source_files())
+    if args.reviewer_key_file:
+        read_reviewer_key(args.reviewer_key_file)
     destination.mkdir(parents=True)
     code = destination / "CodeLab"
     for relative in files:
@@ -107,6 +124,11 @@ def main():
         ],
         check=True,
     )
+    if args.reviewer_key_file:
+        target = destination / "runtime/reviewer-key.json"
+        shutil.copyfile(args.reviewer_key_file, target)
+        if sys.platform != "win32":
+            target.chmod(0o600)
     guide = (ROOT / "docs/SUBMISSION_START.md").read_text(encoding="utf-8")
     guide = guide.replace("](CODE_DELIVERY.md)", "](CodeLab/docs/CODE_DELIVERY.md)")
     guide = guide.replace("](COMPETITION_PREVIEW.md)", "](CodeLab/docs/COMPETITION_PREVIEW.md)")

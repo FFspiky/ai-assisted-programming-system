@@ -220,6 +220,14 @@ def require_user_ai_configuration():
             )
         # Streaming starts after the ORM request session has been torn down.
         g.ai_api_key = key
+        from services.reviewer_access import ReviewerAccessError, preflight
+
+        try:
+            preflight(key)
+        except ReviewerAccessError as exc:
+            return api_error(
+                exc.code, str(exc), exc.status, settings_url="/profile.html#ai-settings"
+            )
     return None
 
 

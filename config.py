@@ -17,6 +17,7 @@ def _int_env(name, default):
 
 
 API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
+REVIEWER_TEST_KEY_ENABLED = os.getenv("REVIEWER_TEST_KEY_ENABLED", "0") == "1"
 # Only the official DeepSeek endpoint is supported; no provider URL override.
 API_URL = "https://api.deepseek.com/chat/completions"
 MODEL_NAME = os.getenv("DEEPSEEK_MODEL_NAME", "deepseek-flash")

@@ -6,6 +6,7 @@ from flask import g, has_request_context
 from flask_login import current_user
 
 from config import AI_THINKING_MODE, API_KEY, API_URL
+from services import reviewer_access
 
 logger = logging.getLogger(__name__)
 
@@ -37,8 +38,23 @@ def _provider_payload(payload):
     return prepared
 
 
+def _check_reviewer_balance(key):
+    try:
+        reviewer_access.before_completion(key)
+    except reviewer_access.ReviewerAccessError as exc:
+        raise AIClientError(str(exc)) from None
+
+
+def _request_error(exc, key):
+    response = getattr(exc, "response", None)
+    if reviewer_access.is_reviewer_key(key) and response is not None:
+        return AIClientError(str(reviewer_access.provider_error(response.status_code)))
+    return AIClientError("AI服务请求失败，请检查网络、Key 和账户余额后重试")
+
+
 def chat_completion(payload, timeout=120, metadata=None):
     key = ensure_ai_configured()
+    _check_reviewer_balance(key)
     headers = {
         "Authorization": f"Bearer {key}",
         "Content-Type": "application/json",
@@ -58,7 +74,7 @@ def chat_completion(payload, timeout=120, metadata=None):
     except requests.exceptions.Timeout as exc:
         raise AIClientError("AI服务响应超时") from exc
     except requests.exceptions.RequestException as exc:
-        raise AIClientError(f"AI服务请求失败: {exc}") from exc
+        raise _request_error(exc, key) from None
     except (KeyError, IndexError, ValueError, TypeError) as exc:
         raise AIClientError(f"AI响应格式异常: {exc}") from exc
 
@@ -66,6 +82,7 @@ def chat_completion(payload, timeout=120, metadata=None):
 def stream_chat_events(payload, timeout=120):
     """Keep provider reasoning separate from the assistant's visible answer."""
     key = ensure_ai_configured()
+    _check_reviewer_balance(key)
     headers = {
         "Authorization": f"Bearer {key}",
         "Content-Type": "application/json",
@@ -111,7 +128,7 @@ def stream_chat_events(payload, timeout=120):
     except requests.exceptions.Timeout as exc:
         raise AIClientError("AI服务响应超时") from exc
     except requests.exceptions.RequestException as exc:
-        raise AIClientError(f"AI服务请求失败: {exc}") from exc
+        raise _request_error(exc, key) from None
 
 
 def stream_chat_deltas(payload, timeout=120):

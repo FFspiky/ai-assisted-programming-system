@@ -65,7 +65,9 @@
         byId('aiKeyStatus').dataset.ready = String(data.configured);
         document.querySelector('[name=ai_mode][value=test]').disabled = !data.test_available;
         document.querySelector(`[name=ai_mode][value=${data.mode === 'test' && data.test_available ? 'test' : 'custom'}]`).checked = true;
-        byId('testKeyHint').textContent = data.test_available ? '测试 Key 已开放，选择后点击保存即可使用。共享测试额度，请按需体验。' : '项目测试 Key 暂未开放，请配置自己的 API Key。';
+        byId('testKeyHint').textContent = data.reviewer_test
+            ? '所有评委共享 10 元测试额度，剩余金额以账户余额为准。用尽后请填写自己的 DeepSeek Key。'
+            : (data.test_available ? '测试 Key 已开放，选择后点击保存即可使用。共享测试额度，请按需体验。' : '项目测试 Key 暂未开放，请配置自己的 API Key。');
         byId('aiProviderHint').textContent = `当前服务：DeepSeek 官方 API（${data.provider}）· 模型：${data.model}。请使用 DeepSeek 官方 Key。`;
         byId('personalApiKey').value = '';
         byId('personalApiKey').type = 'password';
