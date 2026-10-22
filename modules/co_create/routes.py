@@ -9,7 +9,6 @@ from routes.guards import rate_limit
 from services.language_support import language_options
 
 from . import ai, learning_service, problem_service, service
-from .catalog import list_catalog
 from .models import CoCreateSession
 
 blueprint = Blueprint(
@@ -66,7 +65,6 @@ def alias():
 def catalog():
     return api_success(
         {
-            "scenarios": list_catalog(),
             "ai_available": ai.available(),
             "languages": language_options(SUPPORTED_LANGUAGES),
             "problem_driven": True,

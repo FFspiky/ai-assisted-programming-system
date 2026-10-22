@@ -1,6 +1,6 @@
 # AI 实战任务室
 
-> 当前版本仅支持 Python / C++17；历史 Java 和三语言测试记录仅供追溯。当前启动与验证结果见 [参赛说明](COMPETITION_PREVIEW.md)。
+> 当前支持 Python 3.11 / C++17。启动与验证方法见 [参赛说明](COMPETITION_PREVIEW.md)。
 
 
 这是智练 CodeLab 的独立功能模块，入口为 `/task-room.html`，也可通过 `/task-room` 进入。它有自己的页面、前端资源、API、业务服务、数据库表和测试；复用现有 Flask 应用的登录、CSRF、数据库连接、Docker 隔离执行器和 AI 接口。当前 9 项任务全部支持 Python、C++17 的 `solve(data)` 函数合同，不需要安装或制作手机 App，也不是另起一套独立账号服务器。
@@ -133,9 +133,9 @@ register_task_room(app)
 
 | 配置项 | 用途 |
 | --- | --- |
-| `SILICONFLOW_API_KEY` | 后端读取的模型密钥；DeepSeek 兼容配置也沿用此变量名 |
-| `SILICONFLOW_API_URL` | 已配置的聊天接口地址 |
-| `SILICONFLOW_MODEL_NAME` | 请求使用的模型名称 |
+| `DEEPSEEK_API_KEY` | 后端读取的 DeepSeek 官方 API 密钥 |
+| 接口地址（固定） | `https://api.deepseek.com/chat/completions`，不支持第三方服务商 |
+| `DEEPSEEK_MODEL_NAME` | 请求使用的模型名称 |
 | `AI_THINKING_MODE` | 现有供应商适配配置；任务室短回复使用关闭思考的请求 |
 | `DATABASE_URL` | 复用项目数据库 |
 | `FLASK_SECRET_KEY` | 稳定登录会话与 CSRF 的服务端密钥 |
@@ -176,7 +176,7 @@ $env:CORS_ORIGINS = "http://127.0.0.1:5002,http://localhost:5002"
 | --- | --- |
 | `GET /catalog` | 公开任务资料、规则选项、起始代码与 AI 配置可用状态 |
 | `GET /projects?archived=0` | 当前用户的活动或归档项目 |
-| `POST /projects` | 接任务：`scenario_id,language`；language 为 python/cpp/java，省略兼容旧客户端默认为 python |
+| `POST /projects` | 接任务：`scenario_id,language`；language 为 python/cpp，省略兼容旧客户端默认为 python |
 | `GET /projects/{id}` | 项目详情、合同、草稿、消息、运行与事件 |
 | `PATCH /projects/{id}` | 保存：`code,draft_revision`；归档或恢复：`archived,revision` |
 | `POST /projects/{id}/freeze` | 首次确认完整规则：`rules,revision` |
@@ -219,7 +219,7 @@ $env:SMOKE_BASE_URL = "http://127.0.0.1:5007"
 浏览器自动测试中的 AI 也应模拟。真实供应商连通性验证需要用户明确允许付费调用后，在页面主动发送一轮消息；应记录实际响应或错误，不以模拟回复充当真实接入证明。模型名称只有供应商确实返回时才作为响应记录，不填造模型标识。
 
 
-## Python/C++ 项目与旧数据兼容（2026-10-19）
+## Python/C++ 项目与数据兼容
 
 创建项目时选择语言。语言绑定项目，不能通过保存草稿改变。工作区切换语言会先保存原草稿，再恢复同任务、目标语言的活动项目；不存在时创建独立项目。原项目的合同、草稿、消息与证据全部保留。归档项目仍可从“已归档”列表查看及恢复。旧项目和旧运行在迁移时标记为 Python。
 
@@ -250,4 +250,4 @@ ZIP 的 README 提供对应启动命令。示例：Python `python run.py < input
 .\.venv\Scripts\python.exe -m modules.task_room.verify_languages
 ```
 
-默认报告保存到 `tmp/task-room-multilang/docker-verification.json`，包括每种语言的成绩统计完整验收，以及嵌套 JSON、整数/布尔/浮点类型、Unicode、调试输出分离回放。失败会退出非零状态。镜像须使用当前 `sandbox/` 重建，历史 Java 项目记录保留，但不再提供 Java 执行或导出。
+默认报告保存到 `tmp/task-room-multilang/docker-verification.json`，包括每种语言的成绩统计完整验收，以及嵌套 JSON、整数/布尔/浮点类型、Unicode、调试输出分离回放。失败会退出非零状态。镜像须使用当前 `sandbox/` 构建；不支持的语言记录只保留查看，不提供执行或导出。

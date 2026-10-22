@@ -28,7 +28,7 @@ os.environ.update(
     DATABASE_URL="sqlite:///" + DATABASE.as_posix(),
     AUTO_CREATE_DATABASE="0",
     FLASK_SECRET_KEY="isolated-learning-journey-verifier",
-    SILICONFLOW_API_KEY="",
+    DEEPSEEK_API_KEY="",
     SUPPORTED_LANGUAGES="python,cpp",
     RATE_LIMIT_REDIS_URL="",
     REDIS_URL="",

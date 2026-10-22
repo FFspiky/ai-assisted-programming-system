@@ -115,6 +115,9 @@ class AISettingsTest(unittest.TestCase):
                 self.assertEqual(chat_completion({"model": "test"}), "ok")
                 self.assertEqual(list(stream_chat_events({"model": "test"}))[0]["text"], "ok")
                 for call in post.call_args_list:
+                    self.assertEqual(call.args[0], "https://api.deepseek.com/chat/completions")
+                    self.assertIn("thinking", call.kwargs["json"])
+                    self.assertNotIn("enable_thinking", call.kwargs["json"])
                     self.assertEqual(
                         call.kwargs["headers"]["Authorization"], "Bearer sk-account-specific"
                     )

@@ -1,7 +1,6 @@
 import json
-from urllib.parse import urlparse
 
-from config import API_URL, MODEL_NAME
+from config import MODEL_NAME
 from services.ai_client import (
     AIClientError,
     stream_chat_deltas,
@@ -11,12 +10,7 @@ from services.language_support import language_prompt
 
 
 def runtime_identity():
-    provider = (
-        "DeepSeek 官方 API"
-        if urlparse(API_URL).hostname == "api.deepseek.com"
-        else "配置的模型服务"
-    )
-    return f"服务端配置的提供方是{provider}，请求模型标识为 {MODEL_NAME}。"
+    return f"服务端使用 DeepSeek 官方 API，请求模型标识为 {MODEL_NAME}。"
 
 
 def stream_code_from_prompt(

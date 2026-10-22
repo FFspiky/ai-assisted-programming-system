@@ -8,7 +8,7 @@ from unittest.mock import patch
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 os.environ["FLASK_SECRET_KEY"] = "problem-co-create-test-secret"
 os.environ["AUTO_CREATE_DATABASE"] = "0"
-os.environ["SILICONFLOW_API_KEY"] = ""
+os.environ["DEEPSEEK_API_KEY"] = ""
 os.environ["SUPPORTED_LANGUAGES"] = "python,cpp"
 
 from app import app

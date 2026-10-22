@@ -22,6 +22,7 @@ from models import (
 from modules.co_create.models import CoCreateSession
 from services.problem_library import load_library
 from tests import test_problem_co_create as fixtures
+from tests.test_co_create import seed_legacy_record
 
 BASE, PID, app = fixtures.BASE, fixtures.PID, fixtures.app
 TARGET = "CL-BASICS-02"
@@ -491,21 +492,7 @@ class CoCreateLearningTest(unittest.TestCase):
         )
 
     def test_legacy_record_readable_without_new_mutation(self):
-        response = self.client.post(
-            BASE + "/sessions",
-            headers=self.headers,
-            json={"mode": "examples", "scenario_id": "budget"},
-        )
-        if response.status_code != 201:
-            from modules.co_create.catalog import list_catalog
-
-            scenario = list_catalog()[0]["id"]
-            response = self.client.post(
-                BASE + "/sessions",
-                headers=self.headers,
-                json={"mode": "examples", "scenario_id": scenario},
-            )
-        row = self.data(response, 201)["session"]
+        row = seed_legacy_record()
         result = self.data(self.get_learning(row))
         self.assertTrue(result["recap"]["session"]["legacy"])
         self.assertEqual(result["related"], [])

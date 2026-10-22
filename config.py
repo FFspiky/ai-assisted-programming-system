@@ -16,12 +16,11 @@ def _int_env(name, default):
         return default
 
 
-API_KEY = os.getenv("SILICONFLOW_API_KEY", "")
-API_URL = os.getenv("SILICONFLOW_API_URL", "https://api.siliconflow.cn/v1/chat/completions")
-MODEL_NAME = os.getenv("SILICONFLOW_MODEL_NAME", "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B")
-AUTOCOMPLETE_MODEL_NAME = os.getenv(
-    "SILICONFLOW_AUTOCOMPLETE_MODEL_NAME", "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B"
-)
+API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
+# Only the official DeepSeek endpoint is supported; no provider URL override.
+API_URL = "https://api.deepseek.com/chat/completions"
+MODEL_NAME = os.getenv("DEEPSEEK_MODEL_NAME", "deepseek-flash")
+AUTOCOMPLETE_MODEL_NAME = os.getenv("DEEPSEEK_AUTOCOMPLETE_MODEL_NAME", "deepseek-flash")
 AI_THINKING_MODE = os.getenv("AI_THINKING_MODE", "disabled")
 
 # 管理员账号

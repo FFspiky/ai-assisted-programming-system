@@ -1,6 +1,5 @@
 import json
 import logging
-from urllib.parse import urlparse
 
 import requests
 from flask import g, has_request_context
@@ -26,16 +25,15 @@ def ensure_ai_configured():
             raise AIClientError("未配置 API Key，请前往个人资料页配置")
         return key
     if not API_KEY:
-        raise AIClientError("未配置 SILICONFLOW_API_KEY（可在 .env 或环境变量中设置）")
+        raise AIClientError("未配置 DEEPSEEK_API_KEY（可在 .env 或环境变量中设置）")
     return API_KEY
 
 
 def _provider_payload(payload):
     prepared = dict(payload)
-    if urlparse(API_URL).hostname == "api.deepseek.com":
-        enabled = prepared.pop("enable_thinking", None)
-        mode = AI_THINKING_MODE if enabled is None else ("enabled" if enabled else "disabled")
-        prepared.setdefault("thinking", {"type": mode})
+    enabled = prepared.pop("enable_thinking", None)
+    mode = AI_THINKING_MODE if enabled is None else ("enabled" if enabled else "disabled")
+    prepared.setdefault("thinking", {"type": mode})
     return prepared
 
 

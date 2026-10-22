@@ -7,6 +7,7 @@ from models import CodeProposal, PracticeEvent, Problem, Submission, User, db
 from modules.co_create import service
 from modules.co_create.models import CoCreateSession
 from tests import test_problem_co_create as fixtures
+from tests.test_co_create import seed_legacy_record
 
 BASE, PID, app, transport = fixtures.BASE, fixtures.PID, fixtures.app, fixtures.transport
 
@@ -201,14 +202,7 @@ class CoCreateHandoffTest(unittest.TestCase):
             self.assertEqual(CodeProposal.query.count(), 0)
 
     def test_legacy_and_examples_review_shortcut_rejected(self):
-        legacy = self.data(
-            self.client.post(
-                BASE + "/sessions",
-                headers=self.headers,
-                json={"mode": "review", "scenario_id": "dedupe"},
-            ),
-            201,
-        )["session"]
+        legacy = seed_legacy_record("review")
         self.assertEqual(self.handoff(legacy, "review").status_code, 400)
         row = self.create("examples", code="OK")
         self.assertEqual(self.handoff(row, "review").status_code, 400)

@@ -618,7 +618,7 @@ class TaskRoomTest(unittest.TestCase):
             content = "\n".join(archive.read(name).decode("utf-8") for name in names)
             self.assertIn(project["contract"]["id"], content)
             self.assertIn(project["code"].splitlines()[0], content)
-            self.assertNotIn("SILICONFLOW_API_KEY", content)
+            self.assertNotIn("DEEPSEEK_API_KEY", content)
             self.assertNotIn("password_hash", content)
 
     def test_disabled_languages_cannot_create_projects(self):

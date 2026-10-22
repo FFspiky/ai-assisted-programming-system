@@ -26,7 +26,7 @@ pip install -r requirements.txt
 ```bash
 FLASK_SECRET_KEY=replace-with-a-long-random-secret
 DATABASE_URL=sqlite:////absolute/path/app.db
-SILICONFLOW_API_KEY=replace-with-your-api-key
+DEEPSEEK_API_KEY=replace-with-your-api-key
 RATE_LIMIT_REDIS_URL=redis://127.0.0.1:6379/0
 CORS_ORIGINS=https://your-domain.example
 AUTO_CREATE_DATABASE=0
@@ -36,9 +36,9 @@ FLASK_DEBUG=0
 可选配置：
 
 ```bash
-SILICONFLOW_API_URL=https://api.siliconflow.cn/v1/chat/completions
-SILICONFLOW_MODEL_NAME=deepseek-ai/DeepSeek-R1-Distill-Qwen-32B
-SILICONFLOW_AUTOCOMPLETE_MODEL_NAME=deepseek-ai/DeepSeek-R1-0528-Qwen3-8B
+# 接口固定为 https://api.deepseek.com/chat/completions，仅支持 DeepSeek 官方 API
+DEEPSEEK_MODEL_NAME=deepseek-flash
+DEEPSEEK_AUTOCOMPLETE_MODEL_NAME=deepseek-flash
 SUPPORTED_LANGUAGES=python,cpp
 MAX_CODE_CHARS=20000
 MAX_STDIN_CHARS=10000
@@ -160,4 +160,3 @@ flask --app app db upgrade
 - `/problem_selector.html`
 - `/practice.html`
 - `/learn-analytics.html`
-

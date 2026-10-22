@@ -1,27 +1,21 @@
-# AI 辅助编程学习系统
+# 智练 CodeLab · AI 辅助编程学习系统
 
-> **2026-10-19 参赛整合版**：整合学习共创与交互改进，当前仅支持 Python 3.11 / C++17。见 [参赛演示与启动说明](docs/COMPETITION_PREVIEW.md)。以下日期条目是原版本历史记录，其中 Java 及三语言验证不代表当前功能。
+基于 Flask 的编程学习系统，当前支持 Python 3.11 / C++17，仅连接 DeepSeek 官方 API。首次运行见 [启动说明](docs/COMPETITION_PREVIEW.md)。
 
+## 当前功能
 
-一个基于 Flask 的编程学习与 AI 辅助系统，包含用户登录、题库、代码运行、提交判题、积分排行、学习分析、AI 聊天、代码优化和代码补全等功能。
+- 题库练习：分类筛选、代码运行、提交判题、积分排行与学习分析。
+- 学习共创：验证 AI 代码、解释修改、独立完成关联练习，记录实际执行依据与复盘。见 [学习共创说明](docs/CO_CREATE_LEARNING.md)。
+- 编程辅助：聊天、分级帮助、代码优化、自动补全，以及建议采纳、撤销和正式复测。见 [AI 共创说明](docs/CO_CREATE.md)。
+- 实战任务室：9 个项目，包含需求确认、Python/C++ 开发、Docker 验收、变更、交付与档案导出。见 [任务室说明](docs/TASK_ROOM.md)。
+- 学习问卷与项目推荐：依据用户自述推荐任务，并显示实际交付进度。见 [问卷说明](docs/LEARNING_PLAN.md)。
+- 个人资料、头像和个人 AI 密钥配置；达菲郁聊天与桌宠交互。
 
-2026-10-18 **达菲郁学习共创**：围绕“验证 AI 代码 → 解释修改 → 独立再做一次”组织共创页。学生解释绑定具体代码与运行依据，代码改变时保留旧解释并标记；60 道内置题配有人工编排的关联练习，支持 Python / C++ / Java，沿用真实判题。独立练习暂时收起本页 AI 帮助，保留达菲郁、编辑器与草稿，不更改账号的帮助偏好；复盘卡汇总真实运行、采纳/撤销、正式提交及本人自述帮助情况，可导出 JSON / Markdown。一次通过不推断为已掌握。本次使用现有会话状态与事件表，无新增数据库迁移。详见 [学习共创说明](docs/CO_CREATE_LEARNING.md)。
-
-2026-10-16 **题目共创与三语言支持**：`/co-create.html` 已围绕刷题题库开展用例共创与代码质检，承接题意、公开样例、语言和草稿；支持候选对比、题库验证、差异预览后采纳/撤销及正式复测。Python 3.11、C++17、Java 17 共用 Docker 隔离执行，实战任务室、AI 帮助、草稿和导出同步支持三语言。原场景记录保留查看，达菲郁互动与海洋蓝风格保留。已有数据库先备份并升级至 `l30a20261016`，Java 需重新构建运行镜像。详见 [AI 共创说明](docs/CO_CREATE.md) 和 [语言支持说明](docs/LANGUAGES.md)。
-
-2026-10-14 新增独立的 **AI 实战任务室**，入口 `/task-room.html`，模块代码集中于 `modules/task_room/`。包含 9 个原创项目（6 个入门或基础小练习、3 个综合任务）、AI 客户沟通、规则确认、Python / C++ / Java 开发、Docker 实际验收、版本变更、交付、复盘、保存恢复与 ZIP 导出。聊天和候选代码不会自行更改已确认需求，验收由明确规则计算。使用及维护见 [任务室说明](docs/TASK_ROOM.md)。
-
-学习分析中的编程学习问卷已开放：9 个简短问题，包含 Python / C++ 练习语言偏好，保存后推荐 6 个可进入的项目，已领取和已交付的状态会按语言从任务室同步。旧版问卷继续兼容。推荐不调用 AI；学习分析的 AI 功能改为点击后生成。参见 [问卷与项目推荐](docs/LEARNING_PLAN.md)。
-
-「算法造物工坊」已撤回，学习分析入口恢复。工坊代码归档于 `archive/workshop-20261014/`，已有运行及 AI 候选记录保留，相关接口已停用。首页、刷题与题库流程保留。
-
-本轮已加入可视化执行证据诊断：真实用例结果 → AI 疑似原因 → 证据及代码行定位 → 修改后重新判题。参见 [F1 演示与运行说明](docs/EVIDENCE_DEMO.md)。
-
-点击登录后的头像可进入个人主页 `/profile.html`，编辑昵称、用户名、邮箱、简介、所在地和头像，并修改密码。主页展示真实练习时长、去重题数、通过题数、提交次数、通过率、提交日历、语言分布和最近记录；密码修改后所有旧会话失效。头像支持不超过 2 MB 的 PNG/JPG/WebP，保存为 256×256 PNG。旧库升级需执行下方迁移命令并安装新增的 Pillow 依赖。
+用户记录按账号保存。模型建议需通过真实执行验证，有限用例通过不代表已掌握知识或证明教学收益。
 
 ## 环境准备
 
-建议使用 Python 3.11 或更新版本。代码运行和判题还需要 Docker；本机 macOS 可使用已启动的 Docker Desktop。
+建议使用 Python 3.11 或更新版本。代码运行和判题还需要 Docker；Windows/macOS 可使用 Docker Desktop，Linux 可使用 Docker Engine。
 
 ```bash
 python3 -m venv .venv
@@ -39,19 +33,18 @@ cp .env.example .env
 
 ```bash
 FLASK_SECRET_KEY=replace-with-a-random-secret
-SILICONFLOW_API_KEY=replace-with-your-api-key
+DEEPSEEK_API_KEY=replace-with-your-api-key
 ```
 
-DeepSeek 官方密钥也沿用上述历史变量名，同时设置：
+仅支持 DeepSeek 官方 API，接口固定为 `https://api.deepseek.com/chat/completions`。模型配置：
 
 ```dotenv
-SILICONFLOW_API_URL=https://api.deepseek.com/chat/completions
-SILICONFLOW_MODEL_NAME=deepseek-flash
-SILICONFLOW_AUTOCOMPLETE_MODEL_NAME=deepseek-flash
+DEEPSEEK_MODEL_NAME=deepseek-flash
+DEEPSEEK_AUTOCOMPLETE_MODEL_NAME=deepseek-flash
 AI_THINKING_MODE=disabled
 ```
 
-本地 `.env` 不提交。模型名称以账号可用模型为准；本轮已验证 `deepseek-flash`。
+本地 `.env` 不提交。模型名称以账号可用模型为准；默认使用 `deepseek-flash`。
 
 构建执行镜像一次（后续只在 `sandbox/` 修改时重建）：
 
@@ -153,6 +146,6 @@ GitHub Actions 会在推送到 `main` 或打开、更新面向 `main` 的 PR 时
 
 ### 个人 API Key 配置
 
-登录后从「个人主页 → 个人资料 → AI 服务配置」选择自有 Key 或项目测试 Key。自有 Key 须属于页面显示的服务商，模型与接口沿用服务端配置。项目测试 Key 使用服务端 `SILICONFLOW_API_KEY`，未设置时不可选择；用户必须显式保存配置后才能调用 AI。保存不代表已验证服务商额度或密钥有效性。
+登录后从「个人主页 → 个人资料 → AI 服务配置」选择自有 Key 或项目测试 Key。自有 Key 须属于页面显示的服务商，模型与接口沿用服务端配置。项目测试 Key 使用服务端 `DEEPSEEK_API_KEY`，未设置时不可选择；用户必须显式保存配置后才能调用 AI。保存不代表已验证服务商额度或密钥有效性。
 
 升级安装依赖并执行 `flask --app app db upgrade`；本机自动建表模式也会创建新增配置表。用户 Key 使用 Fernet 加密，默认加密密钥自动生成在 `instance/ai-credentials.key`（已被 Git 忽略）。部署时可通过 `AI_CREDENTIAL_ENCRYPTION_KEY` 指定固定的 Fernet 密钥；多实例必须共享同一密钥。请与数据库一起备份并持久保留加密密钥，丢失或更换后用户需重新填写 Key。测试 Key 不会返回浏览器，切换到测试 Key 或清除配置会移除此前保存的个人 Key。

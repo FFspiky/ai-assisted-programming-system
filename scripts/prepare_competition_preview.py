@@ -24,7 +24,7 @@ def main():
         PYTHON_DOTENV_DISABLED="1",
         DATABASE_URL="sqlite:///" + str(target),
         AUTO_CREATE_DATABASE="0",
-        SILICONFLOW_API_KEY="",
+        DEEPSEEK_API_KEY="",
         ADMIN_USERNAME="",
         ADMIN_PASSWORD="",
         ADMIN_EMAIL="",

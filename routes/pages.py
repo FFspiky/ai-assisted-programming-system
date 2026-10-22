@@ -17,11 +17,6 @@ def analytics():
     return render_template("learn-analytics.html")
 
 
-@pages_blueprint.route("/workshop.html")
-def workshop():
-    return redirect(url_for("pages.analytics"))
-
-
 @pages_blueprint.route("/learning-records.html")
 def learning_records():
     return render_template("learn-analytics.html")

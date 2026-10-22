@@ -44,6 +44,12 @@ target_db = current_app.extensions["migrate"].db
 # ... etc.
 
 
+def include_object(obj, name, type_, reflected, compare_to):
+    # Retired workshop tables may remain in upgraded databases; never auto-drop user history.
+    retired = {"workshop_suggestion", "workshop_run", "workshop_project", "workshop_version"}
+    return not (type_ == "table" and reflected and compare_to is None and name in retired)
+
+
 def get_metadata():
     if hasattr(target_db, "metadatas"):
         return target_db.metadatas[None]
@@ -63,7 +69,9 @@ def run_migrations_offline():
 
     """
     url = config.get_main_option("sqlalchemy.url")
-    context.configure(url=url, target_metadata=get_metadata(), literal_binds=True)
+    context.configure(
+        url=url, target_metadata=get_metadata(), literal_binds=True, include_object=include_object
+    )
 
     with context.begin_transaction():
         context.run_migrations()
@@ -87,7 +95,8 @@ def run_migrations_online():
                 directives[:] = []
                 logger.info("No changes in schema detected.")
 
-    conf_args = current_app.extensions["migrate"].configure_args
+    conf_args = dict(current_app.extensions["migrate"].configure_args)
+    conf_args.setdefault("include_object", include_object)
     if conf_args.get("process_revision_directives") is None:
         conf_args["process_revision_directives"] = process_revision_directives
 

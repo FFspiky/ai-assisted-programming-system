@@ -66,12 +66,12 @@
         document.querySelector('[name=ai_mode][value=test]').disabled = !data.test_available;
         document.querySelector(`[name=ai_mode][value=${data.mode === 'test' && data.test_available ? 'test' : 'custom'}]`).checked = true;
         byId('testKeyHint').textContent = data.test_available ? '测试 Key 已开放，选择后点击保存即可使用。共享测试额度，请按需体验。' : '项目测试 Key 暂未开放，请配置自己的 API Key。';
-        byId('aiProviderHint').textContent = `当前服务：${data.provider} · 模型：${data.model}。请使用该服务商的 Key。`;
+        byId('aiProviderHint').textContent = `当前服务：DeepSeek 官方 API（${data.provider}）· 模型：${data.model}。请使用 DeepSeek 官方 Key。`;
         byId('personalApiKey').value = '';
         byId('personalApiKey').type = 'password';
         byId('toggleApiKey').textContent = '显示';
         byId('toggleApiKey').setAttribute('aria-pressed', 'false');
-        byId('personalApiKey').placeholder = data.has_custom_key ? '已保存密钥；留空保留，输入新 Key 可替换' : '粘贴服务商提供的 API Key';
+        byId('personalApiKey').placeholder = data.has_custom_key ? '已保存密钥；留空保留，输入新 Key 可替换' : '粘贴 DeepSeek 官方 API Key';
         byId('saveAiSettings').disabled = false;
         byId('clearAiSettings').disabled = data.mode === 'none';
         const next = new URLSearchParams(location.search).get('next');

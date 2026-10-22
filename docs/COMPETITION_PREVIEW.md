@@ -1,48 +1,66 @@
-# 参赛整合版 · 2026-10-19
+# 当前版本启动与验证
 
-基于 `bd463fe` 整理，开发分支为 `codex/competition-python-cpp`，通过面向 `main` 的 PR 运行完整 CI 后合并。合并后从 `main` 获取当前版本。原开发机的 stash、数据库与验证报告属于本机资料，不随 Git 克隆提供；准备脚本始终使用独立数据库。
+支持 Python 3.11 / C++17，包含题库、学习共创、关联练习、问卷推荐与实战任务室。AI 使用 DeepSeek 官方 API。
 
-## 当前内容
+## 环境与初始化
 
-保留远端题库、学习共创、关联练习、问卷推荐和任务室；合并本地输入法 Enter 保护、流式输出节流与滚动保持、思考内容保留展开、聊天窗口操作、桌宠操作、表单错误提示、编辑器滚动同步和轻量图片。
-
-语言统一为 Python 3.11 / C++17：移除 Java 选项、模板、运行器分支、任务室包装与 JDK 依赖。任务室目录、创建和执行遵守启用语言配置。历史迁移保留，旧 Java 记录不转换为另一种语言。
-
-修复 Redis 限流检查与预约之间的并发窗口；内存限流加锁。题库筛选和分页下推数据库，任务列表不再加载每个项目的全部运行与聊天正文。CI 增加共创、题库、证据工作台、聊天和桌宠浏览器回归。
-
-原开发机预览库包含 183 题：本地 P 系列 120 题、远端 CL 系列 60 题、DEMO 3 题。原题仅复制题面和测试用例，不复制用户或提交记录；P 系列保留未分类状态及原用例，尚未按新题库标准逐题复核。数量不代表题目质量相同。
-
-## 可复现启动
-
-安装 requirements-dev.txt 和 npm 依赖，启动 Docker，然后在项目根目录执行：
+需要 Python 3.11、Docker，以及运行前端测试所需的 Node.js/npm。所有命令在项目根目录执行。先创建并激活 Python 虚拟环境，安装依赖：
 
 ```sh
+python -m pip install -r requirements-dev.txt
+npm ci
 docker build -t codelab-runner:local sandbox
-python scripts/prepare_competition_preview.py --database tmp/competition.db --legacy-db app.db
-PYTHON_DOTENV_DISABLED=1 DATABASE_URL="sqlite:///$PWD/tmp/competition.db" AUTO_CREATE_DATABASE=0 FLASK_SECRET_KEY=local-preview-secret CODE_SANDBOX_IMAGE=codelab-runner:local flask --app app run --host 127.0.0.1 --port 5087
+python scripts/prepare_competition_preview.py --database tmp/competition.db
 ```
 
-准备脚本使用迁移创建独立数据库；重复导入跳过已有题目。若没有原 app.db，可省略 --legacy-db，获得 63 道内置题。不要将已有但未标记迁移版本的数据库作为目标。
+初始化脚本使用迁移创建独立数据库，导入 60 道分类题和 3 道演示题，不需要外部数据库。不要将已有但未标记迁移版本的数据库作为初始化目标。
 
-历史临时预览由原开发机的独立数据库与临时隧道提供，不是仓库托管的长期服务。仓库无法证明该链接当前可用；请按上述命令创建自己的预览。
+## 启动服务
 
-## 建议演示顺序（约 4 分钟）
+复制 `.env.example` 为 `.env`，设置随机的 `FLASK_SECRET_KEY` 和 DeepSeek 官方密钥。下列启动命令保留 `.env` 中的 AI 配置；AI 功能还需要登录后在个人资料页明确选择自有 Key 或项目测试 Key。未配置 AI 时可以手动编程和判题。
 
-1. 题库选择 CL-BASICS-01「秒数换算」，介绍 Python/C++ 两种语言和分类筛选。
-2. 进入代码质检，把分钟写成 t // 60，用输入 3661 运行，展示实际输出与预期的差异。修改为 t // 60 % 60，再执行并查看结果。
-3. 在「解释修改」写下修改理由和边界情况，保存与代码版本绑定的解释。
-4. 进入「独立再做一次」，完成数位之和；展示真实提交结果和复盘卡。说明独立练习会收起本页 AI 帮助，不代表已经证明学习效果。
-5. 用任务室补充展示明确规则、C++ 函数合同、实际验收与导出。主线仍以验证、解释、独立完成为中心。
+Windows PowerShell：
 
-## 原开发机验证记录与边界
+```powershell
+$env:DATABASE_URL = 'sqlite:///' + (Resolve-Path 'tmp/competition.db').Path.Replace('\', '/')
+$env:AUTO_CREATE_DATABASE = '0'
+python -m flask --app app run --host 127.0.0.1 --port 5001
+```
 
-- Python 全量首轮 210 项通过；新增限流 2 项及任务室语言限制回归通过。
-- 前端控制器 45 项通过。
-- 浏览器核心流程 16 项通过；聊天、桌宠、帮助控制 11 项通过（旧测试的自动折叠预期已改为本地保留展开行为，并单独复测通过）。覆盖桌面和窄屏。
-- Python/C++ 学习链路真实 Docker 执行 14 次，两条正式目标提交 Accepted；任务室两种语言均通过成绩统计验收和 Unicode/JSON 往返检查。
-- Redis 实例上 16 个并发请求竞争 1 个额度，仅 1 个获准，过期后额度恢复。
-- AI 请求在回归中使用明确的测试替身；该次公开预览未配置模型密钥。真实 AI 生成质量、真实学生观察及教学收益仍需另行验证。
+macOS/Linux：
 
-原开发机运行证据保存在 tmp/learning-journey-check/docker-smoke.json 与 tmp/task-room-multilang/docker-verification.json，文件未纳入 Git；以上数量为原开发机记录，不能替代当前提交的 CI 结果。测试中有意触发的失败日志不等于测试失败。
+```sh
+DATABASE_URL="sqlite:///$PWD/tmp/competition.db" AUTO_CREATE_DATABASE=0 python -m flask --app app run --host 127.0.0.1 --port 5001
+```
 
-本版适合功能演示和参赛素材录制。正式提交仍需团队补齐作品说明、演示视频、素材来源与真实用户反馈；暂不宣称已达到生产级并发服务。执行器每个应用进程同时最多两个任务，繁忙时返回重试提示。
+浏览器打开 `http://127.0.0.1:5001`，注册并登录。已有数据库升级前先备份，使用 `python -m flask --app app db upgrade` 升级，勿以测试库覆盖用户数据。
+
+## 核心流程
+
+1. 在题库选择 CL-BASICS-01「秒数换算」，选择 Python 或 C++。
+2. 进入代码质检，运行候选代码并比较实际输出与预期。
+3. 保存与代码版本绑定的修改理由和边界情况。
+4. 在「独立再做一次」完成关联题，查看真实提交结果与复盘。
+5. 在任务室体验规则确认、实际验收、交付及导出。
+
+## 可重复验证
+
+```sh
+python -m unittest discover -s tests
+node --test tests/*.test.cjs
+python scripts/verify_problem_co_create.py
+python scripts/verify_co_create_learning.py
+python -m modules.task_room.verify_languages --languages python cpp
+```
+
+Python 测试和验证脚本使用隔离数据库，涉及执行的检查需要 Docker。模型响应使用测试替身，不调用真实付费 AI，不能据此推断模型质量或教学收益。以本次执行结果判断通过状态。
+
+浏览器回归需要先启动上述测试服务：
+
+```sh
+npx playwright install chromium
+```
+
+PowerShell 执行 `$env:SMOKE_BASE_URL='http://127.0.0.1:5001'` 后运行 `npm run smoke`；macOS/Linux 执行 `SMOKE_BASE_URL=http://127.0.0.1:5001 npm run smoke`。浏览器测试会创建测试账号，应使用独立预览数据库。
+
+执行器每个应用进程最多同时运行两个任务，繁忙时提示重试。公网部署条件见 [部署说明](DEPLOYMENT.md)。
