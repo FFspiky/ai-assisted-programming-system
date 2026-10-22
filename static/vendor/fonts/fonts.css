@@ -1,0 +1,16 @@
+/* Local, unmodified variable fonts. Sources and licenses: ../sources.json. */
+@font-face {
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('./roboto/Roboto[wdth,wght].ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Source Code Pro';
+    font-style: normal;
+    font-weight: 200 900;
+    font-display: swap;
+    src: url('./sourcecodepro/SourceCodePro[wght].ttf') format('truetype');
+}

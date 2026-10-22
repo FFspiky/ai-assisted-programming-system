@@ -2,6 +2,8 @@
 
 基于 Flask 的编程学习系统，当前支持 Python 3.11 / C++17，仅连接 DeepSeek 官方 API。首次运行见 [启动说明](docs/COMPETITION_PREVIEW.md)。
 
+提交目录的结构、离线执行镜像导入方式见 [代码交付说明](docs/CODE_DELIVERY.md)。字体和图标已随源码提供，来源与许可见 [本地前端依赖](static/vendor/README.md)。
+
 ## 当前功能
 
 - 题库练习：分类筛选、代码运行、提交判题、积分排行与学习分析。

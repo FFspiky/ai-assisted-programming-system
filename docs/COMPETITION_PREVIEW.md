@@ -9,9 +9,10 @@
 ```sh
 python -m pip install -r requirements-dev.txt
 npm ci
-docker build -t codelab-runner:local sandbox
 python scripts/prepare_competition_preview.py --database tmp/competition.db
 ```
+
+若使用整理后的代码提交目录，在 `CodeLab` 中执行 `python scripts/runner_image.py load ../runtime`，校验并导入随附的 Linux/amd64 执行镜像，无需访问 Docker Hub。导入后会实际测试 Python 和 C++。其他架构或从源码构建时执行 `docker build -t codelab-runner:local sandbox`。完整条件见 [代码交付说明](CODE_DELIVERY.md)。
 
 初始化脚本使用迁移创建独立数据库，导入 60 道分类题和 3 道演示题，不需要外部数据库。不要将已有但未标记迁移版本的数据库作为初始化目标。
 

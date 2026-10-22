@@ -1,0 +1,33 @@
+{
+  "fontawesome": {
+    "version": "6.4.0",
+    "source": "https://registry.npmjs.org/@fortawesome/fontawesome-free/-/fontawesome-free-6.4.0.tgz",
+    "integrity": "sha512-0NyytTlPJwB/BF5LtRV8rrABDbe3TdTXqNB3PdZ+UUUZAEIrdOJdmABqKjt4AXwIoJNaRVVZEXxpNrqvE1GAYQ=="
+  },
+  "fonts": {
+    "source": "https://github.com/google/fonts",
+    "commit": "45e3d5269e4a17d823f6d84470bc084dc5ae46f6",
+    "files": [
+      {
+        "path": "fonts/roboto/Roboto[wdth,wght].ttf",
+        "source": "https://github.com/google/fonts/blob/45e3d5269e4a17d823f6d84470bc084dc5ae46f6/ofl/roboto/Roboto[wdth,wght].ttf",
+        "sha256": "d7598e12c5dbef095ff8272cfc55da0250bd07fbdecbac8a530b9b277872a134"
+      },
+      {
+        "path": "fonts/roboto/OFL.txt",
+        "source": "https://github.com/google/fonts/blob/45e3d5269e4a17d823f6d84470bc084dc5ae46f6/ofl/roboto/OFL.txt",
+        "sha256": "061402327a96aadb0bfb694a960ed289ecd38d383e396243831ab81feb109c41"
+      },
+      {
+        "path": "fonts/sourcecodepro/SourceCodePro[wght].ttf",
+        "source": "https://github.com/google/fonts/blob/45e3d5269e4a17d823f6d84470bc084dc5ae46f6/ofl/sourcecodepro/SourceCodePro[wght].ttf",
+        "sha256": "b400fc584e10aff25d0e775ce181b4fc1c5ea1b5dc37b81aeb2084375b945790"
+      },
+      {
+        "path": "fonts/sourcecodepro/OFL.txt",
+        "source": "https://github.com/google/fonts/blob/45e3d5269e4a17d823f6d84470bc084dc5ae46f6/ofl/sourcecodepro/OFL.txt",
+        "sha256": "cb30d3086a8b3ce0b9e3690bf48d6620402b61160bc658076f95180ccd9e9dae"
+      }
+    ]
+  }
+}

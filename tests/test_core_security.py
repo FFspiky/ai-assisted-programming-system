@@ -1047,19 +1047,28 @@ class CoreSecurityTest(unittest.TestCase):
             data={"avatar": (io.BytesIO(b"x" * (2 * 1024 * 1024 + 1)), "large.png")},
         )
         self.assertEqual(large.status_code, 400)
-        source = io.BytesIO()
-        Image.new("RGB", (50, 100), "blue").save(source, format="PNG")
-        source.seek(0)
-        saved = self.client.post(
-            "/api/profile/avatar", headers=headers, data={"avatar": (source, "avatar.png")}
-        )
-        self.assertEqual(saved.status_code, 200)
-        self.assertTrue(
-            saved.get_json()["data"]["user"]["avatar_url"].startswith("/api/profile/avatar?v=")
-        )
-        image = self.client.get("/api/profile/avatar")
-        self.assertEqual(image.content_type, "image/png")
-        self.assertEqual(Image.open(io.BytesIO(image.data)).size, (256, 256))
+        for image_format in ("PNG", "JPEG", "WEBP"):
+            with self.subTest(image_format=image_format):
+                source = io.BytesIO()
+                Image.new("RGB", (50, 100), "blue").save(source, format=image_format)
+                source.seek(0)
+                saved = self.client.post(
+                    "/api/profile/avatar",
+                    headers=headers,
+                    data={"avatar": (source, "avatar." + image_format.lower())},
+                )
+                self.assertEqual(saved.status_code, 200)
+                self.assertTrue(
+                    saved.get_json()["data"]["user"]["avatar_url"].startswith(
+                        "/api/profile/avatar?v="
+                    )
+                )
+                with self.client.get("/api/profile/avatar") as response:
+                    self.assertEqual(response.content_type, "image/png")
+                    with Image.open(io.BytesIO(response.data)) as image:
+                        self.assertEqual(image.size, (256, 256))
+                        self.assertEqual(image.format, "PNG")
+                        self.assertFalse(image.getexif())
         self.assertEqual(app.test_client().get("/api/profile/avatar").status_code, 401)
         self.assertEqual(
             self.client.delete("/api/profile/avatar", headers=headers).status_code, 200
