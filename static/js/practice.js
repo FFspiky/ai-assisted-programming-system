@@ -186,12 +186,18 @@ function renderGhostLayer() {
     const start = codeInput.selectionStart || 0;
     const end = codeInput.selectionEnd || start;
     const prefix = text.slice(0, start);
-    const suffix = text.slice(end);
     const ghost = start === end ? inlineSuggestion : '';
-    ghostLayer.innerHTML = `<span class="typed">${escapeHtml(prefix)}</span><span class="ghost">${escapeHtml(ghost)}</span><span class="typed">${escapeHtml(suffix)}</span>`;
+    // Never re-render or shift actual code: native text, selection and hit testing stay together.
+    // Mid-code completions use a separate preview so they cannot cover the existing suffix.
+    const atEnd = start === text.length;
+    ghostLayer.style.width = `${codeInput.clientWidth}px`;
+    ghostLayer.style.height = `${codeInput.clientHeight}px`;
+    ghostLayer.innerHTML = `<span class="typed">${escapeHtml(prefix)}</span><span class="ghost">${escapeHtml(atEnd ? ghost : '')}</span>`;
     ghostLayer.scrollTop = codeInput.scrollTop;
     ghostLayer.scrollLeft = codeInput.scrollLeft;
     if (inlineHint) {
+        inlineHint.innerHTML = 'Tab 接受 / Esc 取消' + (ghost && !atEnd
+            ? `<pre class="completion-preview">${escapeHtml(ghost)}</pre>` : '');
         inlineHint.classList.toggle('is-visible', ghost.length > 0);
     }
 }
@@ -354,6 +360,7 @@ if (codeInput) {
         ghostLayer.scrollTop = codeInput.scrollTop;
         ghostLayer.scrollLeft = codeInput.scrollLeft;
     });
+    if (typeof ResizeObserver !== 'undefined') new ResizeObserver(renderGhostLayer).observe(codeInput);
     renderGhostLayer();
 }
 
@@ -1155,7 +1162,6 @@ messageInput.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.isComposing && !chatComposing && e.keyCode !== 229) { e.preventDefault(); sendMessage(); }
 });
 
-codeInput.value = `# 示例Python代码\ndef greet(name):\n    return f"Hello, {name}!"\n\nprint(greet("World"))\n`;
 renderGhostLayer();
 
 chatProblemId = getCurrentProblemId();

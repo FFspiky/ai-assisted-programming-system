@@ -15,15 +15,39 @@
         activeLanguage = requestedLanguage;
     }
     let languageTemplates = {};
+    const legacyGreeting = '# 示例Python代码\ndef greet(name):\n    return f"Hello, {name}!"\n\nprint(greet("World"))\n';
+    // Metadata is used only to recognize untouched drafts from older versions.
+    // It must never populate a new editor, including when this request finishes late.
     fetch('/api/co-create/catalog').then(response => response.json()).then(result => {
         languageTemplates = Object.fromEntries((result.data?.languages || []).map(spec => [spec.id, spec.starter_code]));
-        if (!editor.value && !edited) setStarter();
+        if (!edited && isLegacyTemplate(editor.value)) {
+            try {
+                const saved = JSON.parse(localStorage.getItem(draftKey()) || 'null');
+                if (saved && saved.version !== 3 && isLegacyTemplate(saved.code)) {
+                    migrateDraft(saved);
+                    setBlankEditor();
+                }
+            } catch (_) { /* Storage failures must not interrupt editing. */ }
+        }
     }).catch(() => { /* An empty editor remains editable when metadata is unavailable. */ });
-    function setStarter() {
-        editor.value = languageTemplates[activeLanguage] || '';
-        editor.dataset.untouchedTemplate = 'true';
+    function setBlankEditor() {
+        editor.value = '';
+        editor.dataset.untouchedTemplate = '';
         renderGhostLayer();
-        byId('draftStatus').textContent = '本语言起始模板 · 请按题意编写';
+        byId('draftStatus').textContent = '空白编辑器 · 草稿自动保存';
+    }
+    function isLegacyTemplate(code) {
+        const templates = [languageTemplates[activeLanguage]];
+        if (activeLanguage === 'python') templates.push(legacyGreeting);
+        return typeof code === 'string' && templates.some(template => template
+            && code.replace(/\r\n/g, '\n') === template.replace(/\r\n/g, '\n'));
+    }
+    function migrateDraft(saved) {
+        if (saved.version !== 3 && isLegacyTemplate(saved.code)) {
+            saved = {...saved, version: 3, code: ''};
+            try { localStorage.setItem(draftKey(), JSON.stringify(saved)); } catch (_) { /* Still show a blank editor. */ }
+        }
+        return saved;
     }
     const statusLabels = {'Accepted': '当前用例通过', 'Wrong Answer': '输出与预期不同',
         'Runtime Error': '运行中出现错误', 'Compile Error': '编译未通过',
@@ -50,7 +74,11 @@
     function saveDraft() {
         if (!userReady) return;
         try {
-            localStorage.setItem(draftKey(), JSON.stringify({code: editor.value, input: byId('customInput').value}));
+            let saved = null;
+            try { saved = JSON.parse(localStorage.getItem(draftKey()) || 'null'); } catch (_) { /* Replace a damaged draft. */ }
+            // Switching languages before metadata arrives must not relabel an old template as user code.
+            const version = edited || !saved || saved.code !== editor.value ? 3 : saved.version;
+            localStorage.setItem(draftKey(), JSON.stringify({version, code: editor.value, input: byId('customInput').value}));
             byId('draftStatus').textContent = '草稿已保存';
         } catch (_) { byId('draftStatus').textContent = '浏览器无法保存草稿，请手动复制代码'; }
     }
@@ -59,10 +87,11 @@
             const pending = JSON.parse(sessionStorage.getItem('codelab:login-draft') || 'null');
             if (user && pending && pending.problem === getCurrentProblemId() && pending.language === activeLanguage
                 && (!pending.user_id || pending.user_id === user.id)) {
-                localStorage.setItem(draftKey(), JSON.stringify({code:pending.code,input:pending.input}));
+                localStorage.setItem(draftKey(), JSON.stringify({version:pending.version,code:pending.code,input:pending.input}));
                 sessionStorage.removeItem('codelab:login-draft');
             }
-            const saved = JSON.parse(localStorage.getItem(draftKey()) || 'null');
+            const stored = JSON.parse(localStorage.getItem(draftKey()) || 'null');
+            const saved = stored && migrateDraft(stored);
             if (saved && typeof saved.code === 'string') {
                 editor.value = saved.code;
                 editor.dataset.untouchedTemplate = '';
@@ -237,7 +266,7 @@
     }
     function ready() {
         if (!userReady || !problem) return;
-        if (!edited && !restoreDraft()) setStarter();
+        if (!edited && !restoreDraft()) setBlankEditor();
         restoreSubmission();
     }
     window.addEventListener('practice:user', event => { user = event.detail; userReady = true; ready(); });
@@ -248,7 +277,7 @@
     window.addEventListener('practice:submission', event => { restoreSequence += 1; showSubmission(event.detail); });
     window.addEventListener('auth:required', () => {
         try {
-            sessionStorage.setItem('codelab:login-draft', JSON.stringify({user_id:user?.id,problem:getCurrentProblemId(),language:activeLanguage,code:editor.value,input:byId('customInput').value}));
+            sessionStorage.setItem('codelab:login-draft', JSON.stringify({version:3,user_id:user?.id,problem:getCurrentProblemId(),language:activeLanguage,code:editor.value,input:byId('customInput').value}));
         } catch (_) { /* Keep the editor usable if browser storage is unavailable. */ }
     });
     editor.addEventListener('input', () => { edited = true; editor.dataset.untouchedTemplate = ''; saveDraft(); markStale(); });
@@ -258,7 +287,8 @@
         cancelInlineCompletion();
         cancelPending(); showSubmission(null);
         editor.value = ''; byId('customInput').value = '';
-        if (!restoreDraft()) setStarter();
+        edited = false;
+        if (!restoreDraft()) setBlankEditor();
         editor.scrollTop = editor.scrollLeft = 0;
         renderGhostLayer();
         markStale(); restoreSubmission();

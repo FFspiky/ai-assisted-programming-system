@@ -360,24 +360,30 @@ nav a:hover::after {
     background: #1e1e2e;
 }
 
+.code-area,
 #ghostLayer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    box-sizing: border-box;
     padding: 20px;
     font-family: 'Source Code Pro', monospace;
     font-size: 1rem;
     line-height: 1.6;
-    white-space: pre-wrap;
-    word-wrap: break-word;
+    letter-spacing: normal;
+    tab-size: 4;
+    white-space: pre;
+    overflow-wrap: normal;
+}
+
+#ghostLayer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
     pointer-events: none;
     overflow: hidden;
 }
 
 #ghostLayer .typed {
-    color: #f8f8f2;
+    color: transparent;
 }
 
 #ghostLayer .ghost {
@@ -385,14 +391,11 @@ nav a:hover::after {
 }
 
 .code-area {
+    display: block;
     width: 100%;
     min-height: 300px;
-    padding: 20px;
-    font-family: 'Source Code Pro', monospace;
-    font-size: 1rem;
-    line-height: 1.6;
     background: transparent;
-    color: transparent;
+    color: #f8f8f2;
     caret-color: #f8f8f2;
     border: none;
     resize: none;
@@ -416,6 +419,16 @@ nav a:hover::after {
 
 .inline-hint.is-visible {
     opacity: 1;
+}
+
+.inline-hint .completion-preview {
+    margin: 6px 20px;
+    padding: 8px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    max-height: 120px;
+    overflow: auto;
+    background: var(--code-bg);
 }
 
 .output-area {

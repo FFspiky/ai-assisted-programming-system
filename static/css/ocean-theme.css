@@ -49,10 +49,10 @@ body.ocean-theme {
 .ocean-theme .evidence-button {border-color:#a6c9f34f;color:var(--light)}
 .ocean-theme .evidence-button:hover {color:var(--accent);border-color:var(--accent)}
 .ocean-theme .ai-response {background:#8dbcfc12;border-color:var(--accent)}
-/* The transparent textarea overlays ghostLayer; never give codeInput an opaque foreground. */
-.ocean-theme #ghostLayer .typed {color:#dfedff}
+/* Native textarea text owns selection and caret geometry; the overlay is suggestion-only. */
+.ocean-theme #ghostLayer .typed {color:transparent}
 .ocean-theme #ghostLayer .ghost {color:#b1c3d877}
-.ocean-theme .code-area {caret-color:#f2f7fd}
+.ocean-theme .code-area {color:#dfedff;caret-color:#f2f7fd}
 .ocean-theme .code-area::placeholder {color:#b1c3d899}
 .ocean-theme #customInput {background:#10223a!important;color:var(--light)!important;border-color:#adcff040!important}
 .ocean-theme .ai-floating-window {background:rgba(32,55,83,.92);border-color:#adcdf440;backdrop-filter:blur(24px) saturate(125%);-webkit-backdrop-filter:blur(24px) saturate(125%);box-shadow:0 24px 60px #020b174d}
@@ -116,7 +116,7 @@ body.ocean-theme {
 .ocean-theme {--ui-control-radius:10px;--ui-feedback:160ms;--ui-focus:0 0 0 3px #a5c9ff24}
 .ocean-theme:not(.task-room-page) > .container > header {gap:24px;padding-bottom:28px}
 .ocean-theme:not(.task-room-page) > .container > header nav ul {margin:0;padding:0;align-items:center;gap:24px}
-.ocean-theme:not(.task-room-page) > .container > header nav a {display:inline-flex;align-items:center;min-height:44px;padding:9px 0;font-size:15px;text-decoration:none;line-height:1.5}
+.ocean-theme:not(.task-room-page) > .container > header nav a {position:relative;display:inline-flex;align-items:center;min-height:44px;padding:9px 0;font-size:15px;text-decoration:none;line-height:1.5}
 .ocean-theme:not(.task-room-page) > .container > header nav a::after {content:"";position:absolute;left:0;right:0;bottom:2px;top:auto;width:100%;height:2px;border-radius:2px;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform var(--ui-feedback)}
 .ocean-theme:not(.task-room-page) > .container > header nav a:is([aria-current="page"],.active)::after {transform:scaleX(1)}
 .ocean-theme:not(.task-room-page) > .container > header nav a:hover::after {transform:scaleX(1)}
