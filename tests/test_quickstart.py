@@ -144,7 +144,9 @@ class QuickstartTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr.decode("utf-8", errors="replace"))
 
     def test_database_path_confined_to_project(self):
-        self.assertEqual(setup.database_path(self.root, {}), self.root / "instance/competition.db")
+        self.assertEqual(
+            setup.database_path(self.root, {}), (self.root / "instance/competition.db").resolve()
+        )
         for url in (
             "sqlite:///../../outside.db",
             "sqlite:///:memory:",
