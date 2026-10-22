@@ -6,7 +6,7 @@ GitHub 公开仓库提供完整源码，不提供真实 API Key 或用户数据�
 
 ## 运行条件
 
-- Python 3.11 或更新版本；首次安装 Python 依赖需要联网。
+- Python 3.11 或更新版本；Windows/macOS 配置脚本可在用户同意后安装缺失的 Python 和 Docker Desktop，Windows 还会检查 WSL 2。首次安装需要联网及必要的系统授权，重启后可重跑脚本继续。
 - Docker 已启动并使用 Linux 容器。随附镜像为 **Linux/amd64**，适合常见的 x86-64 Windows/Linux/macOS 主机。
 - ARM 主机需在本机从 `sandbox/` 构建相应架构镜像；不保证模拟运行的时限和性能。
 - AI 功能需要能访问 DeepSeek 官方 API 的网络及有效 Key。手动练习、判题不需要 AI Key。

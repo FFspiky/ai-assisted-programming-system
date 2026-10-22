@@ -22,10 +22,15 @@ jobs:
       - name: Install setup test dependencies
         run: python -m pip install python-dotenv==1.2.2 SQLAlchemy
       - name: Test native launchers and setup safeguards
-        run: python -m unittest tests.test_launchers tests.test_quickstart -v
+        run: python -m unittest tests.test_launchers tests.test_quickstart tests.test_prerequisites -v
 
   test:
+    name: Tests (Python ${{ matrix.python }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.13"]
 
     steps:
       - name: Checkout
@@ -34,7 +39,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4

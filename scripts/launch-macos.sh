@@ -1,19 +1,17 @@
 #!/bin/bash
 cd -- "$(dirname -- "$0")/.." || exit 1
 export PYTHONUTF8=1 PYTHONIOENCODING=utf-8 PYTHONDONTWRITEBYTECODE=1
-runner=""
-if [ -x .venv/bin/python ]; then
-    runner=.venv/bin/python
-else
-    for candidate in python3 python3.14 python3.13 python3.12 python3.11; do
-        if command -v "$candidate" >/dev/null 2>&1 && "$candidate" -c 'import sys; sys.exit(sys.version_info < (3, 11))' >/dev/null 2>&1; then
-            runner="$candidate"
-            break
-        fi
-    done
+source ./scripts/bootstrap-macos.sh || exit 1
+runner=$(codelab_find_python)
+skip_install=0
+for argument in "$@"; do
+    [ "$argument" = '--skip-prerequisites' ] && skip_install=1
+done
+if [ -z "$runner" ] && [ "$1" = 'setup' ] && [ "$skip_install" = 0 ]; then
+    codelab_install_python && runner=$(codelab_find_python)
 fi
 if [ -z "$runner" ]; then
-    printf '%s\n' 'Python 3.11+ was not found. Install Python, then run this script again.'
+    printf '%s\n' 'Python 3.11+ was not found. Run setup-macos.command to install it, or install from https://www.python.org/downloads/.'
     result=1
 else
     "$runner" -B scripts/quickstart.py "$@"

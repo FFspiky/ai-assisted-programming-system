@@ -10,7 +10,7 @@
 
 ## 首次配置
 
-请先安装 **Python 3.11+** 和 **Docker Desktop**，打开 Docker Desktop，等待 Linux 容器引擎运行。首次安装 Python 依赖需要联网。无需安装 Node.js，也无需手动编辑 `.env`。
+无需提前安装 Python、Docker、Homebrew 或 WinGet。直接运行下面的配置脚本即可检查环境；缺少 Python 3.11+ 或 Docker Desktop 时，会询问是否从官方网站下载安装。首次配置需要联网和必要的系统安装权限；已有可用环境会直接复用。无需安装 Node.js，也无需手动编辑 `.env`。
 
 **Windows：**进入 `CodeLab`，双击 `setup-windows.cmd`，完成后双击 `start-windows.cmd`。
 
@@ -22,6 +22,16 @@ bash start-macos.command
 ```
 
 使用 `bash` 启动不依赖文件的可执行权限。Intel Mac 使用随附镜像；Apple Silicon Mac 会自动构建 arm64 原生镜像，首次构建还需要联网访问 Docker Hub 和 Debian 软件源。
+
+### 缺少系统软件时
+
+1. 按提示输入 `y` 同意安装，直接回车或输入 `n` 会停止本次配置。非交互终端不会自动同意安装。
+2. Python 从 python.org 下载 3.13.17 安装包并校验 SHA-256；Windows 为当前用户安装，macOS 会请求登录密码安装官方通用包并配置 HTTPS 证书。
+3. Docker 从 Docker 官网下载对应架构的安装包，并校验发布者签名。Windows 同时检查 WSL 2，缺少或过旧时请求管理员授权安装/更新，不额外安装 Ubuntu。
+4. 在 Docker Desktop 窗口中完成首次协议确认和系统授权。脚本最多等待引擎 5 分钟，随后继续配置项目；超时后可完成 Docker 设置，再运行相同脚本。
+5. **系统要求重启时，请手动重启，再次运行相同 `setup` 脚本。** 已安装的软件会被识别，已有项目配置和数据会保留。脚本不会自动重启，也不会自动修改 BIOS/UEFI 虚拟化设置。
+
+Docker 对操作系统版本、内存和虚拟化有要求，受管电脑的安装策略也可能阻止安装。对应说明见 [Docker Windows 安装要求](https://docs.docker.com/desktop/setup/install/windows-install/)、[Docker macOS 安装要求](https://docs.docker.com/desktop/setup/install/mac-install/) 和 [WSL 官方安装命令](https://learn.microsoft.com/en-us/windows/wsl/basic-commands)。下载失败、签名/哈希校验失败、取消系统授权时，脚本会停止，不会报告配置完成；修复后可重试。Python 安装包及校验值来自 [Python 3.13.17 官方发布页](https://www.python.org/downloads/release/python-31317/)。
 
 配置脚本会创建独立 Python 环境、生成随机会话密钥、检查执行镜像，并通过数据库迁移导入 63 道题。重复运行会保留已有配置和用户数据，升级已有数据库前自动备份。遇到未纳入迁移管理的旧数据库会停止并提示。
 
@@ -49,5 +59,7 @@ bash start-macos.command
 3. 查看学习共创、任务室和个人资料；头像支持 PNG/JPEG/WebP。
 
 高级用法：`setup-windows.cmd --reviewer-key skip` 或 `bash setup-macos.command --reviewer-key skip` 跳过弹窗；`--reviewer-key use` 表示明确同意使用随附 Key；启动加 `--no-browser` 可关闭自动打开浏览器。
+
+已由管理员准备好环境时，可给 `setup` 增加 `--skip-prerequisites`，只检查依赖而不安装或启动系统软件。`start` 脚本始终不安装软件；日后启动前请先打开 Docker Desktop。
 
 完整回归命令见 [启动与验证](COMPETITION_PREVIEW.md)，镜像及目录维护见 [代码交付说明](CODE_DELIVERY.md)。前端资源许可见 [本地前端依赖](../static/vendor/README.md)；桌宠许可见 [素材署名](../static/images/dafeiyu/ATTRIBUTION.md)。

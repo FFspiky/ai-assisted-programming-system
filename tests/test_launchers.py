@@ -24,6 +24,7 @@ Path('invocation.json').write_text(json.dumps({
     'encoding': os.environ.get('PYTHONIOENCODING'),
     'bytecode': os.environ.get('PYTHONDONTWRITEBYTECODE'),
 }), encoding='utf-8')
+print('CodeLab launch probe')
 sys.exit(int(os.environ.get('CODELAB_TEST_EXIT', '0')))
 """
 
@@ -43,6 +44,8 @@ class LauncherTest(unittest.TestCase):
             "start-macos.command",
             "scripts/launch-windows.cmd",
             "scripts/launch-macos.sh",
+            "scripts/bootstrap-windows.ps1",
+            "scripts/bootstrap-macos.sh",
         ):
             shutil.copyfile(ROOT / name, self.project / name)
         self.env = {
@@ -120,6 +123,12 @@ class LauncherTest(unittest.TestCase):
     def controlled_shell_path(self):
         binaries = self.base / "bin"
         binaries.mkdir()
+        # Hide installed Python frameworks as well as PATH in this isolated fixture.
+        bootstrap = self.project / "scripts/bootstrap-macos.sh"
+        text = bootstrap.read_text(encoding="utf-8")
+        for prefix in ("/Library/Frameworks/", "/opt/homebrew/", "/usr/local/"):
+            text = text.replace(prefix, "/nonexistent-codelab-test-python/")
+        bootstrap.write_text(text, encoding="utf-8", newline="\n")
         # Only Bash and dirname are exposed, so host Python cannot affect fallback tests.
         for name in ("bash", "dirname"):
             if os.name == "nt":

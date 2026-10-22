@@ -13,6 +13,8 @@
 
 ## 安装依赖
 
+本机评审可直接运行根目录的 Windows/macOS `setup` 脚本，它会询问并安装缺少的 Python、Docker Desktop（Windows 包括 WSL 2 检查），随后创建应用环境。系统授权、Docker 首次协议确认和必要的重启仍由使用者完成，详见 [首次配置](SUBMISSION_START.md)。下方命令用于手动部署。
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate

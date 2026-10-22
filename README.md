@@ -28,7 +28,7 @@
 
 ## 快速开始
 
-先准备 **Python 3.11+**、**Docker Desktop** 和 Git，并启动 Docker 的 Linux 容器引擎。下载源码也可以使用 GitHub 的 Code → Download ZIP；本项目无需 Node.js 即可运行，Node.js 只用于前端开发测试。
+下载源码后即可运行配置脚本：缺少 **Python 3.11+** 或 **Docker Desktop** 时，脚本会询问是否从官方网站下载安装；已有环境会复用。需要联网及必要的系统安装权限，不必预装 Homebrew 或 WinGet。可以通过 GitHub 的 Code → Download ZIP 获取源码，也可用 Git 克隆；本项目运行无需 Node.js。
 
 ```sh
 git clone https://github.com/FFspiky/ai-assisted-programming-system.git
@@ -53,7 +53,11 @@ bash setup-macos.command
 bash start-macos.command
 ```
 
-脚本会建立独立 Python 环境、生成本地配置、准备执行镜像并初始化 63 道题。启动后自动打开浏览器，默认地址为 `http://127.0.0.1:5001`，端口被占用时选择邻近端口。注册自己的本地账号即可使用；停止服务请在启动窗口按 Ctrl+C。
+缺少依赖时按提示输入 `y` 同意安装。Windows 会安装 Python、Docker Desktop，并在需要时请求管理员授权安装/更新 WSL 2；macOS 会安装 Python，并按 Intel/Apple Silicon 选择 Docker。Python 安装包校验 SHA-256，Docker 安装包校验发布者签名。Docker 首次启动的协议确认和系统授权需在其窗口中完成，脚本会等待引擎就绪。
+
+**如 Windows 提示需要重启，请手动重启后再次运行同一 `setup` 脚本。** 脚本不会自动重启电脑；BIOS/UEFI 虚拟化未开启、系统版本不受 Docker 支持或安装权限受限时，需要按系统提示处理。详细流程与故障恢复见 [首次配置说明](docs/SUBMISSION_START.md)。
+
+依赖就绪后，脚本会建立独立 Python 环境、生成本地配置、准备执行镜像并初始化 63 道题。启动后自动打开浏览器，默认地址为 `http://127.0.0.1:5001`，端口被占用时选择邻近端口。注册自己的本地账号即可使用；停止服务请在启动窗口按 Ctrl+C。
 
 重复配置保留已有设置和用户数据，数据库升级前自动备份。Python 依赖首次安装需要联网；没有随附镜像时会从 `sandbox/` 联网构建。Apple Silicon Mac 会构建 arm64 原生镜像，需能访问 Docker Hub 和 Debian 软件源。
 

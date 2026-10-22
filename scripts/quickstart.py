@@ -18,8 +18,10 @@ from datetime import datetime
 from pathlib import Path
 
 try:
+    from .prerequisites import PrerequisiteError, ensure_docker, refresh_docker_path
     from .reviewer_config import read_reviewer_key
 except ImportError:
+    from prerequisites import PrerequisiteError, ensure_docker, refresh_docker_path
     from reviewer_config import read_reviewer_key
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -282,9 +284,17 @@ def main():
     parser.add_argument(
         "--no-browser", action="store_true", help="Do not open the browser on start"
     )
+    parser.add_argument(
+        "--skip-prerequisites",
+        action="store_true",
+        help="Only check prerequisites; never install or launch system software",
+    )
     args = parser.parse_args()
     if sys.version_info < (3, 11):
         raise SetupError("需要 Python 3.11 或更新版本。请安装后重新运行。")
+    refresh_docker_path()
+    if args.action == "setup" and not args.skip_prerequisites:
+        ensure_docker()
     platform = docker_platform()
     virtualenv = ROOT / ".venv"
     python = virtualenv / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
@@ -300,6 +310,8 @@ def main():
         command.extend(["--reviewer-key", args.reviewer_key])
         if args.no_browser:
             command.append("--no-browser")
+        # Prerequisites were already checked by the parent process.
+        command.append("--skip-prerequisites")
         result = subprocess.run(command, cwd=ROOT, env=child_environment({}))
         return result.returncode
     if args.action == "setup":
@@ -396,9 +408,16 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("\n服务已停止。")
         raise SystemExit(0) from None
-    except (SetupError, subprocess.SubprocessError, OSError, ValueError, ImportError) as exc:
+    except (
+        SetupError,
+        PrerequisiteError,
+        subprocess.SubprocessError,
+        OSError,
+        ValueError,
+        ImportError,
+    ) as exc:
         # Never print environment values or keys. Steps can safely be retried.
-        if isinstance(exc, SetupError):
+        if isinstance(exc, (SetupError, PrerequisiteError)):
             message = str(exc)
         elif isinstance(exc, ImportError):
             message = "应用依赖不完整，请重新运行配置脚本完成安装。"
